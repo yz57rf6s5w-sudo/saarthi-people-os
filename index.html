@@ -129,7 +129,14 @@ function loadState(){
     };
   }catch(e){console.warn(e);return clone(seedData)}
 }
-function saveState(){localStorage.setItem(STORE_KEY,JSON.stringify(state))}
+let storageWarningShown=false;
+function saveState(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(state))}
+  catch(e){
+    console.warn('Saarthi could not persist this session in browser storage.',e);
+    if(!storageWarningShown){storageWarningShown=true;notify('Browser storage is unavailable. The demo will work, but changes may not survive a refresh.');}
+  }
+}
 let state=loadState(), currentTab='dashboard', toastTimer;
 const $=id=>document.getElementById(id);
 const roles={
