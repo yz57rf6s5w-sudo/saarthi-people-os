@@ -178,7 +178,7 @@ function renderDashboard(el,role){
   const openT=state.tickets.filter(t=>t.status==='Open').length;
   const totalLeaveDays=state.leaves.reduce((s,l)=>s+Number(l.days||0),0);
   const totalExp=state.reimbursements.reduce((s,r)=>s+Number(r.amount||0),0);
-  el.innerHTML=pageHead(role==='founder'?'Executive Dashboard':role==='hr'?'People Ops Hub':'My Workspace','Snapshot of people operations.')+
+  el.innerHTML=pageHead(role==='founder'?'Executive Dashboard':role==='hr'?'People Ops Hub':role==='manager'?'Team Dashboard':role==='candidate'?'Candidate Overview':'My Workspace','Snapshot of people operations.')+
   `<div class="metrics">
     <div class="card metric"><strong>${state.employees.length}</strong><span>Headcount</span></div>
     <div class="card metric"><strong>${pendingL}</strong><span>Pending leaves</span></div>
@@ -257,18 +257,29 @@ function renderRewards(el,role){
 
 function renderHelpdesk(el,role){
   const canResolve=['founder','hr'].includes(role);
-  el.innerHTML=pageHead('Helpdesk','Raise and resolve tickets.',`<button class="primary" id="raiseTicket">+ Raise ticket</button>`)+
-  `<div class="card table-card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead><tbody>${state.tickets.filter(t=>['employee','manager'].includes(role)?t.user===state.displayName:role==='candidate'?t.user===state.displayName:true).map(t=>`<tr><td>${escapeHTML(t.user)}</td><td>${escapeHTML(t.subject)}</td><td>${escapeHTML(t.priority)}</td><td><span class="pill ${t.status.toLowerCase()}">${t.status}</span></td><td>${t.status==='Open'&&canResolve?`<button class="success small" data-resolve="${t.id}">Resolve</button>`:'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const ownOnly=['employee','manager','candidate'].includes(role);
+  const visibleTickets=state.tickets.filter(t=>!ownOnly||t.user===state.displayName);
+  el.innerHTML=pageHead(role==='employee'?'HR Helpdesk':role==='manager'?'Team Helpdesk':role==='candidate'?'Candidate Support':'Helpdesk','Raise and track requests. Only People Ops and founders can resolve tickets.',`<button class="primary" id="raiseTicket">+ Raise ticket</button>`)+
+  `<div class="metrics">
+    <div class="card metric"><strong>${visibleTickets.length}</strong><span>My visible tickets</span></div>
+    <div class="card metric"><strong>${visibleTickets.filter(t=>t.status==='Open').length}</strong><span>Open</span></div>
+    <div class="card metric"><strong>${visibleTickets.filter(t=>t.status==='Resolved').length}</strong><span>Resolved</span></div>
+  </div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Action</th></tr></thead><tbody>${visibleTickets.map(t=>`<tr><td>${escapeHTML(t.user)}</td><td>${escapeHTML(t.subject)}</td><td>${escapeHTML(t.priority)}</td><td><span class="pill ${t.status.toLowerCase()}">${escapeHTML(t.status)}</span></td><td>${t.status==='Open'&&canResolve?`<button class="success small" data-resolve="${t.id}">Resolve</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">No tickets yet. Raise a ticket if you need help.</td></tr>'}</tbody></table></div></div>`;
   $('raiseTicket').addEventListener('click',()=>openForm('Raise ticket',[
     {name:'subject',label:'Subject',type:'text',required:true},
     {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
   ],v=>{state.tickets.unshift({id:Date.now(),user:state.displayName,subject:v.subject,priority:v.priority,status:'Open'});saveState();renderApp();notify('Ticket raised')}));
-  el.querySelectorAll('[data-resolve]').forEach(b=>b.addEventListener('click',()=>{const t=state.tickets.find(x=>x.id===Number(b.dataset.resolve));if(t){t.status='Resolved';saveState();renderApp();notify('Ticket resolved')}}));
+  el.querySelectorAll('[data-resolve]').forEach(b=>b.addEventListener('click',()=>{const t=state.tickets.find(x=>x.id===Number(b.dataset.resolve));if(t){t.status='Resolved';t.resolvedBy=role;t.resolvedAt=new Date().toISOString();saveState();renderApp();notify('Ticket resolved')}}));
 }
 
 function renderCandidate(el){
   el.innerHTML=pageHead('Application Status','Illustrative candidate portal.')+
-  `<div class="card"><p>Status: <strong>Interview scheduled</strong></p><p class="tiny muted">This is a demo view only. No real application data is stored.</p></div>`;
+  `<div class="metrics"><div class="card metric"><strong>Interview scheduled</strong><span>Demo application status</span></div><div class="card metric"><strong>People Ops</strong><span>Support contact</span></div></div>
+  <div class="card"><h3>What happens next?</h3><p class="muted">Your recruiter will share the next steps and interview details. This is sample data only and is not connected to a real applicant tracking system.</p><button class="primary" id="candidateSupport">Contact candidate support</button></div>`;
+  $('candidateSupport').addEventListener('click',()=>openForm('Contact candidate support',[
+    {name:'subject',label:'What do you need help with?',type:'text',required:true},
+    {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
+  ],v=>{state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate: '+v.subject,priority:v.priority,status:'Open'});saveState();currentTab='helpdesk';renderApp();notify('Support request submitted')}));
 }
 
 function openForm(title,fields,onSubmit){
