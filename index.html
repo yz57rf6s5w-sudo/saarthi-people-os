@@ -206,6 +206,25 @@ button,select,input,textarea{-webkit-tap-highlight-color:transparent}
   .onboard-step .actions{width:100%;justify-content:space-between}
 }
 @media(min-width:561px) and (max-width:900px){.top-actions{flex-wrap:wrap;justify-content:flex-end}}
+
+/* Product polish: stronger hierarchy, calmer surfaces, and accessible interactions */
+.page-head .section-title{font-size:clamp(19px,2vw,24px);letter-spacing:-.035em;line-height:1.2}
+.page-head>div>p{max-width:68ch;margin:7px 0 0;line-height:1.55}
+.metrics .metric{position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.metrics .metric:hover{transform:translateY(-2px);box-shadow:0 9px 22px #0f172a0c;border-color:#c7d2fe}
+.metric strong{letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.card h3,.panel h3{letter-spacing:-.015em}
+.table-card thead th{background:#f8fafc;color:#475569;font-size:11px;font-weight:750;letter-spacing:.035em;text-transform:uppercase}
+table td,table th{vertical-align:middle}
+input,select,textarea{border-color:#cbd5e1;border-radius:9px}
+input:focus,select:focus,textarea:focus{border-color:#818cf8;box-shadow:0 0 0 3px #eef2ff}
+button:disabled{cursor:not-allowed;opacity:.55;transform:none}
+button:not(:disabled):active{transform:translateY(1px)}
+.nav button{transition:background .14s ease,color .14s ease}
+.sidebar .summary{border:1px solid #e8edf5}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media(max-width:560px){.layout{padding:12px;gap:12px}.metrics{gap:8px}.metrics .metric{padding:12px}.card{padding:14px}.page-head{margin-bottom:13px}}
+
 </style>
 </head>
 <body>
