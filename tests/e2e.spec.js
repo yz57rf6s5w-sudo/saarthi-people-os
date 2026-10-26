@@ -64,3 +64,18 @@ test('employee helpdesk is scoped to the signed-in user', async ({ page }) => {
   await expect(page.locator('#mainContent')).toContainText('Private QA Employee');
   await expect(page.locator('#mainContent')).not.toContainText('Candidate QA');
 });
+
+test('expense form blocks zero-value claims', async ({ page }) => {
+  await login(page, 'employee', 'Validation QA');
+  await page.getByRole('button', { name: /My Expense Claims/ }).click();
+  await page.getByRole('button', { name: /New claim/ }).click();
+  await page.locator('#modalContent [name="category"]').selectOption({ label: 'Other' });
+  await page.locator('#modalContent [name="amount"]').fill('0');
+  await page.locator('#modalContent [name="desc"]').fill('Invalid zero-value claim');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#modalBg')).toBeVisible();
+  await expect(page.locator('#mainContent')).not.toContainText('Invalid zero-value claim');
+  await page.locator('#modalContent [name="amount"]').fill('100');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Invalid zero-value claim');
+});
