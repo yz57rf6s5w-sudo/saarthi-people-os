@@ -139,3 +139,11 @@ test('HR can mark an onboarding step done and retain progress', async ({ page })
   await page.getByRole('button', { name: /Onboarding/ }).click();
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
 });
+
+
+test('employee can open their onboarding checklist', async ({ page }) => {
+  await login(page, 'employee', 'New Joiner QA');
+  await page.getByRole('button', { name: /My Onboarding/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('October 2026 cohort');
+  await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('In Progress');
+});
