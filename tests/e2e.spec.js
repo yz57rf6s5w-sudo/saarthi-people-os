@@ -79,3 +79,19 @@ test('expense form blocks zero-value claims', async ({ page }) => {
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('Invalid zero-value claim');
 });
+
+test('HR can approve a pending expense claim', async ({ page }) => {
+  await login(page, 'employee', 'Approval QA');
+  await page.getByRole('button', { name: /My Expense Claims/ }).click();
+  await page.getByRole('button', { name: /New claim/ }).click();
+  await page.locator('#modalContent [name="category"]').selectOption({ label: 'Other' });
+  await page.locator('#modalContent [name="amount"]').fill('250');
+  await page.locator('#modalContent [name="desc"]').fill('Approval QA expense');
+  await page.locator('#modalOk').click();
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.getByRole('button', { name: 'Reimbursements' }).click();
+  const claim = page.locator('tr').filter({ hasText: 'Approval QA expense' });
+  await expect(claim).toBeVisible();
+  await claim.getByRole('button', { name: 'Approve' }).click();
+  await expect(page.locator('tr').filter({ hasText: 'Approval QA expense' })).toContainText('Approved');
+});
