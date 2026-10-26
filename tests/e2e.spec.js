@@ -166,3 +166,20 @@ test('manager can approve an employee leave request', async ({ page }) => {
   await request.getByRole('button', { name: 'Approve' }).click();
   await expect(page.locator('#leaveTable tr').filter({ hasText: 'Manager approval regression' })).toContainText('Approved');
 });
+
+test('role switch updates navigation to the selected workspace', async ({ page }) => {
+  await login(page, 'employee', 'Navigation QA');
+  await expect(page.locator('#nav')).toContainText('My Leaves');
+  await expect(page.locator('#nav')).not.toContainText('Team Leave Requests');
+  await expect(page.locator('#nav')).not.toContainText('Team Directory');
+
+  await page.locator('#roleSelector').selectOption('manager');
+  await expect(page.locator('#nav')).toContainText('Team Leave Requests');
+  await expect(page.locator('#nav')).toContainText('Expense Approvals');
+  await expect(page.locator('#nav')).not.toContainText('My Onboarding');
+
+  await page.locator('#roleSelector').selectOption('candidate');
+  await expect(page.locator('#nav')).toContainText('Application Status');
+  await expect(page.locator('#nav')).toContainText('Candidate Support');
+  await expect(page.locator('#nav')).not.toContainText('Team Directory');
+});
