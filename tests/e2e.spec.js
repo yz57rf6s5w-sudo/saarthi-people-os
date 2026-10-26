@@ -544,7 +544,7 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
   await login(page, 'employee', 'Career Plan QA');
   await page.locator('#nav button[data-tab="career"]').click();
-  await expect(page.locator('#mainContent')).toContainText('Shape your next career step at your own pace');
+  await expect(page.locator('#mainContent')).toContainText('Set your own direction, skills and learning pace');
   await page.getByRole('button', { name: /Create my career plan/ }).click();
   await page.locator('#modalContent [name="currentRole"]').fill('People Ops Associate');
   await page.locator('#modalContent [name="targetRole"]').fill('People Operations Partner');
@@ -574,7 +574,7 @@ test('founder can customize career skill areas and time horizons', async ({ page
   await page.locator('#modalContent [name="skillAreas"]').fill('Customer empathy\\nSystems thinking\\nPeople leadership');
   await page.locator('#modalContent [name="goalHorizons"]').fill('2 weeks\\n4 months');
   await page.locator('#modalOk').click();
-  await expect(page.locator('#toast')).toContainText('Career module options customized');
+  await expect(page.locator('#toast')).toContainText('Career options customized');
   await page.locator('#roleSelector').selectOption('employee');
   await page.locator('#nav button[data-tab="career"]').click();
   await page.getByRole('button', { name: /Create my career plan/ }).click();
