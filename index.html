@@ -352,6 +352,7 @@ function renderApp(){
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   $('nav').innerHTML=r.nav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   $('nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab;renderApp();if(window.innerWidth<900)$('sidebar').classList.remove('open')}));
+  const activeEmployees=state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
   const pendingL=state.leaves.filter(l=>l.status==='Pending').length;
   const pendingR=state.reimbursements.filter(r=>r.status==='Pending').length;
   $('sidebarSummary').innerHTML=`<div><strong>${state.employees.length}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
@@ -384,6 +385,7 @@ function renderDashboard(el,role){
   const setupPercent=Math.round(setupCount/3*100);
   const metrics=`<div class="metrics">
     <div class="card metric"><strong>${state.employees.length}</strong><span>Team members</span></div>
+    <div class="card metric"><strong>${activeEmployees}</strong><span>Active team members</span></div>
     <div class="card metric"><strong>${pendingL}</strong><span>Leave requests to review</span></div>
     <div class="card metric"><strong>${pendingR}</strong><span>Expense claims to review</span></div>
     <div class="card metric"><strong>${openT}</strong><span>Open helpdesk tickets</span></div>
