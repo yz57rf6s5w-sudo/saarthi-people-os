@@ -126,3 +126,15 @@ test('founder can restore a valid Saarthi backup', async ({ page }) => {
   await page.getByRole('button', { name: /Team Directory/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Restored Demo Employee');
 });
+test('founder can mark an onboarding step done and retain progress', async ({ page }) => {
+  await login(page, 'founder', 'Onboarding QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  const step = page.locator('.onboard-step').filter({ hasText: 'First feature commit' });
+  await expect(step).toContainText('In Progress');
+  await step.getByRole('button', { name: 'Mark done' }).click();
+  await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
+  await page.reload();
+  await expect(page.locator('#app')).toBeVisible();
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
+});
