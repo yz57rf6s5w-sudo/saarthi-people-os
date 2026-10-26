@@ -373,3 +373,51 @@ test('HR status changes update the directory and active dashboard count and pers
   await page.locator('#nav button[data-tab="dashboard"]').click();
   await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
 });
+
+test('every role navigation destination renders a usable module without browser errors', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+
+  for (const role of ['founder', 'hr', 'manager', 'employee', 'candidate']) {
+    await page.evaluate(() => localStorage.clear()).catch(() => {});
+    await login(page, role, 'Module Smoke QA');
+
+    const tabIds = await page.locator('#nav button').evaluateAll(buttons =>
+      buttons.map(button => button.dataset.tab).filter(Boolean)
+    );
+    expect(tabIds.length, role + ' should have navigation destinations').toBeGreaterThan(0);
+
+    for (const tabId of tabIds) {
+      await page.locator('#nav button[data-tab="' + tabId + '"]').click();
+      await expect(page.locator('#mainContent')).toBeVisible();
+      await expect(page.locator('#mainContent')).not.toBeEmpty();
+      const text = (await page.locator('#mainContent').innerText()).trim();
+      expect(text.length, role + '/' + tabId + ' should render useful content').toBeGreaterThan(15);
+    }
+
+    await page.locator('#logoutBtn').click();
+    await expect(page.locator('#loginScreen')).toBeVisible();
+  }
+
+  expect(pageErrors, 'module navigation should not throw uncaught browser errors').toEqual([]);
+});
+
+test('employee cannot resolve helpdesk tickets but HR can resolve them', async ({ page }) => {
+  await login(page, 'employee', 'Ticket Permission QA');
+  await page.getByRole('button', { name: /HR Helpdesk/ }).click();
+  await page.getByRole('button', { name: /Raise ticket/ }).click();
+  await page.locator('#modalContent [name="subject"]').fill('Permission boundary test ticket');
+  await page.locator('#modalContent [name="priority"]').selectOption({ label: 'High' });
+  await page.locator('#modalOk').click();
+
+  const ownTicket = page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' });
+  await expect(ownTicket).toBeVisible();
+  await expect(ownTicket.getByRole('button', { name: 'Resolve' })).toHaveCount(0);
+
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.getByRole('button', { name: /Helpdesk Tickets/ }).click();
+  const hrTicket = page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' });
+  await expect(hrTicket).toBeVisible();
+  await hrTicket.getByRole('button', { name: 'Resolve' }).click();
+  await expect(page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' })).toContainText('Resolved');
+});
