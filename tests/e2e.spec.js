@@ -473,3 +473,35 @@ test('founder advanced settings save workflow defaults and role module access', 
   await expect(page.locator('#wfLeave')).not.toBeChecked();
   await expect(page.locator('[data-access-role="employee"][data-access-module="projects"]')).not.toBeChecked();
 });
+
+
+test('admin-configured approval rules auto-approve employee leave and expense requests', async ({ page }) => {
+  await login(page, 'founder', 'Workflow enforcement QA');
+  await page.getByRole('button', { name: /Advanced Settings/ }).click();
+  await page.locator('#wfLeave').uncheck();
+  await page.locator('#wfExpense').uncheck();
+  await page.getByRole('button', { name: 'Save workflow settings' }).click();
+  await expect(page.locator('#toast')).toContainText('Workflow settings saved');
+
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Leave/ }).first().click();
+  await page.getByRole('button', { name: /Apply leave/ }).click();
+  await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
+  await page.locator('#modalContent [name="days"]').fill('1');
+  await page.locator('#modalContent [name="date"]').fill('2026-12-15');
+  await page.locator('#modalContent [name="reason"]').fill('Workflow auto-approval test');
+  await page.locator('#modalOk').click();
+  const leaveRow = page.locator('#leaveTable tbody tr').filter({ hasText: 'Workflow auto-approval test' });
+  await expect(leaveRow).toContainText('Approved');
+  await expect(leaveRow).toContainText('Workspace rule');
+
+  await page.getByRole('button', { name: /Reimbursements|Expense/ }).first().click();
+  await page.getByRole('button', { name: /New claim/ }).click();
+  await page.locator('#modalContent [name="category"]').selectOption({ label: 'Office Supplies' });
+  await page.locator('#modalContent [name="amount"]').fill('123.45');
+  await page.locator('#modalContent [name="desc"]').fill('Workflow auto-approval test expense');
+  await page.locator('#modalOk').click();
+  const expenseRow = page.locator('#mainContent tr').filter({ hasText: 'Workflow auto-approval test expense' });
+  await expect(expenseRow).toContainText('Approved');
+  await expect(expenseRow).toContainText('123.45');
+});
