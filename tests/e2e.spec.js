@@ -506,3 +506,36 @@ test('admin-configured approval rules auto-approve employee leave and expense re
   await expect(expenseRow).toContainText('Approved');
   await expect(expenseRow).toContainText('123.45');
 });
+
+
+test('manager expense approvals show direct reports and exclude other teams', async ({ page }) => {
+  await login(page, 'employee', 'Ananya Sharma');
+  await page.getByRole('button', { name: /My Expense Claims/ }).click();
+  await page.getByRole('button', { name: /New claim/ }).click();
+  await page.locator('#modalContent [name="category"]').selectOption({ label: 'Travel' });
+  await page.locator('#modalContent [name="amount"]').fill('456.78');
+  await page.locator('#modalContent [name="desc"]').fill('Direct report expense scope QA');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Direct report expense scope QA');
+
+  await page.locator('#logoutBtn').click();
+  await login(page, 'manager', 'Arjun Das');
+  await page.getByRole('button', { name: /Expense Approvals/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Direct report expense scope QA');
+  await expect(page.locator('#mainContent')).not.toContainText('Figma Subscription');
+});
+
+test('shoutouts can be created and persist after reload', async ({ page }) => {
+  await login(page, 'employee', 'Recognition QA');
+  await page.getByRole('button', { name: /Rewards & Recognition|Rewards/ }).click();
+  await page.getByRole('button', { name: /Give shoutout/ }).click();
+  await page.locator('#modalContent [name="to"]').fill('Ananya Sharma');
+  await page.locator('#modalContent [name="badge"]').selectOption({ label: '🌟 Rising Star' });
+  await page.locator('#modalContent [name="text"]').fill('Recognition workflow regression test');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Recognition workflow regression test');
+  await page.reload();
+  await login(page, 'employee', 'Recognition QA');
+  await page.getByRole('button', { name: /Rewards & Recognition|Rewards/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Recognition workflow regression test');
+});
