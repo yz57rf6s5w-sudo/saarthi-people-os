@@ -205,7 +205,7 @@ test('HR can import employees from a CSV spreadsheet', async ({ page }) => {
   await page.locator('#importEmployeesFile').setInputFiles({
     name: 'employees.csv',
     mimeType: 'text/csv',
-    buffer: Buffer.from('Name,Role,Location,Join,Manager,Status\\nCSV Import Employee,QA Analyst,Remote,2026-10-26,People Lead,Active\\n')
+    buffer: Buffer.from('Name,Role,Location,Join,Manager,Status\nCSV Import Employee,QA Analyst,Remote,2026-10-26,People Lead,Active\n')
   });
   await expect(page.locator('#mainContent')).toContainText('CSV Import Employee');
   await expect(page.locator('#mainContent')).toContainText('QA Analyst');
