@@ -11,7 +11,7 @@ async function login(page, role, name = 'QA Demo') {
 
 test('all five demo roles can log in and see their workspace', async ({ page }) => {
   for (const [role, heading] of [
-    ['founder', 'Executive Dashboard'],
+    ['founder', 'Build a better people experience.'],
     ['hr', 'People Ops Hub'],
     ['manager', 'Team Dashboard'],
     ['employee', 'My Workspace'],
@@ -233,7 +233,7 @@ test('founder dashboard provides working guided setup and quick actions', async 
   await expect(page.locator('#mainContent')).toContainText('Make Saarthi yours');
   await page.getByRole('button', { name: 'Set up workspace' }).click();
   await expect(page.locator('#workspaceSetupForm')).toBeVisible();
-  await page.getByRole('button', { name: 'workspaceSetupClose' }).click();
+  await page.getByRole('button', { name: 'Close setup' }).click();
   await page.getByRole('button', { name: /Team directory/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Team Directory');
 });
