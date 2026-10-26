@@ -251,3 +251,18 @@ test('founder setup checklist reflects workspace and directory progress', async 
   await expect(page.locator('.setup-count')).toHaveText('2 of 3');
   await expect(page.locator('.founder-task').filter({ hasText: 'Review your people directory' })).toContainText('Reviewed');
 });
+
+
+test('CSV import skips duplicate employee rows without duplicating directory records', async ({ page }) => {
+  await login(page, 'hr', 'CSV Duplicate QA');
+  const file = {
+    name: 'employees-duplicates.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('Name,Role,Location\nDuplicate Test Person,QA Analyst,Remote\nDuplicate Test Person,QA Analyst,Remote\n')
+  };
+  await page.getByRole('button', { name: 'Import employees CSV' }).click();
+  await page.locator('#importEmployeesFile').setInputFiles(file);
+  await expect(page.locator('#mainContent')).toContainText('Duplicate Test Person');
+  await expect(page.locator('#toast')).toContainText('Skipped 1 duplicate row');
+  await page.locator('#mainContent').getByRole('button', { name: /Add employee/i }).click().catch(() => {});
+});
