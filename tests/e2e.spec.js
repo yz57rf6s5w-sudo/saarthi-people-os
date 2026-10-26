@@ -264,5 +264,4 @@ test('CSV import skips duplicate employee rows without duplicating directory rec
   await page.locator('#importEmployeesFile').setInputFiles(file);
   await expect(page.locator('#mainContent')).toContainText('Duplicate Test Person');
   await expect(page.locator('#toast')).toContainText('Skipped 1 duplicate row');
-  await page.locator('#mainContent').getByRole('button', { name: /Add employee/i }).click().catch(() => {});
 });
