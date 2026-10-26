@@ -369,8 +369,8 @@ function parseCSV(text){
     if(ch==='"'&&quoted&&text[i+1]==='"'){cell+='"';i++;}
     else if(ch==='"')quoted=!quoted;
     else if(ch===','&&!quoted){row.push(cell.trim());cell='';}
-    else if((ch==='\\n'||ch==='\\r')&&!quoted){
-      if(ch==='\\r'&&text[i+1]==='\\n')i++;
+    else if((ch==='\n'||ch==='\r')&&!quoted){
+      if(ch==='\r'&&text[i+1]==='\n')i++;
       row.push(cell.trim());cell='';
       if(row.some(value=>value!==''))rows.push(row);
       row=[];
@@ -379,7 +379,7 @@ function parseCSV(text){
   if(cell!==''||row.length){row.push(cell.trim());if(row.some(value=>value!==''))rows.push(row);}
   if(quoted)throw new Error('CSV has an unclosed quoted field.');
   if(rows.length<2)throw new Error('CSV needs a header row and at least one employee row.');
-  const headers=rows.shift().map(value=>value.replace(/^\\uFEFF/,'').trim().toLowerCase().replace(/[ _-]+/g,''));
+  const headers=rows.shift().map(value=>value.replace(/^\uFEFF/,'').trim().toLowerCase().replace(/[ _-]+/g,''));
   const column=name=>headers.indexOf(name);
   const nameCol=column('name'),roleCol=column('role');
   if(nameCol<0||roleCol<0)throw new Error('CSV must include Name and Role columns.');
