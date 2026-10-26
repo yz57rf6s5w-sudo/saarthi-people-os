@@ -362,7 +362,7 @@ test('HR status changes update the directory and active dashboard count and pers
   await page.locator('#modalOk').click();
   await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Inactive');
   await expect(page.locator('.directory-status-metrics .metric').filter({ hasText: 'Inactive' }).locator('strong')).toHaveText('1');
-  await expect(page.locator('.directory-status-metrics .metric').filter({ hasText: 'Active' }).locator('strong')).toHaveText('4');
+  await expect(page.locator('.directory-status-metrics .metric').nth(0).locator('strong')).toHaveText('4');
   await expect(page.locator('#sidebarSummary')).toContainText('4 active headcount');
   await page.locator('#nav button[data-tab="dashboard"]').click();
   await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
