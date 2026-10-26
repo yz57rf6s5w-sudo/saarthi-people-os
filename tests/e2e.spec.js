@@ -134,7 +134,8 @@ test('HR can mark an onboarding step done and retain progress', async ({ page })
   await step.getByRole('button', { name: 'Mark done' }).click();
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
   await page.reload();
-  await expect(page.locator('#app')).toBeVisible();
+  await expect(page.locator('#loginScreen')).toBeVisible();
+  await login(page, 'hr', 'Onboarding QA');
   await page.getByRole('button', { name: /Onboarding/ }).click();
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
 });
