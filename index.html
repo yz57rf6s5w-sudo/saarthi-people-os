@@ -284,10 +284,10 @@ function renderCandidate(el){
 
 function openForm(title,fields,onSubmit){
   const bg=$('modalBg'),c=$('modalContent');
-  c.innerHTML=`<h3>${title}</h3>`+fields.map(f=>`<div class="form-row"><label>${f.label}</label>${f.type==='select'?`<select name="${f.name}" ${f.required?'required':''}>${f.options.map(o=>`<option>${escapeHTML(o)}</option>`).join('')}</select>`:f.type==='textarea'?`<textarea name="${f.name}" rows="3" ${f.required?'required':''}></textarea>`:`<input name="${f.name}" type="${f.type||'text'}" ${f.min?'min="'+f.min+'"':''} ${f.required?'required':''} value="${f.value||''}">`}</div>`).join('')+`<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button type="button" class="neutral" id="modalCancel">Cancel</button><button type="button" class="primary" id="modalOk">Submit</button></div>`;
+  c.innerHTML=`<h3>${escapeHTML(title)}</h3>`+fields.map(f=>`<div class="form-row"><label for="field-${f.name}">${escapeHTML(f.label)}</label>${f.type==='select'?`<select id="field-${f.name}" name="${f.name}" ${f.required?'required':''}>${f.options.map(o=>`<option>${escapeHTML(o)}</option>`).join('')}</select>`:f.type==='textarea'?`<textarea id="field-${f.name}" name="${f.name}" rows="3" ${f.required?'required':''}></textarea>`:`<input id="field-${f.name}" name="${f.name}" type="${f.type||'text'}" ${f.min?'min="'+f.min+'"':''} ${f.required?'required':''} value="${escapeHTML(f.value||'')}">`}</div>`).join('')+`<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button type="button" class="neutral" id="modalCancel">Cancel</button><button type="button" class="primary" id="modalOk">Submit</button></div>`;
   bg.classList.remove('hidden');
   $('modalCancel').onclick=()=>bg.classList.add('hidden');
-  $('modalOk').onclick=()=>{const data={};fields.forEach(f=>{const el=c.querySelector(`[name="${f.name}"]`);data[f.name]=el?el.value.trim():''});if(fields.some(f=>f.required&&!data[f.name])){notify('Please fill required fields');return}onSubmit(data);bg.classList.add('hidden')};
+  $('modalOk').onclick=()=>{const data={};for(const f of fields){const el=c.querySelector(`[name="${f.name}"]`);if(el&&!el.checkValidity()){el.reportValidity();return}data[f.name]=el?el.value.trim():''}if(fields.some(f=>f.required&&!data[f.name])){notify('Please fill required fields');return}onSubmit(data);bg.classList.add('hidden')};
 }
 
 function openAi(){
