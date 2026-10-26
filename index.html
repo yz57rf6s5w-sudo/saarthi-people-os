@@ -316,6 +316,8 @@ const seedData={
     {id:2,name:'Ship customer analytics v1',owner:'Product & Engineering',status:'At risk',due:'2026-12-15',objective:'Launch a reliable analytics experience for early customers',keyResults:[{id:21,title:'Deliver committed product milestones',target:100,current:55,unit:'%'},{id:22,title:'Resolve priority launch blockers',target:0,current:3,unit:' open'}]},
     {id:3,name:'Build predictable hiring engine',owner:'People Ops',status:'On track',due:'2026-12-01',objective:'Reduce hiring delays while keeping a consistent candidate experience',keyResults:[{id:31,title:'Reduce median time to hire',target:25,current:18,unit:' days'},{id:32,title:'Complete structured scorecards',target:95,current:72,unit:'%'}]}
   ],
+  careerPlans:[{id:1,employee:'Ananya Sharma',currentRole:'Product Designer',targetRole:'Senior Product Designer',horizon:'6 months',skillArea:'Product thinking',skillsToBuild:'Research synthesis, design systems',learningGoal:'Lead one end-to-end discovery project',preferredLearning:'Project-based practice',weeklyHours:2,progress:'In progress',notes:'Pair with a senior designer for monthly portfolio reviews.',visibility:'Share with manager and People Ops',updatedAt:'2026-10-20'}],
+  careerSettings:{skillAreas:['Communication','Technical depth','Leadership','Product thinking','Data & analytics','Project management'],goalHorizons:['30 days','90 days','6 months','12 months']},
   workflowSettings:{leaveApproval:true,expenseApproval:true,onboardingChecklist:true},
   onboarding:[
     {id:1,title:'Workspace & tools provisioning',detail:'Google Workspace, Slack, GitHub and Figma access',status:'Done',owner:'IT / HR'},
@@ -338,6 +340,8 @@ function loadState(){
       tickets:Array.isArray(parsed.tickets)?parsed.tickets:clone(seedData.tickets),
       onboarding:Array.isArray(parsed.onboarding)?parsed.onboarding:clone(seedData.onboarding),
       projects:Array.isArray(parsed.projects)?parsed.projects:clone(seedData.projects),
+      careerPlans:Array.isArray(parsed.careerPlans)?parsed.careerPlans:clone(seedData.careerPlans),
+      careerSettings:{...clone(seedData.careerSettings),...(parsed.careerSettings||{}),skillAreas:Array.isArray(parsed.careerSettings?.skillAreas)?parsed.careerSettings.skillAreas:clone(seedData.careerSettings.skillAreas),goalHorizons:Array.isArray(parsed.careerSettings?.goalHorizons)?parsed.careerSettings.goalHorizons:clone(seedData.careerSettings.goalHorizons)},
       workflowSettings:{...clone(seedData.workflowSettings),...(parsed.workflowSettings||{})},
       accessConfig:parsed.accessConfig||{}
     };
@@ -354,10 +358,10 @@ function saveState(){
 let state=loadState(), currentTab='dashboard', toastTimer;
 const $=id=>document.getElementById(id);
 const roles={
-  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
-  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
-  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
-  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
+  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
+  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
+  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
+  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['career','My Career & Learning','🌱'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
   candidate:{badge:'CANDIDATE PORTAL',nav:[['candidate_portal','Application Status','✎'],['helpdesk','Candidate Support','🎧']]}
 };
 function notify(msg){const t=$('toast');t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,2400)}
@@ -409,7 +413,7 @@ function renderApp(){
   $('greeting').textContent=`Hi, ${escapeHTML(state.displayName)}`;
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
-  const extraModules=[['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
+  const extraModules=[['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
   if(role!=='candidate')extraModules.forEach(item=>{if(state.accessConfig?.[role]?.[item[0]]===true&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
@@ -428,6 +432,7 @@ function renderApp(){
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='projects') renderProjects(el,role);
+  else if(currentTab==='career') renderCareer(el,role);
   else if(currentTab==='admin_settings') renderAdminSettings(el);
   else if(currentTab==='playbook') renderPlaybook(el);
   else if(currentTab==='directory'){if(role==='founder')markSetupStep('directoryReviewed');renderDirectory(el);}
@@ -439,6 +444,34 @@ function renderApp(){
   else if(currentTab==='candidate_portal') renderCandidate(el);
 }
 
+
+
+function renderCareer(el,role){
+ const name=String(state.displayName||'').trim(),isEmployee=role==='employee',canCustomize=['founder','hr'].includes(role);
+ const plans=state.careerPlans||(state.careerPlans=[]),settings=state.careerSettings||(state.careerSettings=clone(seedData.careerSettings));
+ const own=plans.find(p=>String(p.employee||'').toLowerCase()===name.toLowerCase());
+ const team=plans.filter(p=>p.visibility==='Share with manager and People Ops'&&String(p.employee||'').toLowerCase()!==name.toLowerCase()&&(['founder','hr'].includes(role)||(role==='manager'&&state.employees.some(e=>String(e.name||'').toLowerCase()===String(p.employee||'').toLowerCase()&&String(e.manager||'').toLowerCase()===name.toLowerCase()))));
+ const card=p=>'<article class="card" style="margin-bottom:12px"><div class="project-top"><div><div class="eyebrow">CAREER PLAN · '+escapeHTML(p.employee)+'</div><h3>'+escapeHTML(p.targetRole||'Career direction')+'</h3></div><span class="pill '+(p.progress==='Completed'?'approved':p.progress==='In progress'?'pending':'open')+'">'+escapeHTML(p.progress||'Not started')+'</span></div><p class="muted tiny">Current role: '+escapeHTML(p.currentRole||'Not specified')+' · Timeline: '+escapeHTML(p.horizon||'Flexible')+'</p><p><b>Skill focus:</b> '+escapeHTML(p.skillArea||'Not selected')+'</p><p><b>Skills to build:</b> '+escapeHTML(p.skillsToBuild||'Not added')+'</p><p><b>Learning goal:</b> '+escapeHTML(p.learningGoal||'Not added')+'</p><p><b>Preferred learning:</b> '+escapeHTML(p.preferredLearning||'Not specified')+' · '+escapeHTML(String(p.weeklyHours||0))+' hr/week</p>'+(p.notes?'<p class="muted tiny">Support needed: '+escapeHTML(p.notes)+'</p>':'')+'<p class="muted tiny">Updated: '+escapeHTML(p.updatedAt||'Not recorded')+'</p></article>';
+ const metrics='<div class="metrics"><div class="card metric"><strong>'+(own?(own.progress==='Completed'?'100%':own.progress==='In progress'?'50%':'0%'):'0%')+'</strong><span>My plan progress</span></div><div class="card metric"><strong>'+((own?.skillsToBuild||'').split(',').map(x=>x.trim()).filter(Boolean).length)+'</strong><span>Skills to build</span></div><div class="card metric"><strong>'+(own?.weeklyHours||0)+' hr</strong><span>Weekly learning time</span></div></div>';
+ el.innerHTML=pageHead(isEmployee?'My Career & Learning Plan':'Career Growth & Learning',isEmployee?'Set your own direction, skills and learning pace. Update your plan as your priorities change.':'Support employee-owned development. Only plans explicitly shared with you are shown.', '<button class="primary" id="editCareerPlan">'+(own?'Update my plan':'Create my career plan')+'</button>'+(canCustomize?' <button class="neutral" id="customCareerSettings">Customize skill areas</button>':''))+(isEmployee?metrics:'<div class="card" style="margin-bottom:14px"><p class="muted">Growth plans are for coaching and learning support, not performance ratings. Employees choose whether to share their plans.</p></div>')+(isEmployee?(own?card(own):'<div class="card"><h3>Your next step starts with you</h3><p class="muted">Choose one skill, one practical learning goal and a pace that works for you.</p></div>'):'')+(['founder','hr','manager'].includes(role)?'<h3 class="section-title" style="margin-top:20px">Shared team plans</h3>'+(team.length?team.map(card).join(''):'<div class="card">No team plans have been shared with you yet.</div>'):'');
+ $('editCareerPlan')?.addEventListener('click',()=>openForm(own?'Update my career & learning plan':'Create my career & learning plan',[
+ {name:'currentRole',label:'Current role',required:true,value:own?.currentRole||state.employees.find(e=>String(e.name).toLowerCase()===name.toLowerCase())?.role||''},
+ {name:'targetRole',label:'Career direction / target role',required:true,value:own?.targetRole||''},
+ {name:'horizon',label:'Preferred timeline',type:'select',options:settings.goalHorizons,value:own?.horizon||settings.goalHorizons[1],required:true},
+ {name:'skillArea',label:'Main skill area',type:'select',options:settings.skillAreas,value:own?.skillArea||settings.skillAreas[0],required:true},
+ {name:'skillsToBuild',label:'Skills to build (comma-separated)',type:'textarea',required:true,value:own?.skillsToBuild||''},
+ {name:'learningGoal',label:'Practical learning goal or project',type:'textarea',required:true,value:own?.learningGoal||''},
+ {name:'preferredLearning',label:'Preferred learning style',type:'select',options:['Project-based practice','Mentoring / shadowing','Courses / certifications','Reading / self-study','Peer learning','Workshop / cohort'],value:own?.preferredLearning||'Project-based practice',required:true},
+ {name:'weeklyHours',label:'Realistic learning hours per week',type:'number',min:'0',step:'0.5',required:true,value:own?.weeklyHours??2},
+ {name:'progress',label:'Plan status',type:'select',options:['Not started','In progress','Completed','Paused'],value:own?.progress||'Not started',required:true},
+ {name:'notes',label:'Support or resources needed',type:'textarea',value:own?.notes||''},
+ {name:'visibility',label:'Plan visibility',type:'select',options:['Private','Share with manager and People Ops'],value:own?.visibility||'Private',required:true}
+ ],v=>{const updated={...(own||{}),id:own?.id||Date.now(),employee:name,...v,weeklyHours:Number(v.weeklyHours),updatedAt:localISODate()};const i=plans.findIndex(p=>String(p.employee||'').toLowerCase()===name.toLowerCase());if(i>=0)plans[i]=updated;else plans.unshift(updated);state.careerPlans=plans;saveState();renderApp();notify('Career plan saved in this browser demo')}));
+ $('customCareerSettings')?.addEventListener('click',()=>openForm('Customize career skill areas and timelines',[
+ {name:'skillAreas',label:'Skill areas (one per line)',type:'textarea',required:true,value:settings.skillAreas.join('\n')},
+ {name:'goalHorizons',label:'Time horizons (one per line)',type:'textarea',required:true,value:settings.goalHorizons.join('\n')}
+ ],v=>{const areas=[...new Set(v.skillAreas.split(/\n|,/).map(x=>x.trim()).filter(Boolean))],horizons=[...new Set(v.goalHorizons.split(/\n|,/).map(x=>x.trim()).filter(Boolean))];if(!areas.length||!horizons.length){notify('Add at least one skill area and timeline');return}settings.skillAreas=areas;settings.goalHorizons=horizons;state.careerSettings=settings;saveState();renderApp();notify('Career options customized')}));
+}
 
 function renderProjects(el,role){
   const canManage=['founder','hr','manager'].includes(role);
@@ -459,7 +492,7 @@ function renderProjects(el,role){
   }
 }
 function renderAdminSettings(el){
-  const moduleChoices=[['dashboard','Dashboard'],['projects','Project & OKR Tracking'],['playbook','Founders’ Playbook'],['directory','Team Directory'],['onboarding','Onboarding'],['leaves','Leave management'],['reimbursements','Expenses'],['rewards','Rewards & culture'],['helpdesk','Helpdesk']];
+  const moduleChoices=[['dashboard','Dashboard'],['career','Career & Learning'],['projects','Project & OKR Tracking'],['playbook','Founders’ Playbook'],['directory','Team Directory'],['onboarding','Onboarding'],['leaves','Leave management'],['reimbursements','Expenses'],['rewards','Rewards & culture'],['helpdesk','Helpdesk']];
   const rolesToConfigure=['hr','manager','employee','candidate'];
   const access=state.accessConfig||{},workflows=state.workflowSettings||{};
   el.innerHTML=pageHead('Advanced workspace settings','Admin controls for module access, approvals and onboarding flows. Changes are saved in this browser.', '<span class="pill approved">Founder admin</span>')+
