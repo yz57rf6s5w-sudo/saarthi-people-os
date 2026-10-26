@@ -298,7 +298,7 @@ test('leave form prevents past dates and defaults to a future date', async ({ pa
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   });
   expect(await dateInput.getAttribute('min')).toBe(today);
-  expect(await dateInput.inputValue()).toBeGreaterThan(today);
+  expect((await dateInput.inputValue()) > today).toBe(true);
   await dateInput.fill('2020-01-01');
   await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
   await daysInput.fill('2');
