@@ -106,6 +106,7 @@ test('founder can export a Saarthi data backup', async ({ page }) => {
 
 test('founder can restore a valid Saarthi backup', async ({ page }) => {
   await login(page, 'founder', 'Restore QA');
+  page.on('dialog', dialog => dialog.accept());
   const backup = {
     app: 'Saarthi People OS',
     schemaVersion: 1,
