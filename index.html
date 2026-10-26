@@ -483,9 +483,9 @@ function renderLeaves(el,role){
   $('applyLeave').addEventListener('click',()=>openForm('Apply for leave',[
     {name:'type',label:'Leave type',type:'select',options:['Casual Leave','Sick Leave','Earned Leave','Unpaid Leave','Maternity (note: confirm eligibility)','Paternity'],required:true},
     {name:'days',label:'Number of days',type:'number',min:1,required:true,value:'1'},
-    {name:'date',label:'Start date',type:'date',required:true,value:'2026-11-01'},
+    {name:'date',label:'Start date',type:'date',required:true,min:localISODate(),value:localISODate(1)},
     {name:'reason',label:'Reason',type:'textarea',required:true}
-  ],v=>{state.leaves.unshift({id:Date.now(),employee:state.displayName,type:v.type,days:Math.max(1,Number(v.days)||1),date:v.date,reason:v.reason,status:'Pending',approver:''});saveState();renderApp();notify('Leave submitted')}));
+  ],v=>{if(v.date<localISODate()){notify('Choose today or a future start date.');return}const days=Number(v.days);if(!Number.isInteger(days)||days<1){notify('Enter a whole number of leave days, at least 1.');return}state.leaves.unshift({id:Date.now(),employee:state.displayName,type:v.type,days,date:v.date,reason:v.reason,status:'Pending',approver:''});saveState();renderApp();notify('Leave submitted')}));
   el.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.approve));if(l){l.status='Approved';l.approver=role;saveState();renderApp();notify('Leave approved')}}));
   el.querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.reject));if(l){l.status='Rejected';l.approver=role;saveState();renderApp();notify('Leave rejected')}}));
 }
@@ -538,6 +538,13 @@ function renderCandidate(el){
     {name:'subject',label:'What do you need help with?',type:'text',required:true},
     {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
   ],v=>{state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate: '+v.subject,priority:v.priority,status:'Open'});saveState();currentTab='helpdesk';renderApp();notify('Support request submitted')}));
+}
+
+function localISODate(offsetDays=0){
+  const date=new Date();
+  date.setHours(12,0,0,0);
+  date.setDate(date.getDate()+offsetDays);
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
 }
 
 function openForm(title,fields,onSubmit){
