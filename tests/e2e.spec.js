@@ -335,3 +335,19 @@ test('helpdesk ticket form keeps valid subject text trimmed', async ({ page }) =
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('Device access request');
 });
+
+
+test('HR can edit an employee record and persist the updated details', async ({ page }) => {
+  await login(page, 'hr', 'Employee Edit QA');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  const row = page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' });
+  await expect(row).toBeVisible();
+  await row.getByRole('button', { name: 'Edit' }).click();
+  await page.locator('#modalContent [name="location"]').fill('Pune, India');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Pune, India');
+  await page.reload();
+  await login(page, 'hr', 'Employee Edit QA');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Pune, India');
+});
