@@ -210,3 +210,19 @@ test('HR can import employees from a CSV spreadsheet', async ({ page }) => {
   await expect(page.locator('#mainContent')).toContainText('CSV Import Employee');
   await expect(page.locator('#mainContent')).toContainText('QA Analyst');
 });
+
+test('workspace setup saves company settings for reuse', async ({ page }) => {
+  await login(page, 'hr', 'Workspace Setup QA');
+  await page.getByRole('button', { name: 'Workspace setup' }).click();
+  await page.locator('#workspaceCompany').fill('Northstar Startup');
+  await page.locator('#workspaceIndustry').selectOption({ label: 'Technology / SaaS' });
+  await page.locator('#workspaceLocation').fill('Bengaluru, India');
+  await page.locator('#workspaceSize').selectOption({ label: '11–25 people' });
+  await page.locator('#workspaceStage').selectOption({ label: 'Bootstrapped' });
+  await page.getByRole('button', { name: 'Save workspace' }).click();
+  await expect(page.locator('#toast')).toContainText('Workspace settings saved');
+  await page.getByRole('button', { name: 'Workspace setup' }).click();
+  await expect(page.locator('#workspaceCompany')).toHaveValue('Northstar Startup');
+  await expect(page.locator('#workspaceLocation')).toHaveValue('Bengaluru, India');
+  await expect(page.locator('#workspaceSize')).toHaveValue('11–25');
+});
