@@ -226,3 +226,14 @@ test('workspace setup saves company settings for reuse', async ({ page }) => {
   await expect(page.locator('#workspaceLocation')).toHaveValue('Bengaluru, India');
   await expect(page.locator('#workspaceSize')).toHaveValue('11–25');
 });
+
+test('founder dashboard provides working guided setup and quick actions', async ({ page }) => {
+  await login(page, 'founder', 'Founder Dashboard QA');
+  await expect(page.locator('#mainContent .founder-hero')).toBeVisible();
+  await expect(page.locator('#mainContent')).toContainText('Make Saarthi yours');
+  await page.getByRole('button', { name: 'Set up workspace' }).click();
+  await expect(page.locator('#workspaceSetupForm')).toBeVisible();
+  await page.getByRole('button', { name: 'workspaceSetupClose' }).click();
+  await page.getByRole('button', { name: /Team directory/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Team Directory');
+});
