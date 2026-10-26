@@ -30,7 +30,8 @@ test('candidate can submit a support ticket', async ({ page }) => {
   await page.locator('[name="subject"]').fill('E2E candidate question');
   await page.locator('#modalOk').click();
   await expect(page.getByText('E2E candidate question')).toBeVisible();
-  await expect(page.getByText('Open', { exact: true })).toBeVisible();
+  const ticketRow = page.locator('tr').filter({ hasText: 'E2E candidate question' });
+  await expect(ticketRow.getByText('Open', { exact: true })).toBeVisible();
 });
 
 test('employee leave request can be submitted and approved by founder', async ({ page }) => {
@@ -64,7 +65,9 @@ test('expense claim can be rejected by HR', async ({ page }) => {
   const claim = page.locator('tr').filter({ hasText: 'E2E regression expense' });
   await expect(claim).toBeVisible();
   await claim.getByRole('button', { name: 'Reject' }).click();
-  await expect(claim.getByText(/Rejected/)).toBeVisible();
+  await expect(page.locator('#toast')).toContainText('Claim rejected');
+  const updatedClaim = page.locator('tr').filter({ hasText: 'E2E regression expense' });
+  await expect(updatedClaim).toContainText('Rejected');
 });
 
 test('employee sees only their own helpdesk tickets and cannot resolve them', async ({ page }) => {
