@@ -543,7 +543,7 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
 
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
   await login(page, 'employee', 'Career Plan QA');
-  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await page.locator('#nav button[data-tab="career"]').click();
   await expect(page.locator('#mainContent')).toContainText('Shape your next career step at your own pace');
   await page.getByRole('button', { name: /Create my career plan/ }).click();
   await page.locator('#modalContent [name="currentRole"]').fill('People Ops Associate');
@@ -562,21 +562,21 @@ test('employee can create, customize and retain a career learning plan', async (
   await expect(page.locator('#mainContent')).toContainText('Stakeholder management, HR analytics');
   await page.reload();
   await login(page, 'employee', 'Career Plan QA');
-  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await page.locator('#nav button[data-tab="career"]').click();
   await expect(page.locator('#mainContent')).toContainText('People Operations Partner');
   await expect(page.locator('#mainContent')).toContainText('3 hr');
 });
 
 test('founder can customize career skill areas and time horizons', async ({ page }) => {
   await login(page, 'founder', 'Career Settings QA');
-  await page.getByRole('button', { name: /Career & Learning/ }).click();
+  await page.locator('#nav button[data-tab="career"]').click();
   await page.getByRole('button', { name: /Customize skill areas/ }).click();
   await page.locator('#modalContent [name="skillAreas"]').fill('Customer empathy\\nSystems thinking\\nPeople leadership');
   await page.locator('#modalContent [name="goalHorizons"]').fill('2 weeks\\n4 months');
   await page.locator('#modalOk').click();
   await expect(page.locator('#toast')).toContainText('Career module options customized');
   await page.locator('#roleSelector').selectOption('employee');
-  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await page.locator('#nav button[data-tab="career"]').click();
   await page.getByRole('button', { name: /Create my career plan/ }).click();
   await expect(page.locator('#modalContent [name="skillArea"]')).toContainText('Systems thinking');
   await expect(page.locator('#modalContent [name="horizon"]')).toContainText('4 months');
