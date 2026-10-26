@@ -307,3 +307,19 @@ test('leave form prevents past dates and defaults to a future date', async ({ pa
   await expect(page.locator('#modalBg')).toBeVisible();
   await expect(page.locator('#leaveTable')).not.toContainText('Past date validation test');
 });
+
+
+test('expense claims accept valid paise precision and show a helpful empty state', async ({ page }) => {
+  await login(page, 'employee', 'Expense Decimal QA');
+  await page.getByRole('button', { name: /My Expense Claims/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('No expense claims yet');
+  await page.getByRole('button', { name: /New claim/ }).click();
+  await page.locator('#modalContent [name="category"]').selectOption({ label: 'Other' });
+  const amount = page.locator('#modalContent [name="amount"]');
+  await expect(amount).toHaveAttribute('step', '0.01');
+  await amount.fill('12.50');
+  await page.locator('#modalContent [name="desc"]').fill('Valid paise precision test');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('₹12.50');
+  await expect(page.locator('#mainContent')).toContainText('Valid paise precision test');
+});
