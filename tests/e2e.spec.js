@@ -351,3 +351,22 @@ test('HR can edit an employee record and persist the updated details', async ({ 
   await page.locator('#nav button[data-tab="directory"]').click();
   await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Pune, India');
 });
+
+test('HR status changes update the directory and active dashboard count and persist', async ({ page }) => {
+  await login(page, 'hr', 'Employee Status QA');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  const row = page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' });
+  await expect(row).toContainText('Active');
+  await row.getByRole('button', { name: 'Edit' }).click();
+  await page.locator('#modalContent [name="status"]').selectOption('Inactive');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Inactive');
+  await page.locator('#nav button[data-tab="dashboard"]').click();
+  await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
+  await page.reload();
+  await login(page, 'hr', 'Employee Status QA');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Inactive');
+  await page.locator('#nav button[data-tab="dashboard"]').click();
+  await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
+});
