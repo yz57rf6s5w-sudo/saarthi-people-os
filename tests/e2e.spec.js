@@ -327,7 +327,7 @@ test('expense claims accept valid paise precision and show a helpful empty state
 
 test('helpdesk ticket form keeps valid subject text trimmed', async ({ page }) => {
   await login(page, 'employee', 'Helpdesk Subject QA');
-  await page.getByRole('button', { name: /Helpdesk Tickets/ }).click();
+  await page.getByRole('button', { name: /HR Helpdesk/ }).click();
   await page.getByRole('button', { name: /Raise ticket/ }).click();
   const subject = page.locator('#modalContent [name="subject"]');
   await subject.fill('Device access request');
