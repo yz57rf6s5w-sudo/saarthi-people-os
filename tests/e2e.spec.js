@@ -539,3 +539,45 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
   await page.locator('#nav button[data-tab="rewards"]').click();
   await expect(page.locator('#mainContent')).toContainText('Recognition workflow regression test');
 });
+
+
+test('employee can create, customize and retain a career learning plan', async ({ page }) => {
+  await login(page, 'employee', 'Career Plan QA');
+  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Shape your next career step at your own pace');
+  await page.getByRole('button', { name: /Create my career plan/ }).click();
+  await page.locator('#modalContent [name="currentRole"]').fill('People Ops Associate');
+  await page.locator('#modalContent [name="targetRole"]').fill('People Operations Partner');
+  await page.locator('#modalContent [name="horizon"]').selectOption({ label: '90 days' });
+  await page.locator('#modalContent [name="skillArea"]').selectOption({ label: 'Communication' });
+  await page.locator('#modalContent [name="skillsToBuild"]').fill('Stakeholder management, HR analytics');
+  await page.locator('#modalContent [name="learningGoal"]').fill('Lead one employee experience improvement project');
+  await page.locator('#modalContent [name="preferredLearning"]').selectOption({ label: 'Mentoring / shadowing' });
+  await page.locator('#modalContent [name="weeklyHours"]').fill('3');
+  await page.locator('#modalContent [name="progress"]').selectOption({ label: 'In progress' });
+  await page.locator('#modalContent [name="notes"]').fill('Would like a mentor and a practical project');
+  await page.locator('#modalContent [name="visibility"]').selectOption({ label: 'Private' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('People Operations Partner');
+  await expect(page.locator('#mainContent')).toContainText('Stakeholder management, HR analytics');
+  await page.reload();
+  await login(page, 'employee', 'Career Plan QA');
+  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('People Operations Partner');
+  await expect(page.locator('#mainContent')).toContainText('3 hr');
+});
+
+test('founder can customize career skill areas and time horizons', async ({ page }) => {
+  await login(page, 'founder', 'Career Settings QA');
+  await page.getByRole('button', { name: /Career & Learning/ }).click();
+  await page.getByRole('button', { name: /Customize skill areas/ }).click();
+  await page.locator('#modalContent [name="skillAreas"]').fill('Customer empathy\\nSystems thinking\\nPeople leadership');
+  await page.locator('#modalContent [name="goalHorizons"]').fill('2 weeks\\n4 months');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('Career module options customized');
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /My Career & Learning/ }).click();
+  await page.getByRole('button', { name: /Create my career plan/ }).click();
+  await expect(page.locator('#modalContent [name="skillArea"]')).toContainText('Systems thinking');
+  await expect(page.locator('#modalContent [name="horizon"]')).toContainText('4 months');
+});
