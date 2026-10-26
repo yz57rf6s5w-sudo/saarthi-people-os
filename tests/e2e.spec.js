@@ -149,8 +149,8 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
-test('manager can approve an employee leave request', async ({ page }) => {
-  await login(page, 'employee', 'Manager Approval QA');
+test('manager can approve a direct report leave request but only sees their team', async ({ page }) => {
+  await login(page, 'employee', 'Ananya Sharma');
   await page.getByRole('button', { name: /My Leaves/ }).click();
   await page.getByRole('button', { name: /Apply leave/ }).click();
   await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
@@ -159,7 +159,8 @@ test('manager can approve an employee leave request', async ({ page }) => {
   await page.locator('#modalContent [name="reason"]').fill('Manager approval regression');
   await page.locator('#modalOk').click();
   await expect(page.locator('#leaveTable')).toContainText('Manager approval regression');
-  await page.locator('#roleSelector').selectOption('manager');
+  await page.locator('#logoutBtn').click();
+  await login(page, 'manager', 'Arjun Das');
   await page.getByRole('button', { name: /Team Leave Requests/ }).click();
   const request = page.locator('#leaveTable tr').filter({ hasText: 'Manager approval regression' });
   await expect(request).toBeVisible();
