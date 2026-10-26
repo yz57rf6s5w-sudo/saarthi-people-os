@@ -183,3 +183,18 @@ test('role switch updates navigation to the selected workspace', async ({ page }
   await expect(page.locator('#nav')).toContainText('Candidate Support');
   await expect(page.locator('#nav')).not.toContainText('Team Directory');
 });
+
+test('employee leave view does not expose approval actions', async ({ page }) => {
+  await login(page, 'employee', 'Employee Permission QA');
+  await page.getByRole('button', { name: /My Leaves/ }).click();
+  await page.getByRole('button', { name: /Apply leave/ }).click();
+  await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
+  await page.locator('#modalContent [name="days"]').fill('1');
+  await page.locator('#modalContent [name="date"]').fill('2026-11-20');
+  await page.locator('#modalContent [name="reason"]').fill('Employee permission QA');
+  await page.locator('#modalOk').click();
+  const request = page.locator('#leaveTable tr').filter({ hasText: 'Employee permission QA' });
+  await expect(request).toBeVisible();
+  await expect(request.getByRole('button', { name: 'Approve' })).toHaveCount(0);
+  await expect(request.getByRole('button', { name: 'Reject' })).toHaveCount(0);
+});
