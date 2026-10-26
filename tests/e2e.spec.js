@@ -527,7 +527,7 @@ test('manager expense approvals show direct reports and exclude other teams', as
 
 test('shoutouts can be created and persist after reload', async ({ page }) => {
   await login(page, 'employee', 'Recognition QA');
-  await page.getByRole('button', { name: /Rewards & Recognition|Rewards/ }).click();
+  await page.locator('#nav button[data-tab="rewards"]').click();
   await page.getByRole('button', { name: /Give shoutout/ }).click();
   await page.locator('#modalContent [name="to"]').fill('Ananya Sharma');
   await page.locator('#modalContent [name="badge"]').selectOption({ label: '🌟 Rising Star' });
@@ -536,6 +536,6 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
   await expect(page.locator('#mainContent')).toContainText('Recognition workflow regression test');
   await page.reload();
   await login(page, 'employee', 'Recognition QA');
-  await page.getByRole('button', { name: /Rewards & Recognition|Rewards/ }).click();
+  await page.locator('#nav button[data-tab="rewards"]').click();
   await expect(page.locator('#mainContent')).toContainText('Recognition workflow regression test');
 });
