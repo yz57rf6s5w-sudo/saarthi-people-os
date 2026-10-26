@@ -32,6 +32,93 @@
   .topbar{padding:10px 14px}
   .metrics{grid-template-columns:1fr 1fr}
 }
+
+/* Saarthi visual refresh: calmer surfaces, clearer hierarchy, responsive polish */
+:root{
+  --navy:#111827;--ink:#182338;--muted:#68758a;--line:#e5eaf2;--bg:#f4f6fb;
+  --indigo:#4f46e5;--purple:#8b5cf6;--green:#0f9f78;--amber:#b7791f;--red:#dc4545;
+  --surface:#ffffff;--soft-indigo:#eef2ff;--shadow-sm:0 2px 8px rgba(20,32,58,.045);
+  --shadow-md:0 12px 32px rgba(20,32,58,.075);
+}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(99,102,241,.07),transparent 32%),var(--bg);color:var(--ink);letter-spacing:-.01em}
+button{border-radius:11px;min-height:36px}
+button:active{transform:translateY(1px)}
+.primary{background:linear-gradient(135deg,#5145e5,#6d4de6);box-shadow:0 4px 10px rgba(79,70,229,.16)}
+.primary:hover{background:linear-gradient(135deg,#4338ca,#5b21b6);box-shadow:0 6px 16px rgba(79,70,229,.22);transform:translateY(-1px)}
+.secondary{background:#eef2ff;color:#4338ca}
+.neutral{background:#f1f4f9;color:#344256}
+.neutral:hover{background:#e8edf5}
+.topbar{background:linear-gradient(110deg,#111827 0%,#18213a 70%,#29245a 100%);padding:13px clamp(14px,2.4vw,30px);box-shadow:0 5px 22px rgba(15,23,42,.16);border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{letter-spacing:-.035em;font-size:20px}
+.logo{box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 12px rgba(79,70,229,.28)}
+.layout{max-width:1440px;padding:26px clamp(12px,2.5vw,32px);gap:22px}
+.sidebar,.panel,.card{border-color:#e6eaf2;box-shadow:var(--shadow-sm)}
+.sidebar{padding:13px;border-radius:18px;background:rgba(255,255,255,.94)}
+.nav{gap:5px}
+.nav button{padding:10px 11px;font-size:13px;transition:background .15s,color .15s,transform .15s}
+.nav button.active{background:linear-gradient(100deg,#eef2ff,#f4f0ff);color:#4338ca;box-shadow:inset 3px 0 0 #635bdf;font-weight:750}
+.nav button:hover{transform:translateX(2px)}
+.sidebar .summary{background:linear-gradient(135deg,#f8fafc,#f3f4ff);border:1px solid #edf0f8;line-height:1.65}
+.section-title{font-size:20px;letter-spacing:-.035em;color:#17213a}
+.page-head{align-items:center;margin-bottom:20px}
+.metrics{gap:14px;margin-bottom:20px}
+.metric{position:relative;overflow:hidden;padding:17px 18px;border-radius:16px;background:linear-gradient(145deg,#fff,#fbfcff);transition:transform .18s,box-shadow .18s}
+.metric:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.metric:after{content:"";position:absolute;right:-22px;top:-28px;width:84px;height:84px;border-radius:50%;background:rgba(99,102,241,.055)}
+.metric strong{font-size:27px;letter-spacing:-.045em;line-height:1.25;color:#17213a}
+.metric span{display:inline-block;margin-top:5px;line-height:1.4}
+.card{padding:18px 20px;border-radius:17px}
+.table-card{padding:0}
+th{padding:12px 15px;background:#f7f8fc;color:#69758b;font-size:10px;letter-spacing:.075em}
+td{padding:12px 15px}
+tr:hover td{background:#f8f9ff}
+.pill{padding:4px 10px;letter-spacing:.01em}
+.progress{height:9px;background:#edf0f6}
+.onboard-step{padding:14px 2px}
+.modal-bg{backdrop-filter:blur(5px);background:rgba(15,23,42,.58)}
+.modal{border:1px solid rgba(255,255,255,.8);border-radius:20px;padding:24px;box-shadow:0 28px 70px rgba(15,23,42,.28)}
+.modal h3{letter-spacing:-.03em}
+.form-row{margin-bottom:15px}
+.form-row label{color:#344256;font-size:12px;margin-bottom:6px}
+.form-row input,.form-row select,.form-row textarea,.filter-bar input{padding:10px 12px;border-color:#dfe5ef;border-radius:10px;transition:border-color .15s,box-shadow .15s}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus,.filter-bar input:focus{border-color:#818cf8;box-shadow:0 0 0 3px rgba(99,102,241,.1);outline:none}
+.chat-box{background:#f6f7fc;border:1px solid #eceffa}
+.bubble{padding:10px 13px;border-radius:14px;line-height:1.55}
+.bot{background:#eef2ff;color:#38318b}
+.toast{border:1px solid #374151;box-shadow:0 12px 32px rgba(15,23,42,.22)}
+#loginScreen{background:radial-gradient(ellipse at 18% 15%,rgba(129,140,248,.2),transparent 35%),radial-gradient(ellipse at 85% 85%,rgba(167,139,250,.18),transparent 32%),linear-gradient(135deg,#f7f8ff,#f5f7fb 52%,#f0edff)}
+#loginScreen>.card{padding:30px;border-radius:24px;border:1px solid rgba(255,255,255,.9);box-shadow:0 24px 70px rgba(38,48,85,.12);backdrop-filter:blur(12px)}
+#loginScreen .brand{font-size:23px}
+#loginScreen h2{font-size:25px;letter-spacing:-.045em;color:#17213a}
+#loginScreen form button{width:100%;margin-top:4px}
+@media(max-width:900px){
+  .layout{padding:14px;gap:14px}
+  .sidebar{box-shadow:var(--shadow-md)}
+  .page-head{align-items:flex-start}
+  .top-actions{gap:6px;flex-wrap:wrap;justify-content:flex-end}
+}
+@media(max-width:560px){
+  .topbar{gap:8px;align-items:flex-start}
+  .brand{font-size:17px;gap:7px}
+  .brand small{font-size:9px;margin-left:2px}
+  .logo{width:34px;height:34px}
+  .top-actions{max-width:58%;font-size:12px}
+  .top-actions select{max-width:145px;padding:7px;font-size:12px}
+  .layout{padding:10px}
+  .metrics{gap:9px}
+  .metric{padding:13px;border-radius:14px}
+  .metric strong{font-size:23px}
+  .card{padding:15px}
+  .page-head{gap:8px}
+  .section-title{font-size:18px}
+  #loginScreen>.card{padding:23px}
+  .modal-bg{padding:12px}
+  .modal{padding:18px;border-radius:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
 </style>
 </head>
 <body>
