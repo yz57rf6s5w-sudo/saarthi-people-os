@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
 <title>Saarthi People OS — Working Demo</title>
 <style>
 :root{--navy:#0f172a;--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--bg:#f8fafc;--indigo:#4f46e5;--purple:#7c3aed;--green:#059669;--amber:#d97706;--red:#dc2626}
@@ -377,6 +381,9 @@ $('logoutBtn').addEventListener('click',()=>{$('app').classList.add('hidden');$(
 $('menuToggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
 document.addEventListener('click',e=>{if(e.target.id==='modalBg')$('modalBg').classList.add('hidden')});
 })();
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
 </script>
 </body>
 </html>
