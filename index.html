@@ -449,8 +449,10 @@ function renderPlaybook(el){
 
 function renderDirectory(el){
   const canExport=['founder','hr'].includes(state.activeRole);
+  const statusCount=status=>state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()===status.toLowerCase()).length;
   el.innerHTML=pageHead('Team Directory','Your team at a glance. Edit employee details and export a portable CSV copy.',canExport?'<button class="neutral small" id="exportDirectoryBtn">Export directory CSV</button>':'')+
-  `<div class="filter-bar"><input id="dirFilter" placeholder="Filter by name, role, location..." aria-label="Filter team directory"></div>
+  `<div class="metrics directory-status-metrics"><div class="card metric"><strong>${statusCount('Active')}</strong><span>Active</span></div><div class="card metric"><strong>${statusCount('Inactive')}</strong><span>Inactive</span></div><div class="card metric"><strong>${statusCount('On leave')}</strong><span>On leave</span></div></div>
+  <div class="filter-bar"><input id="dirFilter" placeholder="Filter by name, role, location..." aria-label="Filter team directory"></div>
   <div class="card table-card"><div class="table-wrap"><table id="dirTable"><thead><tr><th>Name</th><th>Role</th><th>Location</th><th>Join date</th><th>Manager</th><th>Status</th>${canExport?'<th>Actions</th>':''}</tr></thead><tbody></tbody></table></div></div>`;
   function filteredRows(){const q=($('dirFilter').value||'').trim().toLowerCase();return state.employees.filter(e=>!q||[e.name,e.role,e.location,e.manager,e.status].some(x=>String(x||'').toLowerCase().includes(q)))}
   function draw(){const rows=filteredRows();$('dirTable').querySelector('tbody').innerHTML=rows.map(e=>`<tr><td><strong>${escapeHTML(e.name)}</strong></td><td>${escapeHTML(e.role)}</td><td>${escapeHTML(e.location)}</td><td>${escapeHTML(e.join)}</td><td>${escapeHTML(e.manager)}</td><td><span class="pill approved">${escapeHTML(e.status)}</span></td>${canExport?`<td><button class="neutral small" data-edit-employee="${e.id}">Edit</button></td>`:''}</tr>`).join('')||'<tr><td colspan="${canExport?7:6}" class="muted">No matches</td></tr>';if(canExport)$('dirTable').querySelectorAll('[data-edit-employee]').forEach(btn=>btn.addEventListener('click',()=>editEmployee(btn.dataset.editEmployee)))}
