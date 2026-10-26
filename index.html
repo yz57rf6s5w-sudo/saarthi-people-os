@@ -636,11 +636,23 @@ $('importEmployeesFile').addEventListener('change',async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
   try{
     if(file.size>1024*1024)throw new Error('Employee CSV must be 1 MB or smaller.');
-    const imported=parseCSV(await file.text());
+    const parsedEmployees=parseCSV(await file.text());
+    const employeeKey=employee=>String(employee.name||'').trim().toLocaleLowerCase()+'|'+String(employee.role||'').trim().toLocaleLowerCase();
+    const knownEmployees=new Set(state.employees.map(employeeKey));
+    const imported=[];
+    let duplicates=0;
+    parsedEmployees.forEach(employee=>{
+      const key=employeeKey(employee);
+      if(knownEmployees.has(key)){duplicates++;return;}
+      knownEmployees.add(key);
+      imported.push(employee);
+    });
+    if(!imported.length)throw new Error('No new employees to import. All valid rows already exist in your directory.');
     state.employees.push(...imported);
     if(state.activeRole==='founder')markSetupStep('teamImported');
     saveState();renderApp();
-    notify('Imported '+imported.length+' employee'+(imported.length===1?'':'s')+'.');
+    const duplicateNote=duplicates?' Skipped '+duplicates+' duplicate row'+(duplicates===1?'':'s')+'.':'';
+    notify('Imported '+imported.length+' employee'+(imported.length===1?'':'s')+'.'+duplicateNote);
     if(['founder','hr'].includes(state.activeRole)){
       currentTab='directory';renderApp();
     }
