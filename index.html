@@ -413,7 +413,7 @@ function renderApp(){
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   const canImportEmployees=['founder','hr'].includes(role);
   $('importEmployeesBtn').classList.toggle('hidden',!canImportEmployees);
-  $('importEmployeesFile').classList.toggle('hidden',!canImportEmployees);
+  $('importEmployeesFile').classList.add('hidden');
   $('workspaceSetupBtn').classList.toggle('hidden',role==='candidate');
   $('exportDataBtn').classList.toggle('hidden',!['founder','hr'].includes(role));
   $('importDataBtn').classList.toggle('hidden',role!=='founder');
