@@ -241,8 +241,8 @@ function renderReimbursements(el,role){
     {name:'amount',label:'Amount (₹)',type:'number',min:1,required:true},
     {name:'desc',label:'Description',type:'textarea',required:true}
   ],v=>{state.reimbursements.unshift({id:Date.now(),employee:state.displayName,category:v.category,amount:Number(v.amount),desc:v.desc,status:'Pending',approver:''});saveState();renderApp();notify('Claim submitted')}));
-  el.querySelectorAll('[data-approve-r]').forEach(b=>b.addEventListener('click',()=>{const r=state.reimbursements.find(x=>x.id===Number(b.dataset.approve-r));if(r){r.status='Approved';r.approver=role;saveState();renderApp();notify('Claim approved')}}));
-  el.querySelectorAll('[data-reject-r]').forEach(b=>b.addEventListener('click',()=>{const r=state.reimbursements.find(x=>x.id===Number(b.dataset.reject-r));if(r){r.status='Rejected';r.approver=role;saveState();renderApp();notify('Claim rejected')}}));
+  el.querySelectorAll('[data-approve-r]').forEach(b=>b.addEventListener('click',()=>{const r=state.reimbursements.find(x=>x.id===Number(b.dataset.approveR));if(r){r.status='Approved';r.approver=role;saveState();renderApp();notify('Claim approved')}}));
+  el.querySelectorAll('[data-reject-r]').forEach(b=>b.addEventListener('click',()=>{const r=state.reimbursements.find(x=>x.id===Number(b.dataset.rejectR));if(r){r.status='Rejected';r.approver=role;saveState();renderApp();notify('Claim rejected')}}));
 }
 
 function renderRewards(el,role){
