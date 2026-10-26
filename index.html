@@ -526,7 +526,7 @@ function renderHelpdesk(el,role){
   $('raiseTicket').addEventListener('click',()=>openForm('Raise ticket',[
     {name:'subject',label:'Subject',type:'text',required:true},
     {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
-  ],v=>{state.tickets.unshift({id:Date.now(),user:state.displayName,subject:v.subject,priority:v.priority,status:'Open'});saveState();renderApp();notify('Ticket raised')}));
+  ],v=>{const subject=String(v.subject||'').trim();if(subject.length<4){notify('Enter a ticket subject with at least 4 characters.');return}if(subject.length>120){notify('Keep the ticket subject to 120 characters or fewer.');return}state.tickets.unshift({id:Date.now(),user:state.displayName,subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});saveState();renderApp();notify('Ticket raised')}));
   el.querySelectorAll('[data-resolve]').forEach(b=>b.addEventListener('click',()=>{const t=state.tickets.find(x=>x.id===Number(b.dataset.resolve));if(t){t.status='Resolved';t.resolvedBy=role;t.resolvedAt=new Date().toISOString();saveState();renderApp();notify('Ticket resolved')}}));
 }
 
