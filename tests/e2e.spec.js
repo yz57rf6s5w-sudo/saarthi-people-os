@@ -285,3 +285,25 @@ test('founder can export a filtered team directory as CSV', async ({ page }) => 
   expect(csv).toContain('Product Designer');
   expect(csv).not.toContain('Rohan Mehta');
 });
+
+
+test('leave form prevents past dates and defaults to a future date', async ({ page }) => {
+  await login(page, 'employee', 'Leave Date Validation QA');
+  await page.getByRole('button', { name: /My Leaves/ }).click();
+  await page.getByRole('button', { name: /Apply leave/ }).click();
+  const dateInput = page.locator('#modalContent [name="date"]');
+  const daysInput = page.locator('#modalContent [name="days"]');
+  const today = await page.evaluate(() => {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  });
+  expect(await dateInput.getAttribute('min')).toBe(today);
+  expect(await dateInput.inputValue()).toBeGreaterThan(today);
+  await dateInput.fill('2020-01-01');
+  await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
+  await daysInput.fill('2');
+  await page.locator('#modalContent [name="reason"]').fill('Past date validation test');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#modalBg')).toBeVisible();
+  await expect(page.locator('#leaveTable')).not.toContainText('Past date validation test');
+});
