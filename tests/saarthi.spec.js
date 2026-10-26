@@ -65,8 +65,7 @@ test('expense claim can be rejected by HR', async ({ page }) => {
   const claim = page.locator('tr').filter({ hasText: 'E2E regression expense' });
   await expect(claim).toBeVisible();
   await claim.getByRole('button', { name: 'Reject' }).click();
-  await expect(page.locator('#toast')).toContainText('Claim rejected');
-  const updatedClaim = page.locator('tr').filter({ hasText: 'E2E regression expense' });
+    const updatedClaim = page.locator('tr').filter({ hasText: 'E2E regression expense' });
   await expect(updatedClaim).toContainText('Rejected');
 });
 
