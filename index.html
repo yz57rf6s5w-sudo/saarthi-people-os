@@ -59,7 +59,10 @@
     <div class="brand"><button class="menu-toggle" id="menuToggle">☰</button><div class="logo">S</div> Saarthi <small>People OS</small></div>
     <div class="top-actions">
       <span id="greeting" style="font-size:13px"></span>
-      <select id="roleSelector"></select>
+      <select id="roleSelector" aria-label="Demo role"></select>
+      <button class="neutral small" id="exportDataBtn" title="Download a backup of this demo data">Export data</button>
+      <button class="neutral small" id="importDataBtn" title="Restore data from a Saarthi JSON backup">Import data</button>
+      <input type="file" id="importDataFile" accept="application/json,.json" class="hidden" aria-label="Choose Saarthi backup file">
       <button class="secondary small" id="aiOpen">Ask Saarthi</button>
       <button class="neutral small" id="logoutBtn">Logout</button>
     </div>
@@ -330,6 +333,35 @@ window.saarthiLogin=function(e){
 $('loginForm').addEventListener('submit',window.saarthiLogin);
 $('roleSelector').addEventListener('change',e=>{state.activeRole=e.target.value;currentTab=roles[state.activeRole].nav[0][0];saveState();renderApp()});
 $('aiOpen').addEventListener('click',openAi);
+$('exportDataBtn').addEventListener('click',()=>{
+  const backup={app:'Saarthi People OS',schemaVersion:1,exportedAt:new Date().toISOString(),data:state};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='saarthi-people-os-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  notify('Backup downloaded. Store it somewhere safe.');
+});
+$('importDataBtn').addEventListener('click',()=>$('importDataFile').click());
+$('importDataFile').addEventListener('change',async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+    if(file.size>2*1024*1024)throw new Error('Backup must be 2 MB or smaller.');
+    const parsed=JSON.parse(await file.text());
+    const incoming=parsed&&parsed.data&&typeof parsed.data==='object'?parsed.data:parsed;
+    const arrays=['employees','leaves','reimbursements','shoutouts','tickets','onboarding'];
+    if(!incoming||!arrays.every(k=>Array.isArray(incoming[k])))throw new Error('This file is not a valid Saarthi backup. Required data sections are missing.');
+    if(incoming.activeRole&&!roles[incoming.activeRole])throw new Error('The backup contains an unsupported role.');
+    const restored={...clone(seedData),...incoming};
+    arrays.forEach(k=>{if(!Array.isArray(restored[k]))throw new Error('Invalid '+k+' section.')});
+    state=restored;
+    saveState();
+    $('roleSelector').value=roles[state.activeRole]?state.activeRole:'founder';
+    currentTab=roles[state.activeRole]?roles[state.activeRole].nav[0][0]:'dashboard';
+    renderApp();
+    notify('Backup restored successfully.');
+  }catch(err){notify(err.message||'Could not restore this backup.');}
+  finally{e.target.value='';}
+});
 $('logoutBtn').addEventListener('click',()=>{$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('demoCode').value=''});
 $('menuToggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
 document.addEventListener('click',e=>{if(e.target.id==='modalBg')$('modalBg').classList.add('hidden')});
