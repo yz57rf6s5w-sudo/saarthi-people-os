@@ -337,6 +337,14 @@ function openWorkspaceSetup(){
   });
 }
 
+function markSetupStep(step){
+  state.companySettings=state.companySettings||{};
+  state.companySettings.setupProgress=state.companySettings.setupProgress||{};
+  if(state.companySettings.setupProgress[step])return false;
+  state.companySettings.setupProgress[step]=true;
+  saveState();
+  return true;
+}
 function renderApp(){
   const role=state.activeRole;
   const r=roles[role];
@@ -350,7 +358,7 @@ function renderApp(){
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='playbook') renderPlaybook(el);
-  else if(currentTab==='directory') renderDirectory(el);
+  else if(currentTab==='directory'){if(role==='founder')markSetupStep('directoryReviewed');renderDirectory(el);}
   else if(currentTab==='onboarding') renderOnboarding(el);
   else if(currentTab==='leaves') renderLeaves(el,role);
   else if(currentTab==='reimbursements') renderReimbursements(el,role);
@@ -371,6 +379,9 @@ function renderDashboard(el,role){
   const onboardingDone=state.onboarding.filter(item=>item.status==='Done').length;
   const onboardingPct=state.onboarding.length?Math.round(onboardingDone/state.onboarding.length*100):0;
   const setupDone=Boolean(settings.setupCompleted);
+  const setupProgress=settings.setupProgress||{};
+  const setupCount=(setupDone?1:0)+(setupProgress.teamImported?1:0)+(setupProgress.directoryReviewed?1:0);
+  const setupPercent=Math.round(setupCount/3*100);
   const metrics=`<div class="metrics">
     <div class="card metric"><strong>${state.employees.length}</strong><span>Team members</span></div>
     <div class="card metric"><strong>${pendingL}</strong><span>Leave requests to review</span></div>
@@ -390,11 +401,11 @@ function renderDashboard(el,role){
       <div class="founder-hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">S</div><div class="orbit-chip chip-one">People</div><div class="orbit-chip chip-two">Culture</div><div class="orbit-chip chip-three">Growth</div></div>
     </section>
     <section class="founder-start-grid">
-      <div class="card founder-setup-card"><div class="founder-section-heading"><div><span class="founder-kicker">GET STARTED</span><h3>Make Saarthi yours</h3></div><span class="setup-count">${setupDone?'1':'0'} of 3</span></div>
-        <div class="progress"><span style="width:${setupDone?33:0}%"></span></div>
+      <div class="card founder-setup-card"><div class="founder-section-heading"><div><span class="founder-kicker">GET STARTED</span><h3>Make Saarthi yours</h3></div><span class="setup-count">${setupCount} of 3</span></div>
+        <div class="progress"><span style="width:${setupPercent}%"></span></div>
         <button class="founder-task" data-founder-action="setup"><span class="task-icon">01</span><span><strong>Configure your workspace</strong><small>Add company name, industry and team size</small></span><span class="task-status ${setupDone?'task-complete':''}">${setupDone?'Saved':'Start'} →</span></button>
-        <button class="founder-task" data-founder-action="import"><span class="task-icon">02</span><span><strong>Bring in your team</strong><small>Import employees from a CSV spreadsheet</small></span><span class="task-status">Import →</span></button>
-        <button class="founder-task" data-founder-action="directory"><span class="task-icon">03</span><span><strong>Review your people directory</strong><small>Check roles, locations and reporting lines</small></span><span class="task-status">Open →</span></button>
+        <button class="founder-task" data-founder-action="import"><span class="task-icon">02</span><span><strong>Bring in your team</strong><small>Import employees from a CSV spreadsheet</small></span><span class="task-status ${setupProgress.teamImported?"task-complete":""}">${setupProgress.teamImported?"Imported":"Import →"}</span></button>
+        <button class="founder-task" data-founder-action="directory"><span class="task-icon">03</span><span><strong>Review your people directory</strong><small>Check roles, locations and reporting lines</small></span><span class="task-status ${setupProgress.directoryReviewed?"task-complete":""}">${setupProgress.directoryReviewed?"Reviewed":"Open →"}</span></button>
       </div>
       <div class="card founder-insight-card"><span class="founder-kicker">YOUR WORKSPACE PULSE</span><h3>Keep the essentials moving</h3>
         <div class="pulse-row"><span class="pulse-icon pulse-indigo">↗</span><span><strong>${pendingL+pendingR} items</strong><small>Waiting for approval</small></span><button data-founder-action="leaves" aria-label="Review leave approvals and expenses">Review →</button></div>
@@ -627,6 +638,7 @@ $('importEmployeesFile').addEventListener('change',async e=>{
     if(file.size>1024*1024)throw new Error('Employee CSV must be 1 MB or smaller.');
     const imported=parseCSV(await file.text());
     state.employees.push(...imported);
+    if(state.activeRole==='founder')markSetupStep('teamImported');
     saveState();renderApp();
     notify('Imported '+imported.length+' employee'+(imported.length===1?'':'s')+'.');
     if(['founder','hr'].includes(state.activeRole)){
