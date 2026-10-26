@@ -95,3 +95,33 @@ test('HR can approve a pending expense claim', async ({ page }) => {
   await claim.getByRole('button', { name: 'Approve' }).click();
   await expect(page.locator('tr').filter({ hasText: 'Approval QA expense' })).toContainText('Approved');
 });
+
+test('founder can export a Saarthi data backup', async ({ page }) => {
+  await login(page, 'founder', 'Backup QA');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export data' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/^saarthi-people-os-backup-.*\.json$/);
+});
+
+test('founder can restore a valid Saarthi backup', async ({ page }) => {
+  await login(page, 'founder', 'Restore QA');
+  const backup = {
+    app: 'Saarthi People OS',
+    schemaVersion: 1,
+    data: {
+      activeRole: 'founder',
+      displayName: 'Restore QA',
+      employees: [{ id: 999, name: 'Restored Demo Employee', role: 'QA', location: 'Remote', join: '2026-10-01', manager: 'Founder', status: 'Active' }],
+      leaves: [], reimbursements: [], shoutouts: [], tickets: [], onboarding: []
+    }
+  };
+  await page.locator('#importDataFile').setInputFiles({
+    name: 'saarthi-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(backup))
+  });
+  await expect(page.locator('#sidebarSummary')).toContainText('1');
+  await page.getByRole('button', { name: /Team Directory/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Restored Demo Employee');
+});
