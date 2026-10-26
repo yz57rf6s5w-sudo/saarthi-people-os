@@ -220,6 +220,7 @@ input,select,textarea{border-color:#cbd5e1;border-radius:9px}
 input:focus,select:focus,textarea:focus{border-color:#818cf8;box-shadow:0 0 0 3px #eef2ff}
 button:disabled{cursor:not-allowed;opacity:.55;transform:none}
 button:not(:disabled):active{transform:translateY(1px)}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:16px;margin-top:16px}.project-card{padding:20px;min-width:0}.project-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.project-card h3{font-size:17px;line-height:1.3;margin:5px 0 8px}.project-card>p{font-size:13px;line-height:1.55;min-height:38px}.project-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin:14px 0}.progress-track,.kr-progress{height:7px;background:#edf1f7;border-radius:99px;overflow:hidden}.progress-track>span,.kr-progress>span{display:block;height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:99px}.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:7px}.kr-list{display:grid;gap:13px;margin-top:18px}.kr-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 10px;align-items:center}.kr-item>div:first-child{min-width:0}.kr-item b{display:block;font-size:12px;line-height:1.4}.kr-item small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.kr-progress{grid-column:1/2;height:5px}.kr-item button{grid-column:2;grid-row:1/3}.project-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:16px}.settings-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;margin-top:16px}.settings-panel{padding:20px;min-width:0}.section-kicker{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--indigo);margin-bottom:8px}.settings-panel h3{margin:0 0 8px}.settings-table{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:auto}.settings-row{display:grid;grid-template-columns:minmax(130px,1fr) repeat(4,minmax(48px,.4fr));gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px}.settings-row:last-child{border-bottom:0}.settings-head{background:#f8fafc;font-size:10px;text-transform:uppercase;color:var(--muted)}.switch-cell{text-align:center}.switch-cell input,.setting-toggle input{accent-color:var(--indigo);width:16px;height:16px}.setting-toggle{display:flex;align-items:flex-start;gap:10px;padding:14px 0;border-bottom:1px solid var(--line);font-size:13px}.setting-toggle span{display:grid;gap:4px}.setting-toggle small{color:var(--muted);line-height:1.45}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:900px){.settings-layout{grid-template-columns:1fr}}@media(max-width:560px){.settings-panel{padding:14px}.settings-row{grid-template-columns:minmax(115px,1fr) repeat(4,minmax(35px,.35fr));padding:9px 8px;gap:5px;font-size:11px}.project-card>p{min-height:0}}
 .nav button{transition:background .14s ease,color .14s ease}
 .sidebar .summary{border:1px solid #e8edf5}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
@@ -310,6 +311,12 @@ const seedData={
     {id:201,user:'Ananya Sharma',subject:'Laptop replacement request',priority:'Medium',status:'Open'},
     {id:301,user:'Siddharth Nair',subject:'Tax Declaration Verification',priority:'High',status:'Open'}
   ],
+  projects:[
+    {id:1,name:'Improve onboarding completion',owner:'People Ops',status:'On track',due:'2026-11-30',objective:'Make every new joiner productive in the first 30 days',keyResults:[{id:11,title:'Complete onboarding checklist within 5 working days',target:90,current:65,unit:'%'},{id:12,title:'Reach new-joiner experience score',target:4.7,current:4.2,unit:'/5'}]},
+    {id:2,name:'Ship customer analytics v1',owner:'Product & Engineering',status:'At risk',due:'2026-12-15',objective:'Launch a reliable analytics experience for early customers',keyResults:[{id:21,title:'Deliver committed product milestones',target:100,current:55,unit:'%'},{id:22,title:'Resolve priority launch blockers',target:0,current:3,unit:' open'}]},
+    {id:3,name:'Build predictable hiring engine',owner:'People Ops',status:'On track',due:'2026-12-01',objective:'Reduce hiring delays while keeping a consistent candidate experience',keyResults:[{id:31,title:'Reduce median time to hire',target:25,current:18,unit:' days'},{id:32,title:'Complete structured scorecards',target:95,current:72,unit:'%'}]}
+  ],
+  workflowSettings:{leaveApproval:true,expenseApproval:true,onboardingChecklist:true},
   onboarding:[
     {id:1,title:'Workspace & tools provisioning',detail:'Google Workspace, Slack, GitHub and Figma access',status:'Done',owner:'IT / HR'},
     {id:2,title:'Founder culture & product overview',detail:'Intro session and product roadmap review',status:'Done',owner:'Founder'},
@@ -329,7 +336,10 @@ function loadState(){
       reimbursements:Array.isArray(parsed.reimbursements)?parsed.reimbursements:clone(seedData.reimbursements),
       shoutouts:Array.isArray(parsed.shoutouts)?parsed.shoutouts:clone(seedData.shoutouts),
       tickets:Array.isArray(parsed.tickets)?parsed.tickets:clone(seedData.tickets),
-      onboarding:Array.isArray(parsed.onboarding)?parsed.onboarding:clone(seedData.onboarding)
+      onboarding:Array.isArray(parsed.onboarding)?parsed.onboarding:clone(seedData.onboarding),
+      projects:Array.isArray(parsed.projects)?parsed.projects:clone(seedData.projects),
+      workflowSettings:{...clone(seedData.workflowSettings),...(parsed.workflowSettings||{})},
+      accessConfig:parsed.accessConfig||{}
     };
   }catch(e){console.warn(e);return clone(seedData)}
 }
@@ -344,10 +354,10 @@ function saveState(){
 let state=loadState(), currentTab='dashboard', toastTimer;
 const $=id=>document.getElementById(id);
 const roles={
-  founder:{badge:'FOUNDER / CEO',nav:[['dashboard','Executive Dashboard','▦'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧']]},
-  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
-  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
-  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
+  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
+  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
+  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
+  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
   candidate:{badge:'CANDIDATE PORTAL',nav:[['candidate_portal','Application Status','✎'],['helpdesk','Candidate Support','🎧']]}
 };
 function notify(msg){const t=$('toast');t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,2400)}
@@ -398,7 +408,16 @@ function renderApp(){
   const r=roles[role];
   $('greeting').textContent=`Hi, ${escapeHTML(state.displayName)}`;
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
-  $('nav').innerHTML=r.nav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
+  const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
+  if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
+  $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
+  const canImportEmployees=['founder','hr'].includes(role);
+  $('importEmployeesBtn').classList.toggle('hidden',!canImportEmployees);
+  $('importEmployeesFile').classList.toggle('hidden',!canImportEmployees);
+  $('workspaceSetupBtn').classList.toggle('hidden',role==='candidate');
+  $('exportDataBtn').classList.toggle('hidden',!['founder','hr'].includes(role));
+  $('importDataBtn').classList.toggle('hidden',role!=='founder');
+  $('resetDemoBtn').classList.toggle('hidden',role!=='founder');
   $('nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab;renderApp();if(window.innerWidth<900)$('sidebar').classList.remove('open')}));
   const activeHeadcount=state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
   const pendingL=state.leaves.filter(l=>l.status==='Pending').length;
@@ -406,6 +425,8 @@ function renderApp(){
   $('sidebarSummary').innerHTML=`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
+  else if(currentTab==='projects') renderProjects(el,role);
+  else if(currentTab==='admin_settings') renderAdminSettings(el);
   else if(currentTab==='playbook') renderPlaybook(el);
   else if(currentTab==='directory'){if(role==='founder')markSetupStep('directoryReviewed');renderDirectory(el);}
   else if(currentTab==='onboarding') renderOnboarding(el);
@@ -414,6 +435,36 @@ function renderApp(){
   else if(currentTab==='rewards') renderRewards(el,role);
   else if(currentTab==='helpdesk') renderHelpdesk(el,role);
   else if(currentTab==='candidate_portal') renderCandidate(el);
+}
+
+
+function renderProjects(el,role){
+  const canManage=['founder','hr','manager'].includes(role);
+  const projects=state.projects||[];
+  const avg=projects.length?Math.round(projects.reduce((sum,p)=>sum+(p.keyResults||[]).reduce((n,k)=>n+Math.min(100,Math.max(0,Number(k.target)?Number(k.current)/Number(k.target)*100:0)),0)/Math.max(1,(p.keyResults||[]).length),0)/projects.length):0;
+  const statusPill=status=>'<span class="pill '+(status==='On track'?'approved':status==='At risk'?'pending':'open')+'">'+escapeHTML(status)+'</span>';
+  el.innerHTML=pageHead('Project & OKR Tracking','Connect company objectives to measurable key results. Update progress as work moves.',canManage?'<button class="primary" id="newProjectBtn">+ New project</button>':'')+
+  '<div class="metrics project-metrics"><div class="card metric"><strong>'+projects.length+'</strong><span>Active projects</span></div><div class="card metric"><strong>'+projects.reduce((n,p)=>n+(p.keyResults||[]).length,0)+'</strong><span>Key results</span></div><div class="card metric"><strong>'+avg+'%</strong><span>Average KR progress</span></div></div>'+
+  '<div class="project-grid">'+projects.map(p=>{
+    const krs=p.keyResults||[],progress=krs.length?Math.round(krs.reduce((n,k)=>n+Math.min(100,Math.max(0,Number(k.target)?Number(k.current)/Number(k.target)*100:0)),0)/krs.length):0;
+    return '<article class="card project-card"><div class="project-top"><div><div class="eyebrow">OBJECTIVE</div><h3>'+escapeHTML(p.name)+'</h3></div>'+statusPill(p.status||'On track')+'</div><p class="muted">'+escapeHTML(p.objective||'Objective not added yet')+'</p><div class="project-meta"><span>Owner: <b>'+escapeHTML(p.owner||'Unassigned')+'</b></span><span>Due: <b>'+escapeHTML(p.due||'Not set')+'</b></span></div><div class="progress-track"><span style="width:'+progress+'%"></span></div><div class="progress-label"><span>Overall progress</span><b>'+progress+'%</b></div><div class="kr-list">'+krs.map(k=>{const pct=Math.min(100,Math.max(0,Number(k.target)?Math.round(Number(k.current)/Number(k.target)*100):0));return '<div class="kr-item"><div><b>'+escapeHTML(k.title)+'</b><small>'+escapeHTML(String(k.current)+String(k.unit||''))+' / '+escapeHTML(String(k.target)+String(k.unit||''))+'</small></div><div class="kr-progress"><span style="width:'+pct+'%"></span></div>'+(canManage?'<button class="neutral small" data-update-kr="'+p.id+'" data-kr="'+k.id+'">Update</button>':'')+'</div>'}).join('')+'</div>'+(canManage?'<div class="project-actions"><button class="neutral small" data-edit-project="'+p.id+'">Edit project</button><button class="neutral small" data-add-kr="'+p.id+'">+ Key result</button></div>':'')+'</article>'
+  }).join('')+'</div>'+(!projects.length?'<div class="card empty-state">No projects yet. Create your first objective to get started.</div>':'');
+  if(canManage){
+    $('newProjectBtn')?.addEventListener('click',()=>openForm('Create project objective',[{name:'name',label:'Project name',required:true},{name:'objective',label:'Objective',type:'textarea',required:true},{name:'owner',label:'Owner / team',required:true},{name:'due',label:'Target date',type:'date',required:true},{name:'status',label:'Status',type:'select',options:['On track','At risk','Blocked','Completed'],value:'On track'}],v=>{state.projects.unshift({id:Date.now(),...v,keyResults:[]});saveState();renderApp();notify('Project created')}));
+    el.querySelectorAll('[data-update-kr]').forEach(btn=>btn.addEventListener('click',()=>{const p=projects.find(x=>x.id===Number(btn.dataset.updateKr)),k=p?.keyResults.find(x=>x.id===Number(btn.dataset.kr));if(!k)return;openForm('Update key result',[{name:'current',label:'Current value ('+k.unit+')',type:'number',min:'0',required:true,value:k.current},{name:'status',label:'Project status',type:'select',options:['On track','At risk','Blocked','Completed'],value:p.status||'On track'}],v=>{k.current=Number(v.current);p.status=v.status;saveState();renderApp();notify('Key result updated')})}));
+    el.querySelectorAll('[data-edit-project]').forEach(btn=>btn.addEventListener('click',()=>{const p=projects.find(x=>x.id===Number(btn.dataset.editProject));if(!p)return;openForm('Edit project',[{name:'name',label:'Project name',required:true,value:p.name},{name:'objective',label:'Objective',type:'textarea',required:true,value:p.objective},{name:'owner',label:'Owner / team',required:true,value:p.owner},{name:'due',label:'Target date',type:'date',required:true,value:p.due},{name:'status',label:'Status',type:'select',options:['On track','At risk','Blocked','Completed'],value:p.status||'On track'}],v=>{Object.assign(p,v);saveState();renderApp();notify('Project updated')})}));
+    el.querySelectorAll('[data-add-kr]').forEach(btn=>btn.addEventListener('click',()=>{const p=projects.find(x=>x.id===Number(btn.dataset.addKr));if(!p)return;openForm('Add key result',[{name:'title',label:'Measurable key result',required:true},{name:'current',label:'Current value',type:'number',min:'0',required:true,value:0},{name:'target',label:'Target value',type:'number',min:'1',required:true},{name:'unit',label:'Unit (%, days, score)',required:true,value:'%'}],v=>{p.keyResults.push({id:Date.now(),...v,current:Number(v.current),target:Number(v.target)});saveState();renderApp();notify('Key result added')})}));
+  }
+}
+function renderAdminSettings(el){
+  const moduleChoices=[['dashboard','Dashboard'],['projects','Project & OKR Tracking'],['playbook','Founders’ Playbook'],['directory','Team Directory'],['onboarding','Onboarding'],['leaves','Leave management'],['reimbursements','Expenses'],['rewards','Rewards & culture'],['helpdesk','Helpdesk']];
+  const rolesToConfigure=['hr','manager','employee','candidate'];
+  const access=state.accessConfig||{},workflows=state.workflowSettings||{};
+  el.innerHTML=pageHead('Advanced workspace settings','Admin controls for module access, approvals and onboarding flows. Changes are saved in this browser.', '<span class="pill approved">Founder admin</span>')+
+  '<div class="settings-layout"><section class="card settings-panel"><div class="section-kicker">ACCESS CONTROL</div><h3>Role-based module access</h3><p class="muted tiny">Choose which modules each role can see. Dashboard remains available; candidate access stays separate from internal projects.</p><div class="settings-table"><div class="settings-row settings-head"><b>Module</b>'+rolesToConfigure.map(r=>'<b>'+r[0].toUpperCase()+r.slice(1)+'</b>').join('')+'</div>'+moduleChoices.filter(([id])=>id!=='dashboard').map(([id,label])=>'<div class="settings-row"><span>'+label+'</span>'+rolesToConfigure.map(roleName=>'<label class="switch-cell"><input type="checkbox" data-access-role="'+roleName+'" data-access-module="'+id+'" '+(access[roleName]?.[id]!==false&&!(roleName==='candidate'&&id==='projects')?'checked':'')+' '+(roleName==='candidate'&&id==='projects'?'disabled':'')+'><span class="sr-only">'+roleName+' '+label+'</span></label>').join('')+'</div>').join('')+'</div><button class="primary" id="saveAccessConfig" style="margin-top:14px">Save access rules</button></section>'+
+  '<section class="card settings-panel"><div class="section-kicker">WORKFLOW DESIGN</div><h3>Approval & process gates</h3><p class="muted tiny">Set default workflow expectations for your startup.</p><label class="setting-toggle"><input type="checkbox" id="wfLeave" '+(workflows.leaveApproval!==false?'checked':'')+'> <span><b>Leave approval required</b><small>Leave requests enter a pending approval queue.</small></span></label><label class="setting-toggle"><input type="checkbox" id="wfExpense" '+(workflows.expenseApproval!==false?'checked':'')+'> <span><b>Expense approval required</b><small>Expense claims require review before reimbursement.</small></span></label><label class="setting-toggle"><input type="checkbox" id="wfOnboarding" '+(workflows.onboardingChecklist!==false?'checked':'')+'> <span><b>Onboarding checklist</b><small>Track required steps during new-joiner setup.</small></span></label><button class="primary" id="saveWorkflowSettings" style="margin-top:14px">Save workflow settings</button></section></div><section class="card settings-panel" style="margin-top:16px"><div class="section-kicker">ADMIN NOTES</div><h3>Workspace guardrails</h3><ul class="muted"><li>CSV employee import is available only to Founder and HR.</li><li>Employee and candidate portals never display employee import controls.</li><li>Project updates and workflow settings persist in this browser’s demo storage.</li><li>This is a prototype: role switching is simulated and is not production authentication.</li></ul></section>';
+  $('saveAccessConfig').onclick=()=>{state.accessConfig=state.accessConfig||{};el.querySelectorAll('[data-access-role]').forEach(input=>{const roleName=input.dataset.accessRole,moduleId=input.dataset.accessModule;state.accessConfig[roleName]=state.accessConfig[roleName]||{};state.accessConfig[roleName][moduleId]=input.checked});saveState();renderApp();notify('Role access rules saved')};
+  $('saveWorkflowSettings').onclick=()=>{state.workflowSettings={leaveApproval:$('wfLeave').checked,expenseApproval:$('wfExpense').checked,onboardingChecklist:$('wfOnboarding').checked};saveState();notify('Workflow settings saved')};
 }
 
 function renderDashboard(el,role){
