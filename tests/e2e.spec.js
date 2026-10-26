@@ -237,3 +237,17 @@ test('founder dashboard provides working guided setup and quick actions', async 
   await page.getByRole('button', { name: /Team directory/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Team Directory');
 });
+
+
+test('founder setup checklist reflects workspace and directory progress', async ({ page }) => {
+  await login(page, 'founder', 'Setup Progress QA');
+  await page.getByRole('button', { name: 'Set up workspace' }).click();
+  await page.locator('#workspaceCompany').fill('Progress Demo');
+  await page.getByRole('button', { name: 'Save workspace' }).click();
+  await expect(page.locator('.setup-count')).toHaveText('1 of 3');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Team Directory');
+  await page.locator('#nav button[data-tab="dashboard"]').click();
+  await expect(page.locator('.setup-count')).toHaveText('2 of 3');
+  await expect(page.locator('.founder-task').filter({ hasText: 'Review your people directory' })).toContainText('Reviewed');
+});
