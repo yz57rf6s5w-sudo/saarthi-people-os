@@ -265,3 +265,17 @@ test('CSV import skips duplicate employee rows without duplicating directory rec
   await expect(page.locator('#mainContent')).toContainText('Duplicate Test Person');
   await expect(page.locator('#toast')).toContainText('Skipped 1 duplicate row');
 });
+
+
+test('founder can export a filtered team directory as CSV', async ({ page }) => {
+  await login(page, 'founder', 'Directory Export QA');
+  await page.locator('#nav button[data-tab="directory"]').click();
+  await expect(page.locator('#dirTable tbody tr')).toHaveCount(5);
+  await page.locator('#dirFilter').fill('Product');
+  await expect(page.locator('#dirTable tbody tr')).toHaveCount(1);
+  await expect(page.locator('#dirTable tbody')).toContainText('Product');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export directory CSV' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/saarthi-team-directory-.*\.csv/);
+});
