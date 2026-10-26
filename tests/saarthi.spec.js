@@ -16,7 +16,7 @@ async function login(page, name, role) {
 
 test('login and role-specific dashboards render', async ({ page }) => {
   await login(page, 'E2E Founder', 'founder');
-  await expect(page.getByRole('heading', { name: 'Executive Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Build a better people experience.' })).toBeVisible();
   await page.locator('#roleSelector').selectOption('manager');
   await expect(page.getByRole('heading', { name: 'Team Dashboard' })).toBeVisible();
   await page.locator('#roleSelector').selectOption('employee');
@@ -45,7 +45,7 @@ test('employee leave request can be submitted and approved by founder', async ({
   await page.locator('#modalOk').click();
   await expect(page.getByText('E2E regression leave')).toBeVisible();
   await page.locator('#roleSelector').selectOption('founder');
-  await page.getByRole('button', { name: 'Leave Approvals' }).click();
+  await page.locator('#nav').getByRole('button', { name: 'Leave Approvals' }).click();
   const request = page.locator('tr').filter({ hasText: 'E2E regression leave' });
   await expect(request).toBeVisible();
   await request.getByRole('button', { name: 'Approve' }).click();
