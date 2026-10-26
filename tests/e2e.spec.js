@@ -278,4 +278,10 @@ test('founder can export a filtered team directory as CSV', async ({ page }) => 
   await page.getByRole('button', { name: 'Export directory CSV' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/saarthi-team-directory-.*\.csv/);
+  const fs = require('node:fs/promises');
+  const csvPath = await download.path();
+  const csv = await fs.readFile(csvPath, 'utf8');
+  expect(csv).toContain('Ananya Sharma');
+  expect(csv).toContain('Product Designer');
+  expect(csv).not.toContain('Rohan Mehta');
 });
