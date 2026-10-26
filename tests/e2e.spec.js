@@ -198,3 +198,15 @@ test('employee leave view does not expose approval actions', async ({ page }) =>
   await expect(request.getByRole('button', { name: 'Approve' })).toHaveCount(0);
   await expect(request.getByRole('button', { name: 'Reject' })).toHaveCount(0);
 });
+
+test('HR can import employees from a CSV spreadsheet', async ({ page }) => {
+  await login(page, 'hr', 'CSV Import QA');
+  await page.getByRole('button', { name: 'Import employees CSV' }).click();
+  await page.locator('#importEmployeesFile').setInputFiles({
+    name: 'employees.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('Name,Role,Location,Join,Manager,Status\\nCSV Import Employee,QA Analyst,Remote,2026-10-26,People Lead,Active\\n')
+  });
+  await expect(page.locator('#mainContent')).toContainText('CSV Import Employee');
+  await expect(page.locator('#mainContent')).toContainText('QA Analyst');
+});
