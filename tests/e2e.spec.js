@@ -147,3 +147,22 @@ test('employee can open their onboarding checklist', async ({ page }) => {
   await expect(page.locator('#mainContent')).toContainText('October 2026 cohort');
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('In Progress');
 });
+
+
+test('manager can approve an employee leave request', async ({ page }) => {
+  await login(page, 'employee', 'Manager Approval QA');
+  await page.getByRole('button', { name: /My Leaves/ }).click();
+  await page.getByRole('button', { name: /Apply leave/ }).click();
+  await page.locator('#modalContent [name="type"]').selectOption({ label: 'Casual Leave' });
+  await page.locator('#modalContent [name="days"]').fill('1');
+  await page.locator('#modalContent [name="date"]').fill('2026-11-18');
+  await page.locator('#modalContent [name="reason"]').fill('Manager approval regression');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#leaveTable')).toContainText('Manager approval regression');
+  await page.locator('#roleSelector').selectOption('manager');
+  await page.getByRole('button', { name: /Team Leave Requests/ }).click();
+  const request = page.locator('#leaveTable tr').filter({ hasText: 'Manager approval regression' });
+  await expect(request).toBeVisible();
+  await request.getByRole('button', { name: 'Approve' }).click();
+  await expect(page.locator('#leaveTable tr').filter({ hasText: 'Manager approval regression' })).toContainText('Approved');
+});
