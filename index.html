@@ -66,6 +66,8 @@
       <select id="roleSelector" aria-label="Demo role"></select>
       <button class="neutral small" id="exportDataBtn" title="Download a backup of this demo data">Export data</button>
       <button class="neutral small" id="importDataBtn" title="Restore data from a Saarthi JSON backup">Import data</button>
+      <button class="neutral small" id="importEmployeesBtn" title="Add employees from a CSV spreadsheet">Import employees CSV</button>
+      <input type="file" id="importEmployeesFile" accept=".csv,text/csv" class="hidden" aria-label="Choose employee CSV file">
       <button class="neutral small" id="resetDemoBtn" title="Reset this browser's demo data to the original sample">Reset demo</button>
       <input type="file" id="importDataFile" accept="application/json,.json" class="hidden" aria-label="Choose Saarthi backup file">
       <button class="secondary small" id="aiOpen">Ask Saarthi</button>
@@ -355,6 +357,58 @@ $('resetDemoBtn').addEventListener('click',()=>{
   $('roleSelector').value=state.activeRole;
   renderApp();
   notify('Demo data reset to the original sample.');
+});
+$('importEmployeesBtn').addEventListener('click',()=>{
+  if(!['founder','hr'].includes(state.activeRole)){notify('Employee CSV import is available to Founder and HR in this demo.');return;}
+  $('importEmployeesFile').click();
+});
+function parseCSV(text){
+  const rows=[];let row=[],cell='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(ch==='"'&&quoted&&text[i+1]==='"'){cell+='"';i++;}
+    else if(ch==='"')quoted=!quoted;
+    else if(ch===','&&!quoted){row.push(cell.trim());cell='';}
+    else if((ch==='\\n'||ch==='\\r')&&!quoted){
+      if(ch==='\\r'&&text[i+1]==='\\n')i++;
+      row.push(cell.trim());cell='';
+      if(row.some(value=>value!==''))rows.push(row);
+      row=[];
+    }else cell+=ch;
+  }
+  if(cell!==''||row.length){row.push(cell.trim());if(row.some(value=>value!==''))rows.push(row);}
+  if(quoted)throw new Error('CSV has an unclosed quoted field.');
+  if(rows.length<2)throw new Error('CSV needs a header row and at least one employee row.');
+  const headers=rows.shift().map(value=>value.replace(/^\\uFEFF/,'').trim().toLowerCase().replace(/[ _-]+/g,''));
+  const column=name=>headers.indexOf(name);
+  const nameCol=column('name'),roleCol=column('role');
+  if(nameCol<0||roleCol<0)throw new Error('CSV must include Name and Role columns.');
+  const get=(r,key,fallback='')=>{const index=column(key);return index<0?'':String(r[index]||'').trim()||fallback;};
+  const employees=rows.map((r,i)=>({
+    id:Math.max(0,...state.employees.map(e=>Number(e.id)||0))+i+1,
+    name:String(r[nameCol]||'').trim(),
+    role:String(r[roleCol]||'').trim(),
+    location:get(r,'location','Remote'),
+    join:get(r,'join',get(r,'joindate',new Date().toISOString().slice(0,10))),
+    manager:get(r,'manager','Unassigned'),
+    status:get(r,'status','Active')
+  })).filter(e=>e.name&&e.role);
+  if(!employees.length)throw new Error('No valid employee rows found. Each row needs Name and Role.');
+  return employees;
+}
+$('importEmployeesFile').addEventListener('change',async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+    if(file.size>1024*1024)throw new Error('Employee CSV must be 1 MB or smaller.');
+    const imported=parseCSV(await file.text());
+    state.employees.push(...imported);
+    saveState();renderApp();
+    notify('Imported '+imported.length+' employee'+(imported.length===1?'':'s')+'.');
+    if(['founder','hr'].includes(state.activeRole)){
+      currentTab='directory';renderApp();
+    }
+  }catch(err){notify(err.message||'Could not import employee CSV.');}
+  finally{e.target.value='';}
 });
 $('importDataFile').addEventListener('change',async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
