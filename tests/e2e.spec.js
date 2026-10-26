@@ -421,3 +421,55 @@ test('employee cannot resolve helpdesk tickets but HR can resolve them', async (
   await hrTicket.getByRole('button', { name: 'Resolve' }).click();
   await expect(page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' })).toContainText('Resolved');
 });
+
+
+test('project OKRs can be created and key-result progress persists after reload', async ({ page }) => {
+  await login(page, 'founder', 'Project OKR QA');
+  await page.getByRole('button', { name: /Project & OKR Tracking/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Improve onboarding completion');
+  await page.getByRole('button', { name: /New project/ }).click();
+  await page.locator('#modalContent [name="name"]').fill('QA product launch');
+  await page.locator('#modalContent [name="objective"]').fill('Launch a testable first release');
+  await page.locator('#modalContent [name="owner"]').fill('Product team');
+  await page.locator('#modalContent [name="due"]').fill('2026-12-20');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('QA product launch');
+  await page.reload();
+  await login(page, 'founder', 'Project OKR QA');
+  await page.getByRole('button', { name: /Project & OKR Tracking/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('QA product launch');
+});
+
+test('employee and candidate roles do not show employee CSV import controls', async ({ page }) => {
+  for (const role of ['employee', 'candidate']) {
+    await page.goto('http://127.0.0.1:4173');
+    await page.locator('#loginName').fill('CSV role visibility QA');
+    await page.locator('#loginRole').selectOption(role);
+    await page.locator('#demoCode').fill('demo123');
+    await page.getByRole('button', { name: 'Enter workspace' }).click();
+    await expect(page.locator('#app')).toBeVisible();
+    await expect(page.locator('#importEmployeesBtn')).toBeHidden();
+    await expect(page.locator('#importEmployeesFile')).toBeHidden();
+    await page.locator('#roleSelector').selectOption('founder');
+    await expect(page.locator('#importEmployeesBtn')).toBeVisible();
+    await expect(page.locator('#importEmployeesFile')).toBeHidden();
+  }
+});
+
+test('founder advanced settings save workflow defaults and role module access', async ({ page }) => {
+  await login(page, 'founder', 'Admin Settings QA');
+  await page.getByRole('button', { name: /Advanced Settings/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Role-based module access');
+  await page.locator('#wfLeave').uncheck();
+  await page.getByRole('button', { name: 'Save workflow settings' }).click();
+  await expect(page.locator('#toast')).toContainText('Workflow settings saved');
+  await page.locator('[data-access-role="employee"][data-access-module="projects"]').uncheck();
+  await page.getByRole('button', { name: 'Save access rules' }).click();
+  await page.locator('#roleSelector').selectOption('employee');
+  await expect(page.locator('#nav button[data-tab="projects"]')).toHaveCount(0);
+  await page.reload();
+  await login(page, 'founder', 'Admin Settings QA');
+  await page.getByRole('button', { name: /Advanced Settings/ }).click();
+  await expect(page.locator('#wfLeave')).not.toBeChecked();
+  await expect(page.locator('[data-access-role="employee"][data-access-module="projects"]')).not.toBeChecked();
+});
