@@ -64,6 +64,7 @@
     <div class="top-actions">
       <span id="greeting" style="font-size:13px"></span>
       <select id="roleSelector" aria-label="Demo role"></select>
+      <button class="neutral small" id="workspaceSetupBtn" title="Configure your company workspace">Workspace setup</button>
       <button class="neutral small" id="exportDataBtn" title="Download a backup of this demo data">Export data</button>
       <button class="neutral small" id="importDataBtn" title="Restore data from a Saarthi JSON backup">Import data</button>
       <button class="neutral small" id="importEmployeesBtn" title="Add employees from a CSV spreadsheet">Import employees CSV</button>
@@ -159,6 +160,37 @@ const roles={
 function notify(msg){const t=$('toast');t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,2400)}
 function escapeHTML(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]))}
 function pageHead(title,sub,extra=''){return `<div class="page-head"><div><h2 class="section-title">${title}</h2><p class="muted tiny">${sub}</p></div>${extra}</div>`}
+
+function openWorkspaceSetup(){
+  const settings=state.companySettings||{};
+  $('modalContent').innerHTML=`
+    <div class="page-head"><div><h2 class="section-title">Set up your workspace</h2><p class="muted tiny">A few details help tailor Saarthi to your startup.</p></div><button type="button" class="neutral small" id="workspaceSetupClose" aria-label="Close setup">Close</button></div>
+    <form id="workspaceSetupForm">
+      <div class="form-row"><label for="workspaceCompany">Company / startup name</label><input id="workspaceCompany" name="company" maxlength="100" placeholder="e.g. Acme Labs" value="${escapeHTML(settings.name||'')}" required></div>
+      <div class="form-row"><label for="workspaceIndustry">Industry</label><select id="workspaceIndustry" name="industry"><option value="">Choose industry</option>${['Technology / SaaS','Fintech','Consumer / E-commerce','Healthcare','Professional services','Other'].map(v=>`<option value="${v}" ${settings.industry===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="form-row"><label for="workspaceLocation">Primary location</label><input id="workspaceLocation" name="location" maxlength="100" placeholder="e.g. Bengaluru, India" value="${escapeHTML(settings.location||'')}"></div>
+      <div class="form-row"><label for="workspaceSize">Team size</label><select id="workspaceSize" name="teamSize"><option value="">Choose team size</option>${['1–10','11–25','26–50','51–80','81+'].map(v=>`<option value="${v}" ${settings.teamSize===v?'selected':''}>${v} people</option>`).join('')}</select></div>
+      <div class="form-row"><label for="workspaceStage">Company stage</label><select id="workspaceStage" name="stage"><option value="">Choose stage</option>${['Idea / pre-launch','Bootstrapped','Pre-seed','Seed','Series A or later'].map(v=>`<option value="${v}" ${settings.stage===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <p class="tiny muted">Settings are saved in this browser and included in Saarthi backups. This demo does not sync settings across devices.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" class="neutral" id="workspaceSetupCancel">Cancel</button><button type="submit" class="primary">Save workspace</button></div>
+    </form>`;
+  $('modalBg').classList.remove('hidden');
+  const close=()=> $('modalBg').classList.add('hidden');
+  $('workspaceSetupClose').addEventListener('click',close);
+  $('workspaceSetupCancel').addEventListener('click',close);
+  $('workspaceSetupForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    state.companySettings={
+      name:$('workspaceCompany').value.trim(),
+      industry:$('workspaceIndustry').value,
+      location:$('workspaceLocation').value.trim(),
+      teamSize:$('workspaceSize').value,
+      stage:$('workspaceStage').value,
+      setupCompleted:true
+    };
+    saveState();close();renderApp();notify('Workspace settings saved.');
+  });
+}
 
 function renderApp(){
   const role=state.activeRole;
@@ -339,6 +371,7 @@ window.saarthiLogin=function(e){
 };
 $('loginForm').addEventListener('submit',window.saarthiLogin);
 $('roleSelector').addEventListener('change',e=>{state.activeRole=e.target.value;currentTab=roles[state.activeRole].nav[0][0];saveState();renderApp()});
+$('workspaceSetupBtn').addEventListener('click',openWorkspaceSetup);
 $('aiOpen').addEventListener('click',openAi);
 $('exportDataBtn').addEventListener('click',()=>{
   const backup={app:'Saarthi People OS',schemaVersion:1,exportedAt:new Date().toISOString(),data:state};
