@@ -461,7 +461,7 @@ function renderDirectory(el){
     {name:'join',label:'Join date',type:'date',value:employee.join},
     {name:'manager',label:'Manager',value:employee.manager},
     {name:'status',label:'Employment status',type:'select',options:['Active','Inactive','On leave'],value:employee.status||'Active'}
-  ],values=>{const duplicate=state.employees.some(e=>String(e.id)!==String(employee.id)&&String(e.name||'').trim().toLowerCase()===values.name.toLowerCase()&&String(e.role||'').trim().toLowerCase()===values.role.toLowerCase());if(duplicate){notify('Another employee already has this name and role.');return}Object.assign(employee,values);saveState();draw();notify('Employee details updated.')})}
+  ],values=>{const duplicate=state.employees.some(e=>String(e.id)!==String(employee.id)&&String(e.name||'').trim().toLowerCase()===values.name.toLowerCase()&&String(e.role||'').trim().toLowerCase()===values.role.toLowerCase());if(duplicate){notify('Another employee already has this name and role.');return}Object.assign(employee,values);saveState();renderApp();notify('Employee details updated.')})}
   draw();$('dirFilter').addEventListener('input',draw);
   const exportBtn=$('exportDirectoryBtn');
   if(exportBtn)exportBtn.addEventListener('click',()=>{
