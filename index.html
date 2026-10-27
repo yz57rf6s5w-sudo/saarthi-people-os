@@ -322,7 +322,7 @@ button:not(:disabled):active{transform:translateY(1px)}
 
 <div id="app" class="hidden">
   <header class="topbar">
-    <div class="brand"><button class="menu-toggle" id="menuToggle">☰</button><div class="logo">S</div> Saarthi <small>People OS</small></div>
+    <div class="brand"><button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-controls="sidebar" aria-expanded="false">☰</button><div class="logo">S</div> Saarthi <small>People OS</small></div>
     <div class="top-actions">
       <span id="greeting" style="font-size:13px"></span>
       <select id="roleSelector" aria-label="Demo role"></select>
@@ -492,7 +492,7 @@ function renderApp(){
   $('exportDataBtn').classList.toggle('hidden',!['founder','hr'].includes(role));
   $('importDataBtn').classList.toggle('hidden',role!=='founder');
   $('resetDemoBtn').classList.toggle('hidden',role!=='founder');
-  $('nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab;renderApp();if(window.innerWidth<900)$('sidebar').classList.remove('open')}));
+  $('nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab;renderApp();if(window.innerWidth<900){$('sidebar').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');$('menuToggle').setAttribute('aria-label','Open navigation menu')}}));
   const activeHeadcount=state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
   const pendingL=state.leaves.filter(l=>l.status==='Pending').length;
   const pendingR=state.reimbursements.filter(r=>r.status==='Pending').length;
@@ -989,7 +989,8 @@ $('importDataFile').addEventListener('change',async e=>{
   finally{e.target.value='';}
 });
 $('logoutBtn').addEventListener('click',()=>{$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('demoCode').value=''});
-$('menuToggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+$('menuToggle').addEventListener('click',()=>{const open=$('sidebar').classList.toggle('open');$('menuToggle').setAttribute('aria-expanded',String(open));$('menuToggle').setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sidebar').classList.contains('open')){$('sidebar').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');$('menuToggle').setAttribute('aria-label','Open navigation menu');$('menuToggle').focus()}});
 document.addEventListener('click',e=>{if(e.target.id==='modalBg')$('modalBg').classList.add('hidden')});
 })();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
