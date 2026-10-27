@@ -1040,7 +1040,8 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.locator('#modalOk').click();
   await expect(page.locator('#toast')).toContainText('Policy saved as draft');
   await page.locator('#mainContent button[data-policy-publish]').last().click();
-  await expect(page.locator('#mainContent')).toContainText('1 published policy');
+  await expect(page.locator('#mainContent')).toContainText('QA Leave Guidance');
+  await expect(page.locator('#mainContent')).toContainText('Published');
   await page.locator('#aiOpen').click();
   await page.locator('#chatInput').fill('What is the policy for leave?');
   await page.locator('#chatSend').click();
@@ -1075,7 +1076,7 @@ test('manager can request a resource with competency mapping and draft JD, then 
   await expect(page.locator('#mainContent pre')).toContainText('Required competencies');
   await page.locator('#roleSelector').selectOption('hr');
   await expect(page.locator('#nav')).toContainText('Resource requisitions');
-  await page.locator('#nav button[data-tab="requisitions"]').click();
+  await page.locator('#nav button[data-tab="requisitions"]').first().click();
   await expect(page.locator('#mainContent')).toContainText('Customer Success Specialist');
   await page.getByRole('button', { name: 'Approve request' }).click();
   await expect(page.locator('#mainContent')).toContainText('Approved');
