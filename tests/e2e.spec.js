@@ -175,6 +175,27 @@ test('onboarding remains usable on a narrow mobile viewport', async ({ page }) =
   expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport + 1);
 });
 
+test('completing an onboarding prerequisite unblocks the next step', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    onboarding: [
+      { id: 911, title: 'Verify signed documents', detail: 'HR verifies all signed documents', status: 'In Progress', owner: 'HR', dueDate: '2026-10-01' },
+      { id: 912, title: 'Provision system access', detail: 'IT provisions required accounts', status: 'In Progress', owner: 'IT', dueDate: '2026-10-02', dependsOn: 911 }
+    ]
+  })));
+  await login(page, 'hr', 'Dependency Release QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  const prerequisite = page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' });
+  const dependent = page.locator('.onboard-step').filter({ hasText: 'Provision system access' });
+  await expect(dependent).toContainText('Blocked');
+  await expect(dependent.getByRole('button', { name: 'Waiting' })).toBeDisabled();
+  await prerequisite.getByRole('button', { name: 'Mark done' }).click();
+  await expect(page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' })).toContainText('Done');
+  const released = page.locator('.onboard-step').filter({ hasText: 'Provision system access' });
+  await expect(released).not.toContainText('Blocked');
+  await expect(released.getByRole('button', { name: 'Mark done' })).toBeEnabled();
+  await expect(released).toContainText('Depends on Verify signed documents');
+});
+
 test('onboarding dependency loop validation keeps the edit form open', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
     onboarding: [
