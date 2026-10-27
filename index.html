@@ -741,15 +741,18 @@ function renderLeaves(el,role){
     if(role!=='manager')return;
     const date=$('teamImpactDate').value||localISODate();
     const year=String(date||localISODate()).slice(0,4);
-    const approvedOnDate=managerLeaves.filter(l=>l.status==='Approved'&&String(l.date||'')<=date&&(()=>{const start=new Date((l.date||'')+'T00:00:00');if(Number.isNaN(start.getTime()))return false;const end=new Date(start);end.setDate(end.getDate()+Math.max(1,Number(l.days)||1)-1);return end.toISOString().slice(0,10)>=date})());
-    const pendingOnDate=managerLeaves.filter(l=>l.status==='Pending'&&String(l.date||'')<=date&&(()=>{const start=new Date((l.date||'')+'T00:00:00');if(Number.isNaN(start.getTime()))return false;const end=new Date(start);end.setDate(end.getDate()+Math.max(1,Number(l.days)||1)-1);return end.toISOString().slice(0,10)>=date})());
+    // Compare calendar dates in local time; ISO UTC conversion can shift the day in some time zones.
+    const leaveEndDate=l=>{const start=new Date((l.date||'')+'T12:00:00');if(Number.isNaN(start.getTime()))return '';start.setDate(start.getDate()+Math.max(1,Number(l.days)||1)-1);return `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;};
+    const overlapsDate=l=>{const start=String(l.date||'');const end=leaveEndDate(l);return Boolean(start&&end&&start<=date&&end>=date);};
+    const approvedOnDate=managerLeaves.filter(l=>l.status==='Approved'&&overlapsDate(l));
+    const pendingOnDate=managerLeaves.filter(l=>l.status==='Pending'&&overlapsDate(l));
     const takenByMember=managerTeam.map(e=>({employee:e,days:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Approved'&&String(l.date||'').slice(0,4)===String(year)).reduce((n,l)=>n+Math.max(0,Number(l.days)||0),0),pending:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Pending').length,away:approvedOnDate.some(l=>l.employee===e.name)}));
     const available=Math.max(0,managerTeam.length-new Set(approvedOnDate.map(l=>l.employee)).size);
     const activeOnboarding=(state.onboarding||[]).filter(item=>item.status!=='Done');
     const activeProjects=(state.projects||[]).filter(p=>!['completed','done'].includes(String(p.status||'').toLowerCase()));
     const workItems=managerTeam.flatMap(member=>{
-      const approved=managerLeaves.some(l=>l.employee===member.name&&l.status==='Approved'&&String(l.date||'')<=date&&(()=>{const end=new Date((l.date||'')+'T00:00:00');if(Number.isNaN(end.getTime()))return false;end.setDate(end.getDate()+Math.max(1,Number(l.days)||1)-1);return end.toISOString().slice(0,10)>=date})());
-      const pending=managerLeaves.some(l=>l.employee===member.name&&l.status==='Pending'&&String(l.date||'')<=date&&(()=>{const end=new Date((l.date||'')+'T00:00:00');if(Number.isNaN(end.getTime()))return false;end.setDate(end.getDate()+Math.max(1,Number(l.days)||1)-1);return end.toISOString().slice(0,10)>=date})());
+      const approved=managerLeaves.some(l=>l.employee===member.name&&l.status==='Approved'&&overlapsDate(l));
+      const pending=managerLeaves.some(l=>l.employee===member.name&&l.status==='Pending'&&overlapsDate(l));
       const impact=approved?'Cover needed':pending?'Review cover plan':'No leave overlap';
       return [...activeOnboarding.filter(x=>String(x.owner||'').toLowerCase().includes(member.name.toLowerCase())).map(x=>({member:member.name,title:x.title,source:'Onboarding',due:x.dueDate||'Not set',status:x.status||'Not started',impact})),...activeProjects.filter(x=>String(x.owner||'').toLowerCase()===member.name.toLowerCase()).map(x=>({member:member.name,title:x.name,source:'Project',due:x.due||'Not set',status:x.status||'On track',impact}))];
     });
