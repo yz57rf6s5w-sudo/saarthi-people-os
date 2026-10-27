@@ -541,6 +541,7 @@ test('employee and candidate dashboards show role-appropriate information, not c
   await expect(page.locator('#mainContent')).toContainText('My expenses');
   await expect(page.locator('#mainContent')).toContainText('My onboarding');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#sidebarSummary')).not.toContainText('headcount');
   await expect(page.locator('#mainContent')).not.toContainText('Someone Else');
   await page.locator('#roleSelector').selectOption('candidate');
   await expect(page.locator('#mainContent')).toContainText('Application Status');
