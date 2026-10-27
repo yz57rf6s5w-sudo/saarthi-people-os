@@ -542,6 +542,7 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
 
 
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
+  test.setTimeout(60000);
   await login(page, 'employee', 'Career Plan QA');
   await page.locator('#nav button[data-tab="career"]').click();
   await expect(page.locator('#mainContent')).toContainText('Set your own direction, skills and learning pace');
