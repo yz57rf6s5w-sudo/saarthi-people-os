@@ -511,7 +511,7 @@ test('HR status changes update the directory and active dashboard count and pers
   await expect(page.locator('.directory-status-metrics .metric').nth(0).locator('strong')).toHaveText('4');
   await expect(page.locator('#sidebarSummary')).toContainText('4 active headcount');
   await page.locator('#nav button[data-tab="dashboard"]').click();
-  await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
+  await expect(page.locator('.metric').filter({ hasText: 'Active headcount' }).locator('strong')).toHaveText('4');
   await page.reload();
   await login(page, 'hr', 'Employee Status QA');
   await page.locator('#nav button[data-tab="directory"]').click();
