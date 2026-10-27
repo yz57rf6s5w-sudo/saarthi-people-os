@@ -741,7 +741,10 @@ test('manager sees team leave history and availability before approving leave', 
       { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
       { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
     ],
-    onboarding: [{ id: 951, title: 'Release design handoff', detail: 'Prepare handoff', owner: 'Asha Team QA', dueDate: '2026-10-28', status: 'In Progress' }],
+    onboarding: [
+      { id: 951, title: 'Release design handoff', detail: 'Prepare handoff', owner: 'Asha Team QA', dueDate: '2026-10-28', status: 'In Progress' },
+      { id: 953, title: 'Prepare sprint demo', detail: 'Prepare demo', owner: 'Ravi Team QA', dueDate: '2026-10-28', status: 'In Progress' }
+    ],
     projects: [{ id: 952, name: 'Design QA launch', owner: 'Asha Team QA', due: '2026-10-28', status: 'On track', keyResults: [] }]
   })));
   await login(page, 'manager', 'Manager Leave QA');
