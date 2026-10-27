@@ -1251,8 +1251,7 @@ function openAi(){
   $('chatInput').focus();
 }
 
-// Use one submit path for mouse, keyboard and automation.
-$('loginForm').addEventListener('submit',window.saarthiLogin);
+// Login listener is installed in a separate script after this IIFE.
 $('roleSelector').addEventListener('change',e=>{state.activeRole=e.target.value;currentTab=roles[state.activeRole].nav[0][0];saveState();renderApp()});
 $('workspaceSetupBtn').addEventListener('click',openWorkspaceSetup);
 $('aiOpen').addEventListener('click',openAi);
@@ -1368,6 +1367,16 @@ document.addEventListener('click',e=>{if(e.target.id==='modalBg')$('modalBg').cl
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
 }
+</script>
+<script>
+// Attach login even if a later module initializer in the main script throws.
+(function(){
+  const form=document.getElementById('loginForm');
+  if(form && typeof window.saarthiLogin==='function') form.addEventListener('submit',window.saarthiLogin);
+  window.addEventListener('error',function(event){
+    console.error('Saarthi startup error:',event.message,event.filename,event.lineno);
+  });
+})();
 </script>
 </body>
 </html>
