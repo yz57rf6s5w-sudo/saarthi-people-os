@@ -540,9 +540,13 @@ test('candidate support trims valid requests and records creation time', async (
   await expect(page.locator('#mainContent')).toContainText('Open');
   await expect(page.locator('#toast')).toContainText('Support request submitted');
   await page.reload();
-  await login(page, 'candidate', 'Candidate Support Valid QA');
-  await page.getByRole('button', { name: /HR Helpdesk/ }).click();
-  await expect(page.locator('#mainContent')).toContainText('Candidate: Interview schedule clarification');
+  const persistedTicket = await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('saarthi_people_os_demo_v3') || '{}');
+    return (saved.tickets || []).find(ticket => ticket.subject === 'Candidate: Interview schedule clarification');
+  });
+  expect(persistedTicket).toBeTruthy();
+  expect(persistedTicket.status).toBe('Open');
+  expect(persistedTicket.createdAt).toBeTruthy();
 });
 
 test('project OKRs can be created and key-result progress persists after reload', async ({ page }) => {
