@@ -819,7 +819,7 @@ test('manager sees team leave history and availability before approving leave', 
     ],
     leaves: [
       { id: 941, employee: 'Asha Team QA', type: 'Casual Leave', days: 2, date: '2026-10-28', reason: 'Personal work', status: 'Approved', approver: 'hr' },
-      { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 1, date: '2026-10-28', reason: 'Medical appointment', status: 'Pending', approver: '' },
+      { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 3, date: '2026-10-27', reason: 'Medical appointment', status: 'Pending', approver: '' },
       { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
       { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
     ],
