@@ -669,6 +669,42 @@ test('shoutouts can be created and persist after reload', async ({ page }) => {
 });
 
 
+test('leave requests validate reason and retain review audit history', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    leaves: [],
+    employees: [{ id: 921, name: 'Leave QA Employee', manager: 'Leave QA Manager' }],
+    workflowSettings: { leaveApproval: true }
+  })));
+  await login(page, 'employee', 'Leave QA Employee');
+  await page.getByRole('button', { name: /Leave/ }).click();
+  await page.getByRole('button', { name: /Apply leave/ }).click();
+  await page.locator('#modalContent [name="reason"]').fill('no');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('at least 4 characters');
+  await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#modalContent [name="reason"]')).toHaveValue('no');
+  await page.locator('#modalContent [name="reason"]').fill('Family appointment');
+  await page.locator('#modalOk').click();
+  const request = page.locator('#leaveTable tbody tr').filter({ hasText: 'Family appointment' });
+  await expect(request).toContainText('Pending');
+  await expect(request).toContainText('Requested');
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.getByRole('button', { name: /Leave/ }).click();
+  const reviewRow = page.locator('#leaveTable tbody tr').filter({ hasText: 'Family appointment' });
+  await reviewRow.getByRole('button', { name: 'Approve' }).click();
+  const approved = page.locator('#leaveTable tbody tr').filter({ hasText: 'Family appointment' });
+  await expect(approved).toContainText('Approved');
+  await expect(approved).toContainText('hr');
+  await expect(approved).toContainText('Reviewed');
+  const stored = await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('saarthi_people_os_demo_v3') || '{}');
+    return (state.leaves || []).find(item => item.reason === 'Family appointment');
+  });
+  expect(stored).toBeTruthy();
+  expect(stored.requestedAt).toBeTruthy();
+  expect(stored.reviewedAt).toBeTruthy();
+});
+
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
   test.setTimeout(60000);
   await login(page, 'employee', 'Career Plan QA');
