@@ -589,7 +589,7 @@ test('every role navigation destination renders a usable module without browser 
     expect(tabIds.length, role + ' should have navigation destinations').toBeGreaterThan(0);
 
     for (const tabId of tabIds) {
-      await page.locator('#nav button[data-tab="' + tabId + '"]').click();
+      await page.locator('#nav button[data-tab="' + tabId + '"]').first().click();
       await expect(page.locator('#mainContent')).toBeVisible();
       await expect(page.locator('#mainContent')).not.toBeEmpty();
       const text = (await page.locator('#mainContent').innerText()).trim();
@@ -1039,7 +1039,7 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.locator('#modalContent [name="summary"]').fill('Submit leave requests in advance and confirm team coverage with your manager.');
   await page.locator('#modalOk').click();
   await expect(page.locator('#toast')).toContainText('Policy saved as draft');
-  await page.locator('#mainContent').getByRole('button', { name: 'Publish' }).click();
+  await page.locator('#mainContent button[data-policy-publish]').last().click();
   await expect(page.locator('#mainContent')).toContainText('1 published policy');
   await page.locator('#aiOpen').click();
   await page.locator('#chatInput').fill('What is the policy for leave?');
@@ -1052,7 +1052,7 @@ test('policy insights stay grounded in published policy records', async ({ page 
 test('manager can request a resource with competency mapping and draft JD, then HR can review', async ({ page }) => {
   await login(page, 'manager', 'Requisition QA Manager');
   await expect(page.locator('#nav')).toContainText('Resource requisitions');
-  await page.locator('#nav button[data-tab="requisitions"]').click();
+  await page.locator('#nav button[data-tab="requisitions"]').first().click();
   await page.getByRole('button', { name: /Request a resource/ }).click();
   await page.locator('#modalContent [name="roleTitle"]').fill('Customer Success Specialist');
   await page.locator('#modalContent [name="team"]').fill('Customer Success');
