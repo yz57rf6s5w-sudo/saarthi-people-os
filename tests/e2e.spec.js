@@ -32,7 +32,7 @@ test('all five demo roles can log in and see their workspace', async ({ page }) 
 test('employee can check in and check out and see attendance history', async ({ page }) => {
   await login(page, 'employee', 'Attendance QA');
   await page.getByRole('button', { name: /My Attendance/ }).click();
-  await expect(page.locator('#mainContent')).toContainText("Today's workday");
+  await expect(page.locator('#mainContent')).toContainText(/Today.s workday/);
   await page.locator('#attendanceCheckIn').click();
   await expect(page.locator('#mainContent')).toContainText('Checked in at');
   await expect(page.locator('#attendanceCheckIn')).toBeDisabled();
