@@ -1057,6 +1057,9 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.locator('#mainContent button[data-policy-publish]').last().click();
   await expect(page.locator('#mainContent')).toContainText('QA Leave Guidance');
   await expect(page.locator('#mainContent')).toContainText('Published');
+  await expect(page.locator('#mainContent')).toContainText('Owner: People Ops');
+  await expect(page.locator('#mainContent')).toContainText('Version & activity history');
+  await expect(page.locator('#mainContent')).toContainText('Published · v1.0');
   await page.locator('#aiOpen').click();
   await page.locator('#chatInput').fill('What is the policy for leave?');
   await page.locator('#chatSend').click();
