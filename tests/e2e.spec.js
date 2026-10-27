@@ -145,7 +145,7 @@ test('employee can open their onboarding checklist', async ({ page }) => {
   await login(page, 'employee', 'New Joiner QA');
   await page.getByRole('button', { name: /My Onboarding/ }).click();
   await expect(page.locator('#mainContent')).toContainText('New-joiner readiness');
-  await expect(page.locator('#mainContent')).toContainText('Overdue · needs a nudge');
+  await expect(page.locator('#mainContent')).toContainText('Overdue · unblocked');
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Owner: Manager');
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('In Progress');
 });
