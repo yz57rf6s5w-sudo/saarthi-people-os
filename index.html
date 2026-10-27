@@ -586,15 +586,15 @@ function renderDashboard(el,role){
   const openT=state.tickets.filter(t=>t.status==='Open').length;
   const totalLeaveDays=state.leaves.reduce((sum,l)=>sum+Number(l.days||0),0);
   const totalExp=state.reimbursements.reduce((sum,r)=>sum+Number(r.amount||0),0);
+  const isFounder=role==='founder';
+  const settings=state.companySettings||{};
+  const companyName=settings.name||'your startup';
   const onboardingDone=state.onboarding.filter(item=>item.status==='Done').length;
   const onboardingPct=state.onboarding.length?Math.round(onboardingDone/state.onboarding.length*100):0;
   const setupDone=Boolean(settings.setupCompleted);
   const setupProgress=settings.setupProgress||{};
   const setupCount=(setupDone?1:0)+(setupProgress.teamImported?1:0)+(setupProgress.directoryReviewed?1:0);
   const setupPercent=Math.round(setupCount/3*100);
-  const isFounder=role==='founder';
-  const settings=state.companySettings||{};
-  const companyName=settings.name||'your startup';
   const ownName=String(state.displayName||'').trim().toLowerCase();
   const ownLeaves=state.leaves.filter(l=>String(l.employee||'').trim().toLowerCase()===ownName);
   const ownExpenses=state.reimbursements.filter(r=>String(r.employee||'').trim().toLowerCase()===ownName);
