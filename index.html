@@ -744,9 +744,10 @@ function renderLeaves(el,role){
     // Compare calendar dates in local time; ISO UTC conversion can shift the day in some time zones.
     const leaveEndDate=l=>{const start=new Date((l.date||'')+'T12:00:00');if(Number.isNaN(start.getTime()))return '';start.setDate(start.getDate()+Math.max(1,Number(l.days)||1)-1);return `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;};
     const overlapsDate=l=>{const start=String(l.date||'');const end=leaveEndDate(l);return Boolean(start&&end&&start<=date&&end>=date);};
+    const leaveDaysInYear=(l,y)=>{const start=String(l.date||'');const end=leaveEndDate(l);if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(start)||!end)return 0;const first=start>y+'-01-01'?start:y+'-01-01';const last=end<y+'-12-31'?end:y+'-12-31';if(first>last)return 0;const utc=d=>{const [yy,mm,dd]=d.split('-').map(Number);return Date.UTC(yy,mm-1,dd)};return Math.round((utc(last)-utc(first))/86400000)+1;};
     const approvedOnDate=managerLeaves.filter(l=>l.status==='Approved'&&overlapsDate(l));
     const pendingOnDate=managerLeaves.filter(l=>l.status==='Pending'&&overlapsDate(l));
-    const takenByMember=managerTeam.map(e=>({employee:e,days:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Approved'&&String(l.date||'').slice(0,4)===String(year)).reduce((n,l)=>n+Math.max(0,Number(l.days)||0),0),pending:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Pending').length,away:approvedOnDate.some(l=>l.employee===e.name)}));
+    const takenByMember=managerTeam.map(e=>({employee:e,days:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Approved').reduce((n,l)=>n+leaveDaysInYear(l,String(year)),0),pending:managerLeaves.filter(l=>l.employee===e.name&&l.status==='Pending').length,away:approvedOnDate.some(l=>l.employee===e.name)}));
     const available=Math.max(0,managerTeam.length-new Set(approvedOnDate.map(l=>l.employee)).size);
     const activeOnboarding=(state.onboarding||[]).filter(item=>item.status!=='Done');
     const activeProjects=(state.projects||[]).filter(p=>!['completed','done'].includes(String(p.status||'').toLowerCase()));
