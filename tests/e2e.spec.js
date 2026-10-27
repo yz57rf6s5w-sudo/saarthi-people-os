@@ -1129,3 +1129,19 @@ test('founder can configure people budget and add a project value decision', asy
   await expect(page.locator('#mainContent')).toContainText('Customer analytics launch');
   await expect(page.locator('#mainContent')).toContainText('INR 800,000');
 });
+
+test('Saarthi guide provides role-aware next steps and practical guidance', async ({ page }) => {
+  await login(page, 'employee', 'Guide QA');
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Your personal work guide');
+  await page.locator('#assistantQuestion').fill('I am overloaded this week and have blockers');
+  await page.getByRole('button', { name: /Find my next step/ }).click();
+  await expect(page.locator('#assistantAnswer')).toContainText('available capacity');
+  await page.getByRole('button', { name: /Open relevant area/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Onboarding');
+  await page.reload();
+  await login(page, 'founder', 'Founder Guide QA');
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Founder copilot');
+  await expect(page.locator('#mainContent')).toContainText('People cost & runway');
+});
