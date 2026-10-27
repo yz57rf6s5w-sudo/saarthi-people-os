@@ -517,7 +517,7 @@ test('HR status changes update the directory and active dashboard count and pers
   await page.locator('#nav button[data-tab="directory"]').click();
   await expect(page.locator('#dirTable tbody tr').filter({ hasText: 'Ananya Sharma' })).toContainText('Inactive');
   await page.locator('#nav button[data-tab="dashboard"]').click();
-  await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
+  await expect(page.locator('.metric').filter({ hasText: 'Active headcount' }).locator('strong')).toHaveText('4');
 });
 
 test('employee and candidate dashboards show role-appropriate information, not company-wide metrics', async ({ page }) => {
