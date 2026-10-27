@@ -832,7 +832,7 @@ test('manager sees team leave history and availability before approving leave', 
   await login(page, 'manager', 'Manager Leave QA');
   await page.getByRole('button', { name: /Leave/ }).click();
   await expect(page.locator('#teamLeaveInsights')).toBeVisible();
-  await expect(page.locator('#teamImpactDate')).toHaveValue('2026-10-28');
+  await expect(page.locator('#teamImpactDate')).toHaveValue('2026-10-27'); // defaults to the first pending request's start date
   await expect(page.locator('#teamLeaveInsights')).toContainText('Leave taken by each team member');
   await expect(page.locator('#teamLeaveInsights')).toContainText('Asha Team QA');
   await expect(page.locator('#teamLeaveInsights')).toContainText('Ravi Team QA');
