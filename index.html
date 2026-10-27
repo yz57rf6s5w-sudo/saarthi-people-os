@@ -317,7 +317,7 @@ button:not(:disabled):active{transform:translateY(1px)}
     <div class="brand" style="margin-bottom:16px"><div class="logo">S</div> Saarthi <small>People OS</small></div>
     <h2 style="margin:0 0 6px">Working Demo</h2>
     <p class="muted tiny" style="margin:0 0 16px">Practical people-ops workspace for early-stage teams. <strong>Not for real or sensitive data.</strong></p>
-    <form id="loginForm" onsubmit="return window.saarthiLogin(event)">
+    <form id="loginForm">
       <div class="form-row"><label>Your name</label><input id="loginName" required placeholder="Demo User" value="Demo User"></div>
       <div class="form-row"><label>Role</label>
         <select id="loginRole">
@@ -440,6 +440,27 @@ function saveState(){
 }
 let state=loadState(), currentTab='dashboard', toastTimer;
 const $=id=>document.getElementById(id);
+// Install a resilient login path early so unrelated module initialisation errors cannot leave the demo inaccessible.
+window.saarthiLogin=function(event){
+  if(event)event.preventDefault();
+  const loginScreen=$('loginScreen'), app=$('app'), codeInput=$('demoCode'), roleInput=$('loginRole'), nameInput=$('loginName');
+  try{
+    if(!loginScreen||!app||!codeInput||!roleInput||!nameInput)throw new Error('Login form elements are missing. Refresh the page and try again.');
+    if(codeInput.value.trim()!=='demo123'){notify('Demo code did not match. Enter demo123.');codeInput.focus();return false;}
+    const role=roleInput.value;
+    if(!roles[role]){notify('Please choose a valid demo role.');return false;}
+    state.displayName=nameInput.value.trim()||'Demo User';state.activeRole=role;saveState();
+    loginScreen.classList.add('hidden');app.classList.remove('hidden');currentTab=roles[role].nav[0][0];
+    const selector=$('roleSelector');if(selector)selector.value=role;
+    renderApp();notify('Welcome to the Saarthi demo');
+  }catch(error){
+    console.error('Saarthi demo login failed:',error);
+    loginScreen?.classList.remove('hidden');app?.classList.add('hidden');
+    notify('Workspace could not open: '+(error&&error.message?error.message:'unexpected error'));
+  }
+  return false;
+};
+
 const roles={
   founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['people_budget','People Budget','₹'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
   hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['requisitions','Resource requisitions','＋'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
@@ -1230,34 +1251,8 @@ function openAi(){
   $('chatInput').focus();
 }
 
-window.saarthiLogin=function(e){
-  if(e)e.preventDefault();
-  const button=document.querySelector('#loginForm button[type="submit"]');
-  try{
-    const code=$('demoCode').value.trim();
-    if(code!=='demo123'){notify('Demo code did not match. Enter demo123.');$('demoCode').focus();return false;}
-    const role=$('loginRole').value;
-    if(!roles[role]){notify('Please choose a valid demo role.');return false;}
-    state.displayName=$('loginName').value.trim()||'Demo User';
-    state.activeRole=role;
-    saveState();
-    $('loginScreen').classList.add('hidden');
-    $('app').classList.remove('hidden');
-    currentTab=roles[state.activeRole].nav[0][0];
-    $('roleSelector').value=state.activeRole;
-    renderApp();
-    notify('Welcome to the Saarthi demo');
-  }catch(error){
-    console.error('Saarthi demo login failed:',error);
-    $('loginScreen').classList.remove('hidden');
-    $('app').classList.add('hidden');
-    notify('Could not open the workspace. Please refresh and try again.');
-  }finally{
-    if(button)button.disabled=false;
-  }
-  return false;
-};
-// Login is wired through the form's onsubmit handler so keyboard and button submission share one path.
+// Use one submit path for mouse, keyboard and automation.
+$('loginForm').addEventListener('submit',window.saarthiLogin);
 $('roleSelector').addEventListener('change',e=>{state.activeRole=e.target.value;currentTab=roles[state.activeRole].nav[0][0];saveState();renderApp()});
 $('workspaceSetupBtn').addEventListener('click',openWorkspaceSetup);
 $('aiOpen').addEventListener('click',openAi);
