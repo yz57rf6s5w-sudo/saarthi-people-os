@@ -520,6 +520,56 @@ test('HR status changes update the directory and active dashboard count and pers
   await expect(page.locator('.metric').filter({ hasText: 'Active team members' }).locator('strong')).toHaveText('4');
 });
 
+test('employee and candidate dashboards show role-appropriate information, not company-wide metrics', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    leaves: [
+      { id: 981, employee: 'Employee Dashboard QA', type: 'Casual Leave', days: 2, date: '2026-11-10', reason: 'Personal', status: 'Approved' },
+      { id: 982, employee: 'Someone Else', type: 'Sick Leave', days: 4, date: '2026-11-12', reason: 'Private', status: 'Pending' }
+    ],
+    reimbursements: [
+      { id: 983, employee: 'Employee Dashboard QA', category: 'Travel', amount: 750, status: 'Pending' },
+      { id: 984, employee: 'Someone Else', category: 'Software', amount: 9000, status: 'Pending' }
+    ],
+    onboarding: [
+      { id: 985, title: 'Complete profile', owner: 'Employee Dashboard QA', status: 'In Progress' },
+      { id: 986, title: 'Other employee task', owner: 'Someone Else', status: 'In Progress' }
+    ]
+  })));
+  await login(page, 'employee', 'Employee Dashboard QA');
+  await expect(page.locator('#mainContent')).toContainText('My leave requests pending');
+  await expect(page.locator('#mainContent')).toContainText('Approved leave days');
+  await expect(page.locator('#mainContent')).toContainText('My expenses');
+  await expect(page.locator('#mainContent')).toContainText('My onboarding');
+  await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#mainContent')).not.toContainText('Someone Else');
+  await page.locator('#roleSelector').selectOption('candidate');
+  await expect(page.locator('#mainContent')).toContainText('Your candidate journey');
+  await expect(page.locator('#mainContent')).toContainText('Interview scheduled');
+  await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#mainContent')).not.toContainText('My leave requests pending');
+});
+
+test('manager dashboard metrics are limited to direct-report workload and approvals', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    employees: [
+      { id: 987, name: 'Direct Dashboard QA', role: 'Engineer', manager: 'Manager Dashboard Scope QA', status: 'Active' },
+      { id: 988, name: 'Inactive Dashboard QA', role: 'Designer', manager: 'Manager Dashboard Scope QA', status: 'Inactive' },
+      { id: 989, name: 'Other Dashboard QA', role: 'Engineer', manager: 'Another Manager', status: 'Active' }
+    ],
+    leaves: [
+      { id: 990, employee: 'Direct Dashboard QA', type: 'Casual Leave', days: 1, date: '2026-11-10', reason: 'Team request', status: 'Pending' },
+      { id: 991, employee: 'Other Dashboard QA', type: 'Casual Leave', days: 1, date: '2026-11-10', reason: 'Outside team', status: 'Pending' }
+    ]
+  })));
+  await login(page, 'manager', 'Manager Dashboard Scope QA');
+  await expect(page.locator('#mainContent')).toContainText('Active direct reports');
+  await expect(page.locator('.metric').filter({ hasText: 'Active direct reports' }).locator('strong')).toHaveText('1');
+  await expect(page.locator('#mainContent')).toContainText('Team leave requests to review');
+  await expect(page.locator('#mainContent')).toContainText('Direct Dashboard QA');
+  await expect(page.locator('#mainContent')).not.toContainText('Other Dashboard QA');
+  await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+});
+
 test('every role navigation destination renders a usable module without browser errors', async ({ page }) => {
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
