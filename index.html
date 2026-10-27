@@ -444,7 +444,8 @@ const roles={
   founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
   hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['requisitions','Resource requisitions','＋'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
   manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['requisitions','Resource requisitions','＋'],['policy_docs','Policy documents','📄'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
-  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['profile','My profile','♙'],['policy_docs','Policy documents','📄'],['career','My Career & Learning','🌱'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['exit','Exit support','↗'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
+  employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['attendance','My Attendance','◷'],['profile','My profile','♙'],['policy_docs','Policy documents','📄'],['career','My Career & Learning','🌱'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['exit','Exit support','↗'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
+  
   candidate:{badge:'CANDIDATE PORTAL',nav:[['candidate_portal','Application Status','✎'],['helpdesk','Candidate Support','🎧']]}
 };
 function notify(msg){const t=$('toast');t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,2400)}
@@ -496,7 +497,7 @@ function renderApp(){
   $('greeting').textContent=`Hi, ${escapeHTML(state.displayName)}`;
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
-  const extraModules=[['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
+  const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
   if(role!=='candidate')extraModules.forEach(item=>{if(state.accessConfig?.[role]?.[item[0]]===true&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
@@ -531,6 +532,7 @@ function renderApp(){
   else if(currentTab==='admin_settings') renderAdminSettings(el);
   else if(currentTab==='playbook') renderPlaybook(el);
   else if(currentTab==='directory'){if(role==='founder')markSetupStep('directoryReviewed');renderDirectory(el);}
+  else if(currentTab==='attendance') renderAttendance(el,role);
   else if(currentTab==='profile') renderEmployeeProfile(el);
   else if(currentTab==='policy_docs') renderPolicyDocuments(el);
   else if(currentTab==='exit') renderExitModule(el);
@@ -913,6 +915,52 @@ function renderOnboarding(el){
   $('addOnboardingStep')?.addEventListener('click',()=>editStep(null));
   el.querySelectorAll('[data-edit-step]').forEach(btn=>btn.addEventListener('click',()=>{const step=byId(btn.dataset.editStep);if(step)editStep(step)}));
 }
+function renderAttendance(el,role){
+  state.attendance=Array.isArray(state.attendance)?state.attendance:[];
+  const today=new Date();
+  const dayKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const employeeName=String(state.displayName||'Demo User').trim();
+  const mine=state.attendance.filter(a=>a.employee===employeeName).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const todayRecord=state.attendance.find(a=>a.employee===employeeName&&a.date===dayKey);
+  const active=state.attendance.filter(a=>a.date===dayKey&&a.checkIn&&!a.checkOut);
+  const formatTime=value=>value?new Date(value).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—';
+  const canSeeTeam=['founder','hr','manager'].includes(role);
+  const team=canSeeTeam?state.attendance.filter(a=>a.date===dayKey):[];
+  const latest=mine.slice(0,7);
+  el.innerHTML=pageHead('My Attendance','A simple record of your workday. Your demo records stay in this browser.')+
+    `<div class="metrics">
+      <div class="metric-card"><span class="muted tiny">Today</span><strong>${todayRecord?.checkOut?'Completed':todayRecord?.checkIn?'Checked in':'Not checked in'}</strong><span class="tiny muted">${todayRecord?.checkIn?'Started '+formatTime(todayRecord.checkIn):'Record your start when you begin work'}</span></div>
+      <div class="metric-card"><span class="muted tiny">Days recorded</span><strong>${mine.filter(a=>a.checkIn).length}</strong><span class="tiny muted">Recorded workday starts</span></div>
+      <div class="metric-card"><span class="muted tiny">Currently working</span><strong>${active.length}</strong><span class="tiny muted">Demo records checked in today</span></div>
+    </div>
+    <section class="card" style="margin-top:16px"><div class="card-head"><div><h3>Today's workday</h3><p class="muted tiny">${today.toLocaleDateString([], {weekday:'long',month:'short',day:'numeric'})}</p></div><span class="status-pill">${todayRecord?.checkOut?'Complete':todayRecord?.checkIn?'In progress':'Not started'}</span></div>
+      <p class="muted">${todayRecord?.checkIn?'Checked in at '+formatTime(todayRecord.checkIn)+(todayRecord.checkOut?' · Checked out at '+formatTime(todayRecord.checkOut):' · Remember to check out when you finish.'):'When you start work, record your check-in. Saarthi does not use GPS or biometrics for this demo.'}</p>
+      <div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="primary" id="attendanceCheckIn" ${todayRecord?.checkIn?'disabled':''}>Check in</button>
+        <button class="secondary" id="attendanceCheckOut" ${!todayRecord?.checkIn||todayRecord?.checkOut?'disabled':''}>Check out</button>
+      </div>
+    </section>
+    <section class="card" style="margin-top:16px"><div class="card-head"><h3>Recent attendance</h3><span class="muted tiny">Last 7 records</span></div>
+      ${latest.length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>Check in</th><th>Check out</th><th>Status</th></tr></thead><tbody>'+latest.map(a=>'<tr><td>'+escapeHTML(a.date)+'</td><td>'+formatTime(a.checkIn)+'</td><td>'+formatTime(a.checkOut)+'</td><td>'+(a.checkOut?'Complete':a.checkIn?'In progress':'Needs review')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted tiny">No attendance recorded yet. Your check-ins will appear here.</p>'}
+    </section>
+    ${canSeeTeam?'<section class="card" style="margin-top:16px"><div class="card-head"><h3>Team attendance overview</h3><span class="muted tiny">Today · demo data</span></div><p class="muted tiny">Use this as an operational signal, not a performance score. Absence of a check-in does not prove someone is absent.</p><div class="metrics"><div class="metric-card"><span class="muted tiny">Checked in</span><strong>'+team.filter(a=>a.checkIn).length+'</strong></div><div class="metric-card"><span class="muted tiny">Checked out</span><strong>'+team.filter(a=>a.checkOut).length+'</strong></div><div class="metric-card"><span class="muted tiny">No check-in recorded</span><strong>'+Math.max(0,state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active').length-new Set(team.map(a=>a.employee)).size)+'</strong></div></div></section>':''}`;
+  const checkIn=document.getElementById('attendanceCheckIn');
+  const checkOut=document.getElementById('attendanceCheckOut');
+  if(checkIn)checkIn.addEventListener('click',()=>{
+    state.attendance=Array.isArray(state.attendance)?state.attendance:[];
+    const existing=state.attendance.find(a=>a.employee===employeeName&&a.date===dayKey);
+    if(existing?.checkIn){notify('You are already checked in for today.');return;}
+    if(existing){existing.checkIn=new Date().toISOString();existing.checkOut='';}
+    else state.attendance.push({id:Date.now(),employee:employeeName,date:dayKey,checkIn:new Date().toISOString(),checkOut:''});
+    saveState();renderApp();notify('Checked in. Have a good workday!');
+  });
+  if(checkOut)checkOut.addEventListener('click',()=>{
+    const record=(state.attendance||[]).find(a=>a.employee===employeeName&&a.date===dayKey);
+    if(!record?.checkIn||record.checkOut){notify('No active check-in to close.');return;}
+    record.checkOut=new Date().toISOString();saveState();renderApp();notify('Checked out. Your attendance record is saved in this browser.');
+  });
+}
+
 function renderLeaves(el,role){
   const canApprove=['founder','hr','manager'].includes(role);
   const managerTeam=role==='manager'?state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===String(state.displayName||'').trim().toLowerCase()&&String(e.status||'Active').toLowerCase()==='active'):[];
