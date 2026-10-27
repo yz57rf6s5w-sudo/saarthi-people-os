@@ -151,6 +151,20 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
+test('mobile navigation exposes state and closes with Escape', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page, 'hr', 'Mobile Menu QA');
+  const menu = page.locator('#menuToggle');
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await menu.click();
+  await expect(menu).toHaveAttribute('aria-expanded', 'true');
+  await expect(menu).toHaveAttribute('aria-label', 'Close navigation menu');
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await expect(menu).toHaveAttribute('aria-label', 'Open navigation menu');
+  await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
+});
+
 test('team directory empty state spans the correct table columns', async ({ page }) => {
   await login(page, 'hr', 'Directory QA');
   await page.getByRole('button', { name: /Team Directory/ }).click();
