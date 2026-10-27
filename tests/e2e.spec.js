@@ -670,7 +670,7 @@ test('manager dashboard approval queue only shows direct reports', async ({ page
   })));
   await login(page, 'manager', 'Manager Dashboard QA');
   await expect(page.locator('#mainContent')).toContainText('Direct Report QA');
-  await expect(page.locator('#mainContent')).toContainText('Direct report travel');
+  await expect(page.locator('#mainContent')).toContainText('₹1200 · Travel');
   await expect(page.locator('#mainContent')).not.toContainText('Unrelated Report QA');
   await expect(page.locator('#mainContent')).not.toContainText('Other team request');
   await expect(page.locator('#mainContent')).not.toContainText('Other team software');
