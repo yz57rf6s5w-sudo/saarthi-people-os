@@ -151,6 +151,15 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
+test('team directory empty state spans the correct table columns', async ({ page }) => {
+  await login(page, 'hr', 'Directory QA');
+  await page.getByRole('button', { name: /Team Directory/ }).click();
+  await page.locator('#dirFilter').fill('no-such-person-qa');
+  const emptyCell = page.locator('#dirTable tbody td').filter({ hasText: 'No matches' });
+  await expect(emptyCell).toBeVisible();
+  await expect(emptyCell).toHaveAttribute('colspan', '7');
+});
+
 test('onboarding remains usable on a narrow mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 'hr', 'Mobile Onboarding QA');
