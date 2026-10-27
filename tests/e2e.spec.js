@@ -852,6 +852,9 @@ test('manager sees team leave history and availability before approving leave', 
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('1 / 3');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('Pending on date');
   await expect(page.locator('#leaveTable tbody tr').filter({ hasText: 'Ravi Team QA' })).toContainText('Approved');
+  await page.locator('#teamImpactDate').fill('2027-01-15');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Leave taken by each team member · 2027');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('0');
 });
 
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
