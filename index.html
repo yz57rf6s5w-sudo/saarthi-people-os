@@ -503,15 +503,13 @@ function renderApp(){
   const activeHeadcount=sidebarTeam.length;
   const pendingL=state.leaves.filter(l=>l.status==='Pending'&&(!managerRole||sidebarNames.has(l.employee))).length;
   const pendingR=state.reimbursements.filter(r=>r.status==='Pending'&&(!managerRole||sidebarNames.has(r.employee))).length;
-  $('sidebarSummary').innerHTML=candidateRole
-    ?'<div><strong>Candidate workspace</strong></div><div class="tiny muted" style="margin-top:4px">Application progress and interview updates</div>'
-    :employeeRole
-      ?'<div><strong>My workspace</strong></div><div class="tiny muted" style="margin-top:4px">Your requests, tasks and growth</div>'
-      :managerRole
-        ?`<div><strong>${activeHeadcount}</strong> active direct reports</div><div class="tiny muted" style="margin-top:4px">${pendingL} team leave · ${pendingR} team expenses pending</div>`
-        :role==='hr'
-          ?`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`
-          :`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">Company people overview</div>`;
+  $('sidebarSummary').innerHTML=(candidateRole||employeeRole)
+    ?''
+    :managerRole
+      ?`<div><strong>${activeHeadcount}</strong> active direct reports</div><div class="tiny muted" style="margin-top:4px">${pendingL} team leave · ${pendingR} team expenses pending</div>`
+      :role==='hr'
+        ?`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`
+        :`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">Company people overview</div>`;
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='projects') renderProjects(el,role);
