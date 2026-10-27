@@ -151,6 +151,25 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
+test('onboarding shows the root owner when a task is blocked by a chain of prerequisites', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    onboarding: [
+      { id: 901, title: 'Verify signed documents', detail: 'HR verifies all signed documents', status: 'In Progress', owner: 'HR', dueDate: '2026-10-01' },
+      { id: 902, title: 'Provision system access', detail: 'IT provisions required accounts', status: 'In Progress', owner: 'IT', dueDate: '2026-10-02', dependsOn: 901 },
+      { id: 903, title: 'Start first-day setup', detail: 'Manager confirms the employee is ready', status: 'In Progress', owner: 'Manager', dueDate: '2026-10-03', dependsOn: 902 }
+    ]
+  })));
+  await login(page, 'hr', 'Dependency Chain QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  const downstream = page.locator('.onboard-step').filter({ hasText: 'Start first-day setup' });
+  await expect(downstream).toContainText('Blocked');
+  await expect(downstream).toContainText('Waiting for Provision system access');
+  await expect(downstream).toContainText('Root blocker: Verify signed documents');
+  await expect(downstream).toContainText('Owner: HR');
+  await expect(downstream.getByRole('button', { name: 'Waiting' })).toBeDisabled();
+  await expect(page.locator('#mainContent')).toContainText('Overdue · unblocked');
+});
+
 test('manager can approve a direct report leave request but only sees their team', async ({ page }) => {
   await login(page, 'employee', 'Ananya Sharma');
   await page.getByRole('button', { name: /My Leaves/ }).click();
