@@ -705,6 +705,28 @@ test('leave requests validate reason and retain review audit history', async ({ 
   expect(stored.reviewedAt).toBeTruthy();
 });
 
+test('leave search finds requests by reason and status', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    leaves: [
+      { id: 931, employee: 'Asha QA', type: 'Casual Leave', days: 1, date: '2026-11-10', reason: 'Family appointment', status: 'Pending' },
+      { id: 932, employee: 'Ravi QA', type: 'Sick Leave', days: 2, date: '2026-11-12', reason: 'Routine checkup', status: 'Approved', approver: 'hr' }
+    ]
+  })));
+  await login(page, 'hr', 'Leave Search QA');
+  await page.getByRole('button', { name: /Leave/ }).click();
+  const rows = page.locator('#leaveTable tbody tr');
+  await expect(rows).toHaveCount(2);
+  await page.locator('#leaveFilter').fill('family appointment');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('Asha QA');
+  await page.locator('#leaveFilter').fill('approved');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('Ravi QA');
+  await page.locator('#leaveFilter').fill('no-match');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('No requests');
+});
+
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
   test.setTimeout(60000);
   await login(page, 'employee', 'Career Plan QA');
