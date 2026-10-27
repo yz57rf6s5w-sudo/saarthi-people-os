@@ -977,4 +977,9 @@ test('Saarthi Copilot preview offers role-aware guidance without external AI cal
   await page.locator('#roleSelector').selectOption('employee');
   await expect(page.locator('#mainContent')).toContainText('SAARTHI COPILOT');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#sidebarSummary')).toBeEmpty();
+  await expect(page.locator('#sidebarSummary')).not.toContainText(/headcount|expense|claim/i);
+  await page.locator('#roleSelector').selectOption('candidate');
+  await expect(page.locator('#sidebarSummary')).toBeEmpty();
+  await expect(page.locator('#sidebarSummary')).not.toContainText(/headcount|expense|claim/i);
 });
