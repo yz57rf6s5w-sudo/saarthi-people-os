@@ -561,7 +561,8 @@ test('employee can create, customize and retain a career learning plan', async (
   await expect(page.locator('#mainContent')).toContainText('People Operations Partner');
   await expect(page.locator('#mainContent')).toContainText('Stakeholder management, HR analytics');
   await page.reload();
-  await expect(page.locator('#app')).toBeVisible();
+  await expect(page.locator('#loginScreen')).toBeVisible();
+  await login(page, 'employee', 'Career Plan QA');
   await page.locator('#nav button[data-tab="career"]').click();
   await expect(page.locator('#mainContent')).toContainText('People Operations Partner');
   await expect(page.locator('#mainContent')).toContainText('3 hr');
