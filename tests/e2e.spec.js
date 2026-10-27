@@ -653,6 +653,29 @@ test('manager expense approvals show direct reports and exclude other teams', as
   await expect(page.locator('#mainContent')).not.toContainText('Figma Subscription');
 });
 
+test('manager dashboard approval queue only shows direct reports', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    employees: [
+      { id: 961, name: 'Direct Report QA', role: 'Engineer', manager: 'Manager Dashboard QA', status: 'Active' },
+      { id: 962, name: 'Unrelated Report QA', role: 'Engineer', manager: 'Other Manager QA', status: 'Active' }
+    ],
+    leaves: [
+      { id: 961, employee: 'Direct Report QA', type: 'Casual Leave', days: 1, date: '2026-11-02', reason: 'Direct report request', status: 'Pending' },
+      { id: 962, employee: 'Unrelated Report QA', type: 'Sick Leave', days: 2, date: '2026-11-03', reason: 'Other team request', status: 'Pending' }
+    ],
+    reimbursements: [
+      { id: 961, employee: 'Direct Report QA', category: 'Travel', amount: 1200, desc: 'Direct report travel', status: 'Pending' },
+      { id: 962, employee: 'Unrelated Report QA', category: 'Software', amount: 900, desc: 'Other team software', status: 'Pending' }
+    ]
+  })));
+  await login(page, 'manager', 'Manager Dashboard QA');
+  await expect(page.locator('#mainContent')).toContainText('Direct Report QA');
+  await expect(page.locator('#mainContent')).toContainText('Direct report travel');
+  await expect(page.locator('#mainContent')).not.toContainText('Unrelated Report QA');
+  await expect(page.locator('#mainContent')).not.toContainText('Other team request');
+  await expect(page.locator('#mainContent')).not.toContainText('Other team software');
+});
+
 test('shoutouts can be created and persist after reload', async ({ page }) => {
   await login(page, 'employee', 'Recognition QA');
   await page.locator('#nav button[data-tab="rewards"]').click();
