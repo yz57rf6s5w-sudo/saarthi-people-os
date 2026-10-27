@@ -821,6 +821,7 @@ test('manager sees team leave history and availability before approving leave', 
       { id: 941, employee: 'Asha Team QA', type: 'Casual Leave', days: 2, date: '2026-10-28', reason: 'Personal work', status: 'Approved', approver: 'hr' },
       { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 3, date: '2026-10-27', reason: 'Medical appointment', status: 'Pending', approver: '' },
       { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
+      { id: 945, employee: 'Asha Team QA', type: 'Earned Leave', days: 4, date: '2026-12-30', reason: 'Year-end break', status: 'Approved', approver: 'hr' },
       { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
     ],
     onboarding: [
@@ -854,7 +855,7 @@ test('manager sees team leave history and availability before approving leave', 
   await expect(page.locator('#leaveTable tbody tr').filter({ hasText: 'Ravi Team QA' })).toContainText('Approved');
   await page.locator('#teamImpactDate').fill('2027-01-15');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('Leave taken by each team member · 2027');
-  await expect(page.locator('#teamLeaveInsightBody')).toContainText('0');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('2'); // Two of the four leave days fall in 2027.
 });
 
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
