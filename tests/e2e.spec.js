@@ -213,7 +213,7 @@ test('onboarding dependency loop validation keeps the edit form open', async ({ 
   await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
   await expect(page.locator('#field-dependsOn')).toHaveValue('Provision system access — IT · In Progress (ID 902)');
   await page.locator('#modalCancel').click();
-  await expect(page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' })).toContainText('In Progress');
+  await expect(page.locator('.onboard-step').filter({ has: page.locator('[data-edit-step="901"]') })).toContainText('In Progress');
 });
 
 test('onboarding shows the root owner when a task is blocked by a chain of prerequisites', async ({ page }) => {
