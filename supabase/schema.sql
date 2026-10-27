@@ -91,11 +91,41 @@ drop policy if exists "members can read org memberships" on public.memberships;
 create policy "members can read org memberships" on public.memberships
 for select to authenticated using (public.is_org_member(organization_id));
 
+-- Membership changes go through a constrained function so HR cannot promote
+-- users to founder or edit/delete their own membership through a broad policy.
 drop policy if exists "founders and HR manage memberships" on public.memberships;
-create policy "founders and HR manage memberships" on public.memberships
+drop policy if exists "founders manage memberships" on public.memberships;
+create policy "founders manage memberships" on public.memberships
 for all to authenticated
-using (public.has_org_role(organization_id, array['founder','hr']))
-with check (public.has_org_role(organization_id, array['founder','hr']));
+using (public.has_org_role(organization_id, array['founder']))
+with check (public.has_org_role(organization_id, array['founder']));
+
+-- Safe first-workspace bootstrap: the authenticated caller becomes the first
+-- founder of a new organization. No arbitrary user ID or role is accepted.
+create or replace function public.create_workspace(workspace_name text)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  new_org_id uuid;
+  clean_name text := trim(workspace_name);
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required';
+  end if;
+  if clean_name is null or char_length(clean_name) < 1 or char_length(clean_name) > 120 then
+    raise exception 'Workspace name must be 1–120 characters';
+  end if;
+  insert into public.organizations(name) values (clean_name) returning id into new_org_id;
+  insert into public.memberships(organization_id, user_id, role)
+    values (new_org_id, auth.uid(), 'founder');
+  return new_org_id;
+end;
+$$;
+revoke all on function public.create_workspace(text) from public, anon;
+grant execute on function public.create_workspace(text) to authenticated;
 
 drop policy if exists "members read onboarding tasks" on public.onboarding_tasks;
 create policy "members read onboarding tasks" on public.onboarding_tasks
