@@ -1165,3 +1165,12 @@ test('Saarthi guide explains live demo signals and links to review context', asy
   await page.getByRole('button', { name: /Your pending leave requests/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Leave');
 });
+
+test('Saarthi does not invent policy answers when no source is available', async ({ page }) => {
+  await login(page, 'employee', 'Policy Guide QA');
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
+  await page.locator('#assistantQuestion').fill('What is my leave entitlement policy?');
+  await page.getByRole('button', { name: /Find my next step/ }).click();
+  await expect(page.locator('#assistantAnswer')).toContainText('I could not identify a reliable matching policy source');
+  await expect(page.locator('#assistantAnswer')).toContainText('effective date');
+});
