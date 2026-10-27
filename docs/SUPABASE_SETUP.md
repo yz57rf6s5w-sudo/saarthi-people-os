@@ -16,8 +16,9 @@ This repository currently runs as a static GitHub Pages demo and stores its demo
 2. Open **SQL Editor** in the Supabase dashboard.
 3. Review and run `supabase/schema.sql`.
 4. In **Authentication → URL Configuration**, set the site URL to the deployed Saarthi URL and add any local development URL to the redirect allow list.
-5. Before adding real users, implement a trusted first-founder provisioning flow. The schema deliberately has no public organization-creation or self-promotion policy.
-6. Test with two separate test organizations and accounts. Verify that one organization's user cannot read or modify the other organization's tasks or memberships.
+5. The schema provides `create_workspace(workspace_name)`, which requires an authenticated user and makes that caller the first founder. Review this function and the membership policies before applying the SQL.
+6. Test with at least two separate organizations and accounts. Verify that one organization's user cannot read or modify the other organization's tasks or memberships, and verify HR cannot promote anyone to founder.
+7. Apply schema changes only through the Supabase SQL Editor or a trusted migration process; never put admin credentials in the browser.
 
 ## Important security boundaries
 
@@ -33,14 +34,14 @@ The schema includes `due_date` and `reminder_sent_at` to support scheduled remin
 ## Current limitations
 
 - The deployed demo still uses browser-local storage; changes do not sync across devices or people.
-- This commit adds schema and setup documentation only. Authentication wiring, app integration, first-founder provisioning, scheduled email delivery, and end-to-end RLS tests remain to be implemented.
+- This repository contains schema and setup documentation only. Authentication wiring, app integration, scheduled email delivery, and automated end-to-end RLS tests remain to be implemented.
 - Supabase free-tier quotas and inactivity behavior can change; check the provider's current pricing before deployment: https://supabase.com/pricing.
 
 ## Suggested implementation order
 
 1. Configure a Supabase project and authentication provider.
 2. Add a small client adapter that keeps demo mode working when configuration is absent.
-3. Add organization bootstrap/invitation flow and role-aware access.
+3. Add organization bootstrap/invitation flow and role-aware access using `create_workspace` and a trusted invitation process.
 4. Move onboarding tasks to the shared database with optimistic UI and error handling.
 5. Add server-side reminder scheduling and email.
 6. Add automated tests for cross-tenant isolation and role permissions before using real data.
