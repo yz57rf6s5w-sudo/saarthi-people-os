@@ -128,7 +128,7 @@ test('founder can restore a valid Saarthi backup', async ({ page }) => {
 });
 test('HR can mark an onboarding step done and retain progress', async ({ page }) => {
   await login(page, 'hr', 'Onboarding QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   const step = page.locator('.onboard-step').filter({ hasText: 'First feature commit' });
   await expect(step).toContainText('In Progress');
   await step.getByRole('button', { name: 'Mark done' }).click();
@@ -136,7 +136,7 @@ test('HR can mark an onboarding step done and retain progress', async ({ page })
   await page.reload();
   await expect(page.locator('#loginScreen')).toBeVisible();
   await login(page, 'hr', 'Onboarding QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   await expect(page.locator('.onboard-step').filter({ hasText: 'First feature commit' })).toContainText('Done');
 });
 
@@ -205,7 +205,7 @@ test('onboarding steps can be searched and filtered without losing actions', asy
     ]
   })));
   await login(page, 'hr', 'Onboarding Filter QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   await expect(page.locator('#onboardingResultCount')).toHaveText('3 steps');
   await page.locator('#onboardingSearch').fill('IT QA');
   await expect(page.locator('.onboard-step:visible')).toHaveCount(1);
@@ -223,7 +223,7 @@ test('onboarding remains usable on a narrow mobile viewport', async ({ page }) =
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 'hr', 'Mobile Onboarding QA');
   await page.locator('#menuToggle').click();
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   await expect(page.locator('#mainContent')).toContainText('New-joiner readiness');
   await expect(page.locator('#addOnboardingStep')).toBeVisible();
   await expect(page.locator('.onboard-step').first()).toBeVisible();
@@ -242,7 +242,7 @@ test('completing an onboarding prerequisite unblocks the next step', async ({ pa
     ]
   })));
   await login(page, 'hr', 'Dependency Release QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   const prerequisite = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Mark done' }) }).filter({ hasText: 'Verify signed documents' });
   const dependent = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Waiting' }) }).filter({ hasText: 'Provision system access' });
   await expect(dependent).toContainText('Blocked');
@@ -263,7 +263,7 @@ test('onboarding dependency loop validation keeps the edit form open', async ({ 
     ]
   })));
   await login(page, 'hr', 'Dependency Loop QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   const firstStep = page.locator('.onboard-step').filter({ has: page.locator('[data-edit-step="901"]') });
   await firstStep.locator('[data-edit-step="901"]').click();
   await page.locator('#field-dependsOn').selectOption({ label: 'Provision system access — IT · In Progress (ID 902)' });
@@ -284,7 +284,7 @@ test('onboarding shows the root owner when a task is blocked by a chain of prere
     ]
   })));
   await login(page, 'hr', 'Dependency Chain QA');
-  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await page.locator('#nav button[data-tab="onboarding"]').click();
   const downstream = page.locator('.onboard-step').filter({ hasText: 'Start first-day setup' });
   await expect(downstream).toContainText('Blocked');
   await expect(downstream).toContainText('Waiting for Provision system access');
@@ -543,7 +543,7 @@ test('employee and candidate dashboards show role-appropriate information, not c
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
   await expect(page.locator('#mainContent')).not.toContainText('Someone Else');
   await page.locator('#roleSelector').selectOption('candidate');
-  await expect(page.locator('#mainContent')).toContainText('Your candidate journey');
+  await expect(page.locator('#mainContent')).toContainText('Application Status');
   await expect(page.locator('#mainContent')).toContainText('Interview scheduled');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
   await expect(page.locator('#mainContent')).not.toContainText('My leave requests pending');
