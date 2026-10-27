@@ -500,6 +500,8 @@ test('employee cannot resolve helpdesk tickets but HR can resolve them', async (
   const ownTicket = page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' });
   await expect(ownTicket).toBeVisible();
   await expect(ownTicket.getByRole('button', { name: 'Resolve' })).toHaveCount(0);
+  await expect(ownTicket.locator('time[datetime]')).toHaveCount(1);
+  await expect(ownTicket.locator('time[datetime]')).toHaveAttribute('datetime', /.+/);
 
   await page.locator('#roleSelector').selectOption('hr');
   await page.getByRole('button', { name: /Helpdesk Tickets/ }).click();
@@ -507,6 +509,7 @@ test('employee cannot resolve helpdesk tickets but HR can resolve them', async (
   await expect(hrTicket).toBeVisible();
   await hrTicket.getByRole('button', { name: 'Resolve' }).click();
   await expect(page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' })).toContainText('Resolved');
+  await expect(page.locator('#mainContent tr').filter({ hasText: 'Permission boundary test ticket' })).toContainText('Resolved by hr');
 });
 
 
