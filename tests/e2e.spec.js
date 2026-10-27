@@ -128,6 +128,7 @@ test('founder can restore a valid Saarthi backup', async ({ page }) => {
 });
 test('HR can mark an onboarding step done and retain progress', async ({ page }) => {
   await login(page, 'hr', 'Onboarding QA');
+  await page.locator('#menuToggle').click();
   await page.getByRole('button', { name: /Onboarding/ }).click();
   const step = page.locator('.onboard-step').filter({ hasText: 'First feature commit' });
   await expect(step).toContainText('In Progress');
