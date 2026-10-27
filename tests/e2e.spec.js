@@ -196,6 +196,29 @@ test('team directory empty state spans the correct table columns', async ({ page
   await expect(emptyCell).toHaveAttribute('colspan', '7');
 });
 
+test('onboarding steps can be searched and filtered without losing actions', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    onboarding: [
+      { id: 981, title: 'Verify signed documents', detail: 'Check signed offer and forms', owner: 'HR QA', dueDate: '2026-10-27', status: 'In Progress' },
+      { id: 982, title: 'Provision laptop access', detail: 'Create device and account', owner: 'IT QA', dueDate: '2026-10-28', status: 'Not started', dependsOn: 981 },
+      { id: 983, title: 'Welcome check-in', detail: 'First day welcome', owner: 'Manager QA', dueDate: '2026-10-28', status: 'Done' }
+    ]
+  })));
+  await login(page, 'hr', 'Onboarding Filter QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await expect(page.locator('#onboardingResultCount')).toContainText('3 of 3');
+  await page.locator('#onboardingSearch').fill('IT QA');
+  await expect(page.locator('.onboard-step:visible')).toHaveCount(1);
+  await expect(page.locator('.onboard-step:visible')).toContainText('Provision laptop access');
+  await page.locator('#onboardingSearch').fill('');
+  await page.locator('#onboardingStatus').selectOption('blocked');
+  await expect(page.locator('.onboard-step:visible')).toHaveCount(1);
+  await expect(page.locator('.onboard-step:visible')).toContainText('Blocked');
+  await page.locator('#onboardingStatus').selectOption('done');
+  await expect(page.locator('.onboard-step:visible')).toHaveCount(1);
+  await expect(page.locator('.onboard-step:visible')).toContainText('Welcome check-in');
+});
+
 test('onboarding remains usable on a narrow mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 'hr', 'Mobile Onboarding QA');
