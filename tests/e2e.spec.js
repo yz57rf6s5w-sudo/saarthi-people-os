@@ -1004,8 +1004,8 @@ test('policy documents show clear draft status and exit support avoids automatic
   await login(page, 'employee', 'Policy QA Employee');
   await page.locator('#nav button[data-tab="policy_docs"]').click();
   await expect(page.locator('#mainContent')).toContainText('Policy documents');
-  await expect(page.locator('#mainContent')).toContainText('Leave and time-off policy');
-  await expect(page.locator('#mainContent')).toContainText('Draft');
+  await expect(page.locator('#mainContent')).toContainText('No published policies are available yet');
+  await expect(page.locator('#mainContent')).not.toContainText('Leave and time-off policy');
   await page.locator('#nav button[data-tab="exit"]').click();
   await expect(page.locator('#mainContent')).toContainText('This does not submit a resignation');
   await page.getByRole('button', { name: 'Request confidential conversation' }).click();
