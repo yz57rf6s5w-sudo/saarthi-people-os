@@ -917,68 +917,49 @@ function renderOnboarding(el){
 }
 function renderAttendance(el,role){
   state.attendance=Array.isArray(state.attendance)?state.attendance:[];
+  state.attendanceCorrections=Array.isArray(state.attendanceCorrections)?state.attendanceCorrections:[];
+  state.companyHolidays=Array.isArray(state.companyHolidays)?state.companyHolidays:[];
   const today=new Date();
   const dayKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   const employeeName=String(state.displayName||'Demo User').trim();
+  const canReview=['founder','hr'].includes(role);
+  const managerNames=new Set(state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===employeeName.toLowerCase()).map(e=>e.name));
+  const visibleCorrection=c=>canReview||(role==='manager'&&managerNames.has(c.employee))||(role==='employee'&&c.employee===employeeName);
+  const corrections=state.attendanceCorrections.filter(visibleCorrection).sort((a,b)=>(b.requestedAt||'').localeCompare(a.requestedAt||''));
   const mine=state.attendance.filter(a=>a.employee===employeeName).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const todayRecord=state.attendance.find(a=>a.employee===employeeName&&a.date===dayKey);
   const active=state.attendance.filter(a=>a.date===dayKey&&a.checkIn&&!a.checkOut);
   const formatTime=value=>value?new Date(value).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—';
   const canSeeTeam=['founder','hr','manager'].includes(role);
-  const team=canSeeTeam?state.attendance.filter(a=>a.date===dayKey):[];
+  const team=canSeeTeam?state.attendance.filter(a=>a.date===dayKey&&(role!=='manager'||managerNames.has(a.employee))):[];
   const latest=mine.slice(0,7);
-  el.innerHTML=pageHead('My Attendance','A simple record of your workday. Your demo records stay in this browser.')+
-    `<div class="metrics">
-      <div class="metric-card"><span class="muted tiny">Today</span><strong>${todayRecord?.checkOut?'Completed':todayRecord?.checkIn?'Checked in':'Not checked in'}</strong><span class="tiny muted">${todayRecord?.checkIn?'Started '+formatTime(todayRecord.checkIn):'Record your start when you begin work'}</span></div>
-      <div class="metric-card"><span class="muted tiny">Days recorded</span><strong>${mine.filter(a=>a.checkIn).length}</strong><span class="tiny muted">Recorded workday starts</span></div>
-      <div class="metric-card"><span class="muted tiny">Currently working</span><strong>${active.length}</strong><span class="tiny muted">Demo records checked in today</span></div>
-    </div>
-    <section class="card" style="margin-top:16px"><div class="card-head"><div><h3>Today's workday</h3><p class="muted tiny">${today.toLocaleDateString([], {weekday:'long',month:'short',day:'numeric'})}</p></div><span class="status-pill">${todayRecord?.checkOut?'Complete':todayRecord?.checkIn?'In progress':'Not started'}</span></div>
-      <p class="muted">${todayRecord?.checkIn?'Checked in at '+formatTime(todayRecord.checkIn)+(todayRecord.checkOut?' · Checked out at '+formatTime(todayRecord.checkOut):' · Remember to check out when you finish.'):'When you start work, record your check-in. Saarthi does not use GPS or biometrics for this demo.'}</p>
-      <div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-        <button class="primary" id="attendanceCheckIn" ${todayRecord?.checkIn?'disabled':''}>Check in</button>
-        <button class="secondary" id="attendanceCheckOut" ${!todayRecord?.checkIn||todayRecord?.checkOut?'disabled':''}>Check out</button>
-      </div>
-    </section>
-    <section class="card" style="margin-top:16px"><div class="card-head"><h3>Recent attendance</h3><div class="button-row"><span class="muted tiny">Last 7 records</span><button class="secondary small" id="attendanceCorrectionBtn">Request a correction</button></div></div>
-      ${latest.length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>Check in</th><th>Check out</th><th>Status</th></tr></thead><tbody>'+latest.map(a=>'<tr><td>'+escapeHTML(a.date)+'</td><td>'+formatTime(a.checkIn)+'</td><td>'+formatTime(a.checkOut)+'</td><td>'+(a.checkOut?'Complete':a.checkIn?'In progress':'Needs review')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted tiny">No attendance recorded yet. Your check-ins will appear here.</p>'}
-    </section>
-    <section class="card" style="margin-top:16px"><div class="card-head"><h3>Correction requests</h3><span class="muted tiny">Your requests</span></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Requested check-in</th><th>Requested check-out</th><th>Reason</th><th>Status</th></tr></thead><tbody>
-      ${(state.attendanceCorrections||[]).filter(c=>c.employee===employeeName).map(c=>'<tr><td>'+escapeHTML(c.date)+'</td><td>'+escapeHTML(c.requestedCheckIn||'—')+'</td><td>'+escapeHTML(c.requestedCheckOut||'—')+'</td><td>'+escapeHTML(c.reason)+'</td><td>'+escapeHTML(c.status)+'</td></tr>').join('')||'<tr><td colspan="5" class="muted">No correction requests yet.</td></tr>'}
-      </tbody></table></div><p class="tiny muted">Requests are pending until reviewed. In this prototype, records are stored in this browser.</p></section>
-        ${canSeeTeam?'<section class="card" style="margin-top:16px"><div class="card-head"><h3>Team attendance overview</h3><span class="muted tiny">Today · demo data</span></div><p class="muted tiny">Use this as an operational signal, not a performance score. Absence of a check-in does not prove someone is absent.</p><div class="metrics"><div class="metric-card"><span class="muted tiny">Checked in</span><strong>'+team.filter(a=>a.checkIn).length+'</strong></div><div class="metric-card"><span class="muted tiny">Checked out</span><strong>'+team.filter(a=>a.checkOut).length+'</strong></div><div class="metric-card"><span class="muted tiny">No check-in recorded</span><strong>'+Math.max(0,state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active').length-new Set(team.map(a=>a.employee)).size)+'</strong></div></div></section>':''}`;
-  state.attendanceCorrections=Array.isArray(state.attendanceCorrections)?state.attendanceCorrections:[];
+  const holiday=state.companyHolidays.find(h=>h.date===dayKey);
+  const pendingCount=corrections.filter(c=>c.status==='Pending').length;
+  el.innerHTML=pageHead('My Attendance','A simple workday record with transparent correction review.')+
+    (holiday?'<div class="card" style="margin-bottom:12px"><strong>Holiday: '+escapeHTML(holiday.name)+'</strong><p class="tiny muted">Check your workspace holiday calendar. Attendance status alone does not determine absence.</p></div>':'')+
+    (canReview?'<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3>Holiday calendar</h3><p class="muted tiny">Add a company holiday so teams can interpret attendance in context.</p></div></div><form id="holidayForm" class="form-grid"><label>Holiday name<input name="name" maxlength="80" required placeholder="e.g. Diwali"></label><label>Date<input name="date" type="date" required min="'+dayKey+'"></label><button class="primary" type="submit">Add holiday</button></form><div class="tiny muted" style="margin-top:8px">'+(state.companyHolidays.length?state.companyHolidays.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(h=>escapeHTML(h.date)+' · '+escapeHTML(h.name)).join(' &nbsp; • &nbsp; '):'No company holidays configured yet.')+'</div></section>':'')+
+    '<div class="metrics"><div class="metric-card"><span class="muted tiny">Today</span><strong>'+(todayRecord?.checkOut?'Completed':todayRecord?.checkIn?'Checked in':'Not checked in')+'</strong><span class="tiny muted">'+(todayRecord?.checkIn?'Started '+formatTime(todayRecord.checkIn):'Record your start when you begin work')+'</span></div><div class="metric-card"><span class="muted tiny">Days recorded</span><strong>'+mine.filter(a=>a.checkIn).length+'</strong><span class="tiny muted">Recorded workday starts</span></div><div class="metric-card"><span class="muted tiny">Correction requests</span><strong>'+corrections.filter(c=>c.employee===employeeName&&c.status==='Pending').length+'</strong><span class="tiny muted">Your requests awaiting review</span></div></div>'+
+    '<section class="card" style="margin-top:16px"><div class="card-head"><div><h3>Today’s workday</h3><p class="muted tiny">'+today.toLocaleDateString([], {weekday:'long',month:'short',day:'numeric'})+'</p></div><span class="status-pill">'+(todayRecord?.checkOut?'Complete':todayRecord?.checkIn?'In progress':'Not started')+'</span></div><p class="muted">'+(todayRecord?.checkIn?'Checked in at '+formatTime(todayRecord.checkIn)+(todayRecord.checkOut?' · Checked out at '+formatTime(todayRecord.checkOut):' · Remember to check out when you finish.'):'When you start work, record your check-in. This demo does not use GPS or biometrics.')+'</p><div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="attendanceCheckIn" '+(todayRecord?.checkIn?'disabled':'')+'>Check in</button><button class="secondary" id="attendanceCheckOut" '+(!todayRecord?.checkIn||todayRecord?.checkOut?'disabled':'')+'>Check out</button></div></section>'+
+    '<section class="card" style="margin-top:16px"><div class="card-head"><h3>Recent attendance</h3><div class="button-row"><span class="muted tiny">Last 7 records</span><button class="secondary small" id="attendanceCorrectionBtn">Request a correction</button></div></div>'+
+    (latest.length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>Check in</th><th>Check out</th><th>Status</th></tr></thead><tbody>'+latest.map(a=>'<tr><td>'+escapeHTML(a.date)+'</td><td>'+formatTime(a.checkIn)+'</td><td>'+formatTime(a.checkOut)+'</td><td>'+(a.checkOut?'Complete':a.checkIn?'In progress':'Needs review')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted tiny">No attendance recorded yet. Your check-ins will appear here.</p>')+'</section>'+
+    '<section class="card" style="margin-top:16px"><div class="card-head"><h3>Correction requests</h3><span class="muted tiny">'+(canReview?'People Ops review':role==='manager'?'Direct reports':'Your requests')+' · '+pendingCount+' pending</span></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Date</th><th>Requested times</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody>'+
+    (corrections.map(c=>'<tr><td>'+escapeHTML(c.employee)+'</td><td>'+escapeHTML(c.date)+'</td><td>In: '+escapeHTML(c.requestedCheckIn||'—')+'<br>Out: '+escapeHTML(c.requestedCheckOut||'—')+'</td><td>'+escapeHTML(c.reason)+'</td><td>'+escapeHTML(c.status)+'</td><td>'+(canReview&&c.status==='Pending'?'<button class="success small" data-att-approve="'+c.id+'">Approve</button> <button class="danger small" data-att-decline="'+c.id+'">Decline</button>':'—')+'</td></tr>').join('')||'<tr><td colspan="6" class="muted">No correction requests to show.</td></tr>')+'</tbody></table></div><p class="tiny muted">Approval updates the attendance record. Managers can see their direct reports’ requests; only Founder/HR can approve in this demo.</p></section>'+
+    (canSeeTeam?'<section class="card" style="margin-top:16px"><div class="card-head"><h3>Team attendance overview</h3><span class="muted tiny">Today · demo data</span></div><p class="muted tiny">Operational context only. No check-in does not prove someone is absent. Approved leave and holidays should be checked before following up.</p><div class="metrics"><div class="metric-card"><span class="muted tiny">Checked in</span><strong>'+team.filter(a=>a.checkIn).length+'</strong></div><div class="metric-card"><span class="muted tiny">Checked out</span><strong>'+team.filter(a=>a.checkOut).length+'</strong></div><div class="metric-card"><span class="muted tiny">No check-in record</span><strong>'+Math.max(0,state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active'&&(role!=='manager'||managerNames.has(e.name))).length-new Set(team.map(a=>a.employee)).size)+'</strong></div></div></section>':'');
+  const holidayForm=document.getElementById('holidayForm');
+  if(holidayForm)holidayForm.addEventListener('submit',e=>{e.preventDefault();const data=new FormData(holidayForm);const name=String(data.get('name')||'').trim(),date=String(data.get('date')||'');if(!name||!date)return;if(state.companyHolidays.some(h=>h.date===date)){notify('A holiday is already set for that date.');return}state.companyHolidays.push({id:Date.now(),name,date});saveState();renderApp();notify('Company holiday added.');});
   const correctionBtn=document.getElementById('attendanceCorrectionBtn');
   if(correctionBtn)correctionBtn.addEventListener('click',()=>openForm('Request attendance correction',[
     {name:'date',label:'Attendance date',type:'date',required:true,max:dayKey,value:dayKey},
     {name:'requestedCheckIn',label:'Correct check-in time (optional, HH:MM)',type:'text',required:false},
     {name:'requestedCheckOut',label:'Correct check-out time (optional, HH:MM)',type:'text',required:false},
     {name:'reason',label:'Why is a correction needed?',type:'textarea',required:true}
-  ],v=>{
-    const validTime=t=>!t||/^([01]\\d|2[0-3]):[0-5]\\d$/.test(t);
-    const reason=String(v.reason||'').trim();
-    if(!validTime(v.requestedCheckIn)||!validTime(v.requestedCheckOut)){notify('Enter times in 24-hour HH:MM format.');return false}
-    if(!v.requestedCheckIn&&!v.requestedCheckOut){notify('Enter at least one corrected time.');return false}
-    if(reason.length<5){notify('Please add a short reason.');return false}
-    state.attendanceCorrections.unshift({id:Date.now(),employee:employeeName,date:v.date,requestedCheckIn:v.requestedCheckIn||'',requestedCheckOut:v.requestedCheckOut||'',reason,status:'Pending',requestedAt:new Date().toISOString()});
-    saveState();renderApp();notify('Correction request submitted for review.');
-  }));
+  ],v=>{const validTime=t=>!t||/^([01]\\d|2[0-3]):[0-5]\\d$/.test(t);const reason=String(v.reason||'').trim();if(!validTime(v.requestedCheckIn)||!validTime(v.requestedCheckOut)){notify('Enter times in 24-hour HH:MM format.');return false}if(!v.requestedCheckIn&&!v.requestedCheckOut){notify('Enter at least one corrected time.');return false}if(reason.length<5){notify('Please add a short reason.');return false}state.attendanceCorrections.unshift({id:Date.now(),employee:employeeName,date:v.date,requestedCheckIn:v.requestedCheckIn||'',requestedCheckOut:v.requestedCheckOut||'',reason,status:'Pending',requestedAt:new Date().toISOString()});saveState();renderApp();notify('Correction request submitted for review.');}));
+  document.querySelectorAll('[data-att-approve]').forEach(button=>button.addEventListener('click',()=>{const request=state.attendanceCorrections.find(c=>c.id===Number(button.dataset.attApprove));if(!request||request.status!=='Pending')return;let record=state.attendance.find(a=>a.employee===request.employee&&a.date===request.date);if(!record){record={id:Date.now(),employee:request.employee,date:request.date,checkIn:'',checkOut:''};state.attendance.push(record)}const toISO=time=>time?new Date(request.date+'T'+time+':00').toISOString():'';if(request.requestedCheckIn)record.checkIn=toISO(request.requestedCheckIn);if(request.requestedCheckOut)record.checkOut=toISO(request.requestedCheckOut);request.status='Approved';request.reviewedAt=new Date().toISOString();request.reviewer=employeeName;saveState();renderApp();notify('Attendance correction approved.');}));
+  document.querySelectorAll('[data-att-decline]').forEach(button=>button.addEventListener('click',()=>{const request=state.attendanceCorrections.find(c=>c.id===Number(button.dataset.attDecline));if(!request||request.status!=='Pending')return;request.status='Declined';request.reviewedAt=new Date().toISOString();request.reviewer=employeeName;saveState();renderApp();notify('Correction request declined.');}));
   const checkIn=document.getElementById('attendanceCheckIn');
   const checkOut=document.getElementById('attendanceCheckOut');
-  if(checkIn)checkIn.addEventListener('click',()=>{
-    state.attendance=Array.isArray(state.attendance)?state.attendance:[];
-    const existing=state.attendance.find(a=>a.employee===employeeName&&a.date===dayKey);
-    if(existing?.checkIn){notify('You are already checked in for today.');return;}
-    if(existing){existing.checkIn=new Date().toISOString();existing.checkOut='';}
-    else state.attendance.push({id:Date.now(),employee:employeeName,date:dayKey,checkIn:new Date().toISOString(),checkOut:''});
-    saveState();renderApp();notify('Checked in. Have a good workday!');
-  });
-  if(checkOut)checkOut.addEventListener('click',()=>{
-    const record=(state.attendance||[]).find(a=>a.employee===employeeName&&a.date===dayKey);
-    if(!record?.checkIn||record.checkOut){notify('No active check-in to close.');return;}
-    record.checkOut=new Date().toISOString();saveState();renderApp();notify('Checked out. Your attendance record is saved in this browser.');
-  });
+  if(checkIn)checkIn.addEventListener('click',()=>{state.attendance=Array.isArray(state.attendance)?state.attendance:[];const existing=state.attendance.find(a=>a.employee===employeeName&&a.date===dayKey);if(existing?.checkIn){notify('You are already checked in for today.');return}if(existing){existing.checkIn=new Date().toISOString();existing.checkOut=''}else state.attendance.push({id:Date.now(),employee:employeeName,date:dayKey,checkIn:new Date().toISOString(),checkOut:''});saveState();renderApp();notify('Checked in. Have a good workday!');});
+  if(checkOut)checkOut.addEventListener('click',()=>{const record=(state.attendance||[]).find(a=>a.employee===employeeName&&a.date===dayKey);if(!record?.checkIn||record.checkOut){notify('No active check-in to close.');return}record.checkOut=new Date().toISOString();saveState();renderApp();notify('Checked out. Record saved in this browser.');});
 }
 
 function renderLeaves(el,role){
