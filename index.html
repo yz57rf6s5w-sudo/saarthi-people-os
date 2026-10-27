@@ -1066,12 +1066,13 @@ function openAi(){
   function reply(q){
     const lower=q.toLowerCase();
     let answer='I can guide you on leave, expenses, onboarding, ESOPs, compliance, or helpdesk. Confirm company-specific rules with your People team.';
-    if(lower.includes('leave'))answer='Open Leave Management and choose “Apply leave”. Supported types include Casual, Sick, Earned, Unpaid. Maternity/Paternity eligibility should be confirmed with HR and policy.';
+    if(lower.includes('policy')||lower.includes('compliance')||lower.includes('posh')||lower.includes('pf')){const approved=(state.policyDocuments||[]).filter(d=>d.status==='Published');answer=approved.length?'I can see '+approved.length+' published workplace '+(approved.length===1?'policy':'policies')+' in this workspace. Open Policy Documents and search the topic; follow the approved wording and effective date. If it does not answer your situation, ask HR. I will not infer eligibility or claim legal compliance from a policy title alone.':'I can’t find a published policy in this demo to support a reliable answer. Open Policy Documents or ask HR for the current approved rule. Don’t rely on an unreviewed draft for a decision. Legal obligations depend on your organisation and circumstances.';}
+    else if(lower.includes('helpdesk')||lower.includes('ticket'))answer='Open Helpdesk Tickets, raise a ticket, and Founder/HR roles can mark it resolved.';
+    else if(lower.includes('leave'))answer='Open Leave Management and choose “Apply leave”. Supported types include Casual, Sick, Earned, Unpaid. Maternity/Paternity eligibility should be confirmed with HR and policy.';
     else if(lower.includes('expense')||lower.includes('reimburse')||lower.includes('claim'))answer='Open Reimbursements and select “New claim”. Add category, amount and description. The demo stores it locally.';
     else if(lower.includes('onboard'))answer='Open Onboarding Engine to review the sample checklist. Mark steps done to update progress.';
     else if(lower.includes('esop')||lower.includes('equity'))answer='ESOPs need clear eligibility, vesting, exercise, dilution and tax documentation. Have the plan reviewed by legal and tax professionals.';
-    else if(lower.includes('policy')||lower.includes('compliance')||lower.includes('posh')||lower.includes('pf')){const approved=(state.policyDocuments||[]).filter(d=>d.status==='Published');answer=approved.length?'I can see '+approved.length+' published workplace '+(approved.length===1?'policy':'policies')+' in this workspace. Open Policy Documents and search the topic; follow the approved wording and effective date. If it does not answer your situation, ask HR. I will not infer eligibility or claim legal compliance from a policy title alone.':'I can’t find a published policy in this demo to support a reliable answer. Open Policy Documents or ask HR for the current approved rule. Don’t rely on an unreviewed draft for a decision. Legal obligations depend on your organisation and circumstances.';}
-    else if(lower.includes('helpdesk')||lower.includes('ticket'))answer='Open Helpdesk Tickets, raise a ticket, and Founder/HR roles can mark it resolved.';
+
     setTimeout(()=>addBubble('bot',answer),150);
   }
   $('chatSend').onclick=()=>{const q=$('chatInput').value.trim();if(!q)return;addBubble('user',q);$('chatInput').value='';reply(q)};
