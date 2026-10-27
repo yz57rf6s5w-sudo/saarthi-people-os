@@ -1038,7 +1038,7 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.locator('#modalContent [name="effectiveDate"]').fill('2026-11-01');
   await page.locator('#modalContent [name="summary"]').fill('Submit leave requests in advance and confirm team coverage with your manager.');
   await page.locator('#modalOk').click();
-  await expect(page.locator('#mainContent')).toContainText('Policy saved as draft');
+  await expect(page.locator('#toast')).toContainText('Policy saved as draft');
   await page.locator('#mainContent').getByRole('button', { name: 'Publish' }).click();
   await expect(page.locator('#mainContent')).toContainText('1 published policy');
   await page.locator('#aiOpen').click();
