@@ -1093,16 +1093,16 @@ function renderHelpdesk(el,role){
   const canResolve=['founder','hr'].includes(role);
   const ownOnly=['employee','manager','candidate'].includes(role);
   const visibleTickets=state.tickets.filter(t=>!ownOnly||t.user===state.displayName);
-  el.innerHTML=pageHead(role==='employee'?'HR Helpdesk':role==='manager'?'Team Helpdesk':role==='candidate'?'Candidate Support':'Helpdesk','Raise and track requests. Only People Ops and founders can resolve tickets.',`<button class="primary" id="raiseTicket">+ Raise ticket</button>`)+
+  el.innerHTML=pageHead(role==='employee'?'My support requests':role==='manager'?'Team support':'Helpdesk','Get help without chasing updates. You can see your own requests; only People Ops and founders can resolve them.',`<button class="primary" id="raiseTicket">+ Ask Saarthi for help</button>`)+
   `<div class="metrics">
-    <div class="card metric"><strong>${visibleTickets.length}</strong><span>My visible tickets</span></div>
+    <div class="card metric"><strong>${visibleTickets.length}</strong><span>${ownOnly?"My requests":"Visible requests"}</span></div>
     <div class="card metric"><strong>${visibleTickets.filter(t=>t.status==='Open').length}</strong><span>Open</span></div>
     <div class="card metric"><strong>${visibleTickets.filter(t=>t.status==='Resolved').length}</strong><span>Resolved</span></div>
   </div><div class="card table-card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Raised</th><th>Action</th></tr></thead><tbody>${visibleTickets.map(t=>`<tr><td>${escapeHTML(t.user)}</td><td>${escapeHTML(t.subject)}</td><td><span class="pill ${String(t.priority||'Medium').toLowerCase()}">${escapeHTML(t.priority||'Medium')}</span></td><td><span class="pill ${String(t.status||'Open').toLowerCase()}">${escapeHTML(t.status||'Open')}${t.resolvedAt?` · ${escapeHTML(new Date(t.resolvedAt).toLocaleDateString())}`:''}</span>${t.resolvedBy?`<div class="tiny muted">Resolved by ${escapeHTML(t.resolvedBy)}</div>`:''}</td><td>${t.createdAt?`<time datetime="${escapeHTML(t.createdAt)}" title="${escapeHTML(t.createdAt)}">${escapeHTML(new Date(t.createdAt).toLocaleString())}</time>`:'—'}</td><td>${t.status==='Open'&&canResolve?`<button class="success small" data-resolve="${t.id}">Resolve</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No tickets yet. Raise a ticket if you need help.</td></tr>'}</tbody></table></div></div>`;
-  $('raiseTicket').addEventListener('click',()=>openForm('Raise ticket',[
-    {name:'subject',label:'Subject',type:'text',required:true},
+  $('raiseTicket').addEventListener('click',()=>openForm('Ask for help',[
+    {name:'subject',label:'What do you need help with?',type:'text',required:true},
     {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
-  ],v=>{const subject=String(v.subject||'').trim();if(subject.length<4){notify('Enter a ticket subject with at least 4 characters.');return}if(subject.length>120){notify('Keep the ticket subject to 120 characters or fewer.');return}state.tickets.unshift({id:Date.now(),user:state.displayName,subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});saveState();renderApp();notify('Ticket raised')}));
+  ],v=>{const subject=String(v.subject||'').trim();if(subject.length<4){notify('Enter a ticket subject with at least 4 characters.');return}if(subject.length>120){notify('Keep the ticket subject to 120 characters or fewer.');return}state.tickets.unshift({id:Date.now(),user:state.displayName,subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});saveState();renderApp();notify('Support request saved in this demo')}));
   el.querySelectorAll('[data-resolve]').forEach(b=>b.addEventListener('click',()=>{const t=state.tickets.find(x=>x.id===Number(b.dataset.resolve));if(t){t.status='Resolved';t.resolvedBy=role;t.resolvedAt=new Date().toISOString();saveState();renderApp();notify('Ticket resolved')}}));
 }
 
