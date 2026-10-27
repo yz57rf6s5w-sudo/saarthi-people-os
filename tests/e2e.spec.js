@@ -206,7 +206,7 @@ test('onboarding steps can be searched and filtered without losing actions', asy
   })));
   await login(page, 'hr', 'Onboarding Filter QA');
   await page.getByRole('button', { name: /Onboarding/ }).click();
-  await expect(page.locator('#onboardingResultCount')).toContainText('3 of 3');
+  await expect(page.locator('#onboardingResultCount')).toHaveText('3 steps');
   await page.locator('#onboardingSearch').fill('IT QA');
   await expect(page.locator('.onboard-step:visible')).toHaveCount(1);
   await expect(page.locator('.onboard-step:visible')).toContainText('Provision laptop access');
