@@ -175,6 +175,26 @@ test('onboarding remains usable on a narrow mobile viewport', async ({ page }) =
   expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport + 1);
 });
 
+test('onboarding dependency loop validation keeps the edit form open', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    onboarding: [
+      { id: 901, title: 'Verify signed documents', detail: 'HR verifies all signed documents', status: 'In Progress', owner: 'HR', dueDate: '2026-10-01' },
+      { id: 902, title: 'Provision system access', detail: 'IT provisions required accounts', status: 'In Progress', owner: 'IT', dueDate: '2026-10-02', dependsOn: 901 }
+    ]
+  })));
+  await login(page, 'hr', 'Dependency Loop QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  const firstStep = page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' });
+  await firstStep.getByRole('button', { name: 'Edit' }).click();
+  await page.locator('#field-dependsOn').selectOption({ label: 'Provision system access — IT · In Progress (ID 902)' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('dependency loop');
+  await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#field-dependsOn')).toHaveValue('Provision system access — IT · In Progress (ID 902)');
+  await page.locator('#modalCancel').click();
+  await expect(page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' })).toContainText('In Progress');
+});
+
 test('onboarding shows the root owner when a task is blocked by a chain of prerequisites', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
     onboarding: [
