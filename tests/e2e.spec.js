@@ -891,6 +891,9 @@ test('manager sees team leave history and availability before approving leave', 
   await expect(page.locator('#teamImpactDate')).toHaveValue('2026-10-27'); // defaults to the first pending request's start date
   await expect(page.locator('#teamLeaveInsights')).toContainText('Leave taken by each team member');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('Open work items');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Delivery / performance context');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('1/1 projects complete');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('No individual delivery data');
   await expect(page.locator('#teamLeaveInsights')).toContainText('Asha Team QA');
   await expect(page.locator('#teamLeaveInsights')).toContainText('Ravi Team QA');
   await expect(page.locator('#teamLeaveInsights')).toContainText('Mina Team QA');
