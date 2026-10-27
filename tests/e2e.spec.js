@@ -205,8 +205,8 @@ test('onboarding dependency loop validation keeps the edit form open', async ({ 
   })));
   await login(page, 'hr', 'Dependency Loop QA');
   await page.getByRole('button', { name: /Onboarding/ }).click();
-  const firstStep = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Edit' }) }).filter({ hasText: 'Verify signed documents' });
-  await firstStep.getByRole('button', { name: 'Edit' }).click();
+  const firstStep = page.locator('.onboard-step').filter({ has: page.locator('[data-edit-step="901"]') });
+  await firstStep.locator('[data-edit-step="901"]').click();
   await page.locator('#field-dependsOn').selectOption({ label: 'Provision system access — IT · In Progress (ID 902)' });
   await page.locator('#modalOk').click();
   await expect(page.locator('#toast')).toContainText('dependency loop');
