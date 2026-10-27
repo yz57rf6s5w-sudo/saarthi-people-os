@@ -586,24 +586,49 @@ function renderDashboard(el,role){
   const openT=state.tickets.filter(t=>t.status==='Open').length;
   const totalLeaveDays=state.leaves.reduce((sum,l)=>sum+Number(l.days||0),0);
   const totalExp=state.reimbursements.reduce((sum,r)=>sum+Number(r.amount||0),0);
-  const isFounder=role==='founder';
-  const settings=state.companySettings||{};
-  const companyName=settings.name||'your startup';
   const onboardingDone=state.onboarding.filter(item=>item.status==='Done').length;
   const onboardingPct=state.onboarding.length?Math.round(onboardingDone/state.onboarding.length*100):0;
   const setupDone=Boolean(settings.setupCompleted);
   const setupProgress=settings.setupProgress||{};
   const setupCount=(setupDone?1:0)+(setupProgress.teamImported?1:0)+(setupProgress.directoryReviewed?1:0);
   const setupPercent=Math.round(setupCount/3*100);
-  const metrics=`<div class="metrics">
-    <div class="card metric"><strong>${state.employees.length}</strong><span>Team members</span></div>
-    <div class="card metric"><strong>${activeEmployees}</strong><span>Active team members</span></div>
-    <div class="card metric"><strong>${pendingL}</strong><span>Leave requests to review</span></div>
-    <div class="card metric"><strong>${pendingR}</strong><span>Expense claims to review</span></div>
-    <div class="card metric"><strong>${openT}</strong><span>Open helpdesk tickets</span></div>
-    <div class="card metric"><strong>${totalLeaveDays}</strong><span>Leave days · sample data</span></div>
-    <div class="card metric"><strong>₹${totalExp.toLocaleString('en-IN')}</strong><span>Claims total · sample data</span></div>
-  </div>`;
+  const isFounder=role==='founder';
+  const settings=state.companySettings||{};
+  const companyName=settings.name||'your startup';
+  const ownName=String(state.displayName||'').trim().toLowerCase();
+  const ownLeaves=state.leaves.filter(l=>String(l.employee||'').trim().toLowerCase()===ownName);
+  const ownExpenses=state.reimbursements.filter(r=>String(r.employee||'').trim().toLowerCase()===ownName);
+  const ownOnboarding=state.onboarding.filter(x=>String(x.owner||'').toLowerCase().includes(ownName)||String(x.employee||'').trim().toLowerCase()===ownName);
+  const ownCareerPlan=(state.careerPlans||[]).find(p=>String(p.employee||'').trim().toLowerCase()===ownName);
+  const teamEmployees=state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===ownName);
+  const teamActive=teamEmployees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
+  const teamPendingLeaves=state.leaves.filter(l=>l.status==='Pending'&&directReportNames.has(l.employee));
+  const teamPendingExpenses=state.reimbursements.filter(r=>r.status==='Pending'&&directReportNames.has(r.employee));
+  let metrics='';
+  if(role==='hr'){
+    metrics=`<div class="metrics">
+      <div class="card metric"><strong>${activeEmployees}</strong><span>Active headcount</span></div>
+      <div class="card metric"><strong>${pendingL}</strong><span>Leave requests to review</span></div>
+      <div class="card metric"><strong>${pendingR}</strong><span>Expense claims to review</span></div>
+      <div class="card metric"><strong>${state.onboarding.filter(x=>x.status!=='Done').length}</strong><span>Onboarding steps in progress</span></div>
+      <div class="card metric"><strong>${openT}</strong><span>Open employee support tickets</span></div>
+    </div>`;
+  } else if(role==='manager'){
+    metrics=`<div class="metrics">
+      <div class="card metric"><strong>${teamActive}</strong><span>Active direct reports</span></div>
+      <div class="card metric"><strong>${teamPendingLeaves.length}</strong><span>Team leave requests to review</span></div>
+      <div class="card metric"><strong>${teamPendingExpenses.length}</strong><span>Team expense claims to review</span></div>
+      <div class="card metric"><strong>${state.onboarding.filter(x=>x.status!=='Done'&&teamEmployees.some(e=>String(x.owner||'').toLowerCase().includes(String(e.name||'').toLowerCase()))).length}</strong><span>Team onboarding tasks open</span></div>
+    </div>`;
+  } else if(role==='employee'){
+    metrics=`<div class="metrics">
+      <div class="card metric"><strong>${ownLeaves.filter(l=>l.status==='Pending').length}</strong><span>My leave requests pending</span></div>
+      <div class="card metric"><strong>${ownLeaves.filter(l=>l.status==='Approved').reduce((n,l)=>n+Math.max(0,Number(l.days)||0),0)}</strong><span>Approved leave days</span></div>
+      <div class="card metric"><strong>${ownExpenses.filter(r=>r.status==='Pending').length}</strong><span>My expense claims pending</span></div>
+      <div class="card metric"><strong>${ownOnboarding.filter(x=>x.status!=='Done').length}</strong><span>My onboarding tasks left</span></div>
+      <div class="card metric"><strong>${ownCareerPlan?escapeHTML(ownCareerPlan.progress||'Started'):'Not set up'}</strong><span>My career plan</span></div>
+    </div>`;
+  }
   if(isFounder){
     el.innerHTML=pageHead('Founder overview','A clear starting point for your people operations.')+
     `<section class="founder-hero">
@@ -644,9 +669,27 @@ function renderDashboard(el,role){
     }));
     return;
   }
-  el.innerHTML=pageHead(role==='hr'?'People Ops Hub':role==='manager'?'Team Dashboard':role==='candidate'?'Candidate Overview':'My Workspace','Snapshot of people operations.')+
+  if(role==='candidate'){
+    el.innerHTML=pageHead('Your candidate journey','A simple place to follow next steps and get help from the recruiting team.')+
+      `<section class="founder-hero"><div class="founder-hero-copy"><span class="founder-kicker">CANDIDATE PORTAL</span><h2>Your next chapter starts here.</h2><p>This demo shows an illustrative application journey. Your recruiter will confirm real interview details and decisions.</p><div class="founder-hero-actions"><button class="hero-primary" id="candidateJourneySupport">Ask recruiting a question</button><button class="hero-secondary" data-candidate-action="helpdesk">View support</button></div></div><div class="founder-hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">✦</div><div class="orbit-chip chip-one">Apply</div><div class="orbit-chip chip-two">Connect</div><div class="orbit-chip chip-three">Grow</div></div></section>
+      <div class="card"><span class="founder-kicker">CURRENT STAGE · DEMO</span><h3>Interview scheduled</h3><p class="muted">Recruiter coordination is the next step. This is sample data only and is not connected to an applicant tracking system.</p><div class="progress"><span style="width:50%"></span></div><p class="tiny muted">Application received → Interview coordination → Outcome shared</p></div>`;
+    $('candidateJourneySupport').addEventListener('click',()=>{currentTab='helpdesk';renderApp()});
+    el.querySelector('[data-candidate-action="helpdesk"]').addEventListener('click',()=>{currentTab='helpdesk';renderApp()});
+    return;
+  }
+  if(role==='employee'){
+    el.innerHTML=pageHead('My Workspace','Your tasks, time off and growth—without the company-wide noise.')+
+      `<section class="founder-hero"><div class="founder-hero-copy"><span class="founder-kicker">YOUR PEOPLE WORKSPACE</span><h2>Make progress at your pace.</h2><p>Keep track of your own requests, onboarding actions and learning goals in one place.</p><div class="founder-hero-actions"><button class="hero-primary" data-personal-action="leaves">Request time off</button><button class="hero-secondary" data-personal-action="career">View career plan</button></div></div><div class="founder-hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">S</div><div class="orbit-chip chip-one">You</div><div class="orbit-chip chip-two">Goals</div><div class="orbit-chip chip-three">Growth</div></div></section>`+
+      metrics+`<section class="founder-quick-grid"><button class="card founder-quick-card" data-personal-action="leaves"><span class="quick-symbol quick-blue">◷</span><strong>My leave</strong><small>Request time off and track approvals</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-personal-action="reimbursements"><span class="quick-symbol quick-green">₹</span><strong>My expenses</strong><small>Submit and follow claims</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-personal-action="onboarding"><span class="quick-symbol quick-lilac">✓</span><strong>My onboarding</strong><small>See what remains and what is blocked</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-personal-action="helpdesk"><span class="quick-symbol quick-amber">?</span><strong>Ask Saarthi</strong><small>Get help with a people question</small><span class="quick-arrow">↗</span></button></section>`;
+    el.querySelectorAll('[data-personal-action]').forEach(button=>button.addEventListener('click',()=>{currentTab=button.dataset.personalAction;renderApp()}));
+    return;
+  }
+  el.innerHTML=pageHead('People Ops Hub','Keep employee lifecycle work, approvals and support moving.')+
   metrics+
-  (['hr','manager'].includes(role)?`<div class="card"><h3 style="margin:0 0 10px">Pending approvals</h3>${pendingL+pendingR===0?'<p class="muted">All clear — no approvals waiting for your team.</p>':pendingLeaveRows.map(l=>`<div class="tiny" style="margin:4px 0">Leave: ${escapeHTML(l.employee)} · ${l.days}d · ${escapeHTML(l.type)}</div>`).join('')+pendingExpenseRows.map(r=>`<div class="tiny" style="margin:4px 0">Claim: ${escapeHTML(r.employee)} · ₹${r.amount} · ${escapeHTML(r.category)}</div>`).join('')}</div>`:'');
+  (role==='hr'? `<div class="founder-quick-grid"><button class="card founder-quick-card" data-hr-action="onboarding"><span class="quick-symbol quick-blue">✓</span><strong>Onboarding operations</strong><small>Review owners, dependencies and blockers</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-hr-action="directory"><span class="quick-symbol quick-lilac">♧</span><strong>People directory</strong><small>Maintain employee records and reporting lines</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-hr-action="helpdesk"><span class="quick-symbol quick-green">?</span><strong>Employee support</strong><small>Work through open helpdesk tickets</small><span class="quick-arrow">↗</span></button></div>`:
+  role==='manager'? `<div class="card"><h3 style="margin:0 0 10px">Your team’s approvals</h3><p class="muted tiny">Only requests from your direct reports are shown here.</p>${teamPendingLeaves.length+teamPendingExpenses.length===0?'<p class="muted">No team approvals are waiting.</p>':teamPendingLeaves.map(l=>`<div class="tiny" style="margin:4px 0">Leave: ${escapeHTML(l.employee)} · ${l.days}d · ${escapeHTML(l.type)}</div>`).join('')+teamPendingExpenses.map(r=>`<div class="tiny" style="margin:4px 0">Claim: ${escapeHTML(r.employee)} · ₹${r.amount} · ${escapeHTML(r.category)}</div>`).join('')}</div><div class="founder-quick-grid"><button class="card founder-quick-card" data-manager-action="leaves"><span class="quick-symbol quick-blue">◷</span><strong>Team availability</strong><small>Review leave history and coverage before approving</small><span class="quick-arrow">↗</span></button><button class="card founder-quick-card" data-manager-action="projects"><span class="quick-symbol quick-lilac">🎯</span><strong>Team goals & workload</strong><small>Review OKRs and owned work</small><span class="quick-arrow">↗</span></button></div>`:'');
+  el.querySelectorAll('[data-hr-action]').forEach(button=>button.addEventListener('click',()=>{currentTab=button.dataset.hrAction;renderApp()}));
+  el.querySelectorAll('[data-manager-action]').forEach(button=>button.addEventListener('click',()=>{currentTab=button.dataset.managerAction;renderApp()}));
 }
 
 function renderPlaybook(el){
