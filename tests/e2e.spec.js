@@ -727,6 +727,40 @@ test('leave search finds requests by reason and status', async ({ page }) => {
   await expect(rows.first()).toContainText('No requests');
 });
 
+test('manager sees team leave history and availability before approving leave', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    employees: [
+      { id: 941, name: 'Asha Team QA', role: 'Designer', manager: 'Manager Leave QA', status: 'Active' },
+      { id: 942, name: 'Ravi Team QA', role: 'Engineer', manager: 'Manager Leave QA', status: 'Active' },
+      { id: 943, name: 'Mina Team QA', role: 'Analyst', manager: 'Manager Leave QA', status: 'Active' },
+      { id: 944, name: 'Other Team QA', role: 'Engineer', manager: 'Different Manager', status: 'Active' }
+    ],
+    leaves: [
+      { id: 941, employee: 'Asha Team QA', type: 'Casual Leave', days: 2, date: '2026-10-28', reason: 'Personal work', status: 'Approved', approver: 'hr' },
+      { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 1, date: '2026-10-28', reason: 'Medical appointment', status: 'Pending', approver: '' },
+      { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
+      { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
+    ]
+  })));
+  await login(page, 'manager', 'Manager Leave QA');
+  await page.getByRole('button', { name: /Leave/ }).click();
+  await expect(page.locator('#teamLeaveInsights')).toBeVisible();
+  await expect(page.locator('#teamLeaveInsights')).toContainText('Leave taken by each team member');
+  await expect(page.locator('#teamLeaveInsights')).toContainText('Asha Team QA');
+  await expect(page.locator('#teamLeaveInsights')).toContainText('Ravi Team QA');
+  await expect(page.locator('#teamLeaveInsights')).toContainText('Mina Team QA');
+  await expect(page.locator('#teamLeaveInsights')).not.toContainText('Other Team QA');
+  await page.locator('#teamImpactDate').fill('2026-10-28');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('2 / 3');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('1');
+  const pendingRow = page.locator('#leaveTable tbody tr').filter({ hasText: 'Ravi Team QA' });
+  await expect(pendingRow).toContainText('Pending');
+  await pendingRow.getByRole('button', { name: 'Approve' }).click();
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('1 / 3');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Pending on date');
+  await expect(page.locator('#leaveTable tbody tr').filter({ hasText: 'Ravi Team QA' })).toContainText('Approved');
+});
+
 test('employee can create, customize and retain a career learning plan', async ({ page }) => {
   test.setTimeout(60000);
   await login(page, 'employee', 'Career Plan QA');
