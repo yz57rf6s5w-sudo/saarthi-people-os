@@ -510,6 +510,41 @@ test('employee cannot resolve helpdesk tickets but HR can resolve them', async (
 });
 
 
+test('candidate support rejects vague or oversized subjects without losing input', async ({ page }) => {
+  await login(page, 'candidate', 'Candidate Support QA');
+  await page.getByRole('button', { name: /Application Status/ }).click();
+  await page.getByRole('button', { name: /Contact candidate support/ }).click();
+  const subject = page.locator('#modalContent [name="subject"]');
+  await subject.fill('  hi  ');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('at least 4 characters');
+  await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
+  await expect(subject).toHaveValue('  hi  ');
+  await subject.fill('x'.repeat(121));
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('120 characters or fewer');
+  await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
+  await expect(subject).toHaveValue('x'.repeat(121));
+  await page.locator('#modalCancel').click();
+  await expect(page.locator('#modalBg')).toHaveClass(/hidden/);
+});
+
+test('candidate support trims valid requests and records creation time', async ({ page }) => {
+  await login(page, 'candidate', 'Candidate Support Valid QA');
+  await page.getByRole('button', { name: /Application Status/ }).click();
+  await page.getByRole('button', { name: /Contact candidate support/ }).click();
+  await page.locator('#modalContent [name="subject"]').fill('  Interview schedule clarification  ');
+  await page.locator('#modalContent [name="priority"]').selectOption({ label: 'High' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Candidate: Interview schedule clarification');
+  await expect(page.locator('#mainContent')).toContainText('Open');
+  await expect(page.locator('#toast')).toContainText('Support request submitted');
+  await page.reload();
+  await login(page, 'candidate', 'Candidate Support Valid QA');
+  await page.getByRole('button', { name: /HR Helpdesk/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Candidate: Interview schedule clarification');
+});
+
 test('project OKRs can be created and key-result progress persists after reload', async ({ page }) => {
   await login(page, 'founder', 'Project OKR QA');
   await page.getByRole('button', { name: /Project & OKR Tracking/ }).click();
