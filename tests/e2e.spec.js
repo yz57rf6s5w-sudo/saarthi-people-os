@@ -1047,7 +1047,10 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.getByRole('button', { name: /Add policy/ }).click();
   await page.locator('#modalContent [name="title"]').fill('QA Leave Guidance');
   await page.locator('#modalContent [name="category"]').fill('Leave');
+  await page.locator('#modalContent [name="owner"]').fill('People Ops');
+  await page.locator('#modalContent [name="version"]').fill('1.0');
   await page.locator('#modalContent [name="effectiveDate"]').fill('2026-11-01');
+  await page.locator('#modalContent [name="reviewDate"]').fill('2027-05-01');
   await page.locator('#modalContent [name="summary"]').fill('Submit leave requests in advance and confirm team coverage with your manager.');
   await page.locator('#modalOk').click();
   await expect(page.locator('#toast')).toContainText('Policy saved as draft');
