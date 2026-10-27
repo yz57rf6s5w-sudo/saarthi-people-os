@@ -959,3 +959,17 @@ test('founder can customize career skill areas and time horizons', async ({ page
   await expect(page.locator('#modalContent [name="skillArea"]')).toContainText('Systems thinking');
   await expect(page.locator('#modalContent [name="horizon"]')).toContainText('4 months');
 });
+
+
+test('Saarthi Copilot preview offers role-aware guidance without external AI calls', async ({ page }) => {
+  await login(page, 'manager', 'Copilot QA Manager');
+  await expect(page.locator('#mainContent')).toContainText('SAARTHI COPILOT');
+  await page.getByRole('button', { name: 'Summarize my pending approvals' }).click();
+  await expect(page.locator('#saarthiAiAnswer')).toContainText(/pending approval item|no pending approval/i);
+  await page.locator('#saarthiAiQuestion').fill('What should I check before approving leave?');
+  await page.getByRole('button', { name: 'Get guidance' }).click();
+  await expect(page.locator('#saarthiAiAnswer')).toContainText('team coverage');
+  await page.locator('#roleSelector').selectOption('employee');
+  await expect(page.locator('#mainContent')).toContainText('SAARTHI COPILOT');
+  await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+});
