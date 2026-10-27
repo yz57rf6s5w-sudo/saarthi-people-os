@@ -169,7 +169,7 @@ test('manager sidebar summary only counts direct reports and their approvals', a
   })));
   await login(page, 'manager', 'Manager Summary QA');
   await expect(page.locator('#sidebarSummary')).toContainText('1 active direct reports');
-  await expect(page.locator('#sidebarSummary')).toContainText('1 leave · 1 expense pending');
+  await expect(page.locator('#sidebarSummary')).toContainText('1 team leave · 1 team expenses pending');
   await expect(page.locator('#sidebarSummary')).not.toContainText('2 leave');
 });
 
