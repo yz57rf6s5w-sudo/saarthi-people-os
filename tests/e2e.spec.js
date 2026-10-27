@@ -128,7 +128,6 @@ test('founder can restore a valid Saarthi backup', async ({ page }) => {
 });
 test('HR can mark an onboarding step done and retain progress', async ({ page }) => {
   await login(page, 'hr', 'Onboarding QA');
-  await page.locator('#menuToggle').click();
   await page.getByRole('button', { name: /Onboarding/ }).click();
   const step = page.locator('.onboard-step').filter({ hasText: 'First feature commit' });
   await expect(step).toContainText('In Progress');
@@ -164,6 +163,7 @@ test('team directory empty state spans the correct table columns', async ({ page
 test('onboarding remains usable on a narrow mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 'hr', 'Mobile Onboarding QA');
+  await page.locator('#menuToggle').click();
   await page.getByRole('button', { name: /Onboarding/ }).click();
   await expect(page.locator('#mainContent')).toContainText('New-joiner readiness');
   await expect(page.locator('#addOnboardingStep')).toBeVisible();
