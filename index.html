@@ -226,6 +226,34 @@ button:not(:disabled):active{transform:translateY(1px)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 @media(max-width:560px){.layout{padding:12px;gap:12px}.metrics{gap:8px}.metrics .metric{padding:12px}.card{padding:14px}.page-head{margin-bottom:13px}}
 
+
+/* Unified module experience: consistent orientation, scannable actions, accessible focus */
+.module-page-head{position:relative;gap:18px;padding:3px 1px 17px;margin-bottom:19px;border-bottom:1px solid #e7ebf3}
+.module-heading-copy{min-width:0;flex:1}
+.module-kicker{display:flex;align-items:center;gap:7px;margin-bottom:7px;color:#737b95;font-size:9px;font-weight:850;letter-spacing:.14em}
+.module-kicker-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a78bfa);box-shadow:0 0 0 3px #eef2ff}
+.module-page-head .section-title{margin:0;color:#17213a}
+.module-page-head .muted{max-width:72ch;font-size:12px;line-height:1.65}
+.module-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.module-heading-actions button{white-space:nowrap}
+#mainContent{min-width:0}
+#mainContent .card h3{line-height:1.35}
+#mainContent .card p{overflow-wrap:anywhere}
+#mainContent button:focus-visible,#mainContent a:focus-visible{outline:3px solid #c7d2fe;outline-offset:3px}
+#mainContent .filter-bar{flex-wrap:wrap}
+#mainContent .filter-bar input{min-width:140px}
+#mainContent .table-wrap{border-radius:inherit}
+#mainContent .card+ .card{margin-top:12px}
+@media(max-width:700px){
+ .module-page-head{align-items:stretch;flex-direction:column;gap:12px;padding-bottom:14px}
+ .module-heading-actions{justify-content:flex-start}
+ .module-heading-actions button{flex:0 0 auto}
+}
+@media(max-width:420px){
+ .module-heading-actions{display:grid;grid-template-columns:1fr;width:100%}
+ .module-heading-actions button{width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -366,7 +394,7 @@ const roles={
 };
 function notify(msg){const t=$('toast');t.textContent=msg;t.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.opacity=0,2400)}
 function escapeHTML(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'}[c]))}
-function pageHead(title,sub,extra=''){return `<div class="page-head"><div><h2 class="section-title">${title}</h2><p class="muted tiny">${sub}</p></div>${extra}</div>`}
+function pageHead(title,sub,extra=''){return `<div class="page-head module-page-head"><div class="module-heading-copy"><div class="module-kicker"><span class="module-kicker-dot"></span> SAARTHI WORKSPACE</div><h2 class="section-title">${title}</h2><p class="muted tiny">${sub}</p></div>${extra?`<div class="module-heading-actions">${extra}</div>`:''}</div>`}
 
 function openWorkspaceSetup(){
   const settings=state.companySettings||{};
