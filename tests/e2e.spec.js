@@ -969,6 +969,9 @@ test('Saarthi Copilot preview offers role-aware guidance without external AI cal
   await page.locator('#saarthiAiQuestion').fill('What should I check before approving leave?');
   await page.getByRole('button', { name: 'Get guidance' }).click();
   await expect(page.locator('#saarthiAiAnswer')).toContainText('team coverage');
+  // Onboarding blocker discovery is an HR/founder workspace prompt, not a manager-wide prompt.
+  await page.locator('#roleSelector').selectOption('founder');
+  await expect(page.locator('#mainContent')).toContainText('SAARTHI COPILOT');
   await page.getByRole('button', { name: 'Find onboarding blockers' }).click();
   await expect(page.locator('#saarthiAiAnswer')).toContainText(/onboarding step|onboarding steps/i);
   await page.locator('#roleSelector').selectOption('employee');
