@@ -1155,3 +1155,13 @@ test('Saarthi guide shows proactive next actions for each role', async ({ page }
   await page.getByRole('button', { name: /Saarthi Guide/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Review people budget');
 });
+
+test('Saarthi guide explains live demo signals and links to review context', async ({ page }) => {
+  await login(page, 'employee', 'Signals QA');
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('What may need attention');
+  await expect(page.locator('#mainContent')).toContainText('Your pending leave requests');
+  await expect(page.locator('#mainContent')).toContainText('Counts are calculated from the current demo data');
+  await page.getByRole('button', { name: /Your pending leave requests/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Leave');
+});
