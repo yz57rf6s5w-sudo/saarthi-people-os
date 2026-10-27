@@ -58,7 +58,7 @@ test('employee can submit a leave request and see it in the list', async ({ page
 test('candidate can create a support ticket', async ({ page }) => {
   await login(page, 'candidate', 'Candidate QA');
   await page.getByRole('button', { name: /Candidate Support/ }).click();
-  await page.getByRole('button', { name: /Raise ticket/ }).click();
+  await page.getByRole('button', { name: /Ask Saarthi for help/ }).click();
   await page.locator('#modalContent [name="subject"]').fill('Automated candidate support test');
   await page.locator('#modalContent [name="priority"]').selectOption({ label: 'High' });
   await page.locator('#modalOk').click();
@@ -68,7 +68,7 @@ test('candidate can create a support ticket', async ({ page }) => {
 test('employee helpdesk is scoped to the signed-in user', async ({ page }) => {
   await login(page, 'employee', 'Private QA Employee');
   await page.getByRole('button', { name: /HR Helpdesk/ }).click();
-  await page.getByRole('button', { name: /Raise ticket/ }).click();
+  await page.getByRole('button', { name: /Ask Saarthi for help/ }).click();
   await page.locator('#modalContent [name="subject"]').fill('Private QA ticket');
   await page.locator('#modalContent [name="priority"]').selectOption({ label: 'Medium' });
   await page.locator('#modalOk').click();
@@ -486,7 +486,7 @@ test('expense claims accept valid paise precision and show a helpful empty state
 test('helpdesk ticket form keeps valid subject text trimmed', async ({ page }) => {
   await login(page, 'employee', 'Helpdesk Subject QA');
   await page.getByRole('button', { name: /HR Helpdesk/ }).click();
-  await page.getByRole('button', { name: /Raise ticket/ }).click();
+  await page.getByRole('button', { name: /Ask Saarthi for help/ }).click();
   const subject = page.locator('#modalContent [name="subject"]');
   await subject.fill('Device access request');
   await page.locator('#modalContent [name="priority"]').selectOption({ label: 'Medium' });
@@ -618,7 +618,7 @@ test('every role navigation destination renders a usable module without browser 
 test('employee cannot resolve helpdesk tickets but HR can resolve them', async ({ page }) => {
   await login(page, 'employee', 'Ticket Permission QA');
   await page.getByRole('button', { name: /HR Helpdesk/ }).click();
-  await page.getByRole('button', { name: /Raise ticket/ }).click();
+  await page.getByRole('button', { name: /Ask Saarthi for help/ }).click();
   await page.locator('#modalContent [name="subject"]').fill('Permission boundary test ticket');
   await page.locator('#modalContent [name="priority"]').selectOption({ label: 'High' });
   await page.locator('#modalOk').click();
