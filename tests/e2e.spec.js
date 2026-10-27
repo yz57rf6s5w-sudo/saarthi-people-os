@@ -1047,3 +1047,53 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await expect(page.locator('#chatBox')).toContainText('1 published workplace policy');
   await expect(page.locator('#chatBox')).toContainText('approved wording and effective date');
 });
+
+
+test('manager can request a resource with competency mapping and draft JD, then HR can review', async ({ page }) => {
+  await login(page, 'manager', 'Requisition QA Manager');
+  await expect(page.locator('#nav')).toContainText('Resource requisitions');
+  await page.locator('#nav button[data-tab="requisitions"]').click();
+  await page.getByRole('button', { name: /Request a resource/ }).click();
+  await page.locator('#modalContent [name="roleTitle"]').fill('Customer Success Specialist');
+  await page.locator('#modalContent [name="team"]').fill('Customer Success');
+  await page.locator('#modalContent [name="need"]').fill('The team has sustained onboarding backlogs and cannot meet customer launch timelines.');
+  await page.locator('#modalContent [name="responsibilities"]').fill('Own customer onboarding plans, coordinate launches and track time-to-value.');
+  await page.locator('#modalContent [name="competencies"]').fill('Customer communication, project coordination, data analysis');
+  await page.locator('#modalContent [name="experience"]').selectOption({ label: 'Intermediate / 2–5 years' });
+  await page.locator('#modalContent [name="location"]').fill('Remote, India');
+  await page.locator('#modalContent [name="currency"]').selectOption('INR');
+  await page.locator('#modalContent [name="budgetMin"]').fill('900000');
+  await page.locator('#modalContent [name="budgetMax"]').fill('1400000');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#toast')).toContainText('Resource request and draft JD created');
+  await expect(page.locator('#mainContent')).toContainText('Customer Success Specialist');
+  await expect(page.locator('#mainContent')).toContainText('Customer communication');
+  await expect(page.locator('#mainContent')).toContainText('Budget guidance');
+  await expect(page.locator('#mainContent')).toContainText('900,000–1,400,000');
+  await page.locator('#mainContent details summary').click();
+  await expect(page.locator('#mainContent pre')).toContainText('Key responsibilities');
+  await expect(page.locator('#mainContent pre')).toContainText('Required competencies');
+  await page.locator('#roleSelector').selectOption('hr');
+  await expect(page.locator('#nav')).toContainText('Resource requisitions');
+  await page.locator('#nav button[data-tab="requisitions"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Customer Success Specialist');
+  await page.getByRole('button', { name: 'Approve request' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Approved');
+});
+
+test('resource requisitions do not invent market compensation without evidence', async ({ page }) => {
+  await login(page, 'manager', 'Requisition No Data QA');
+  await page.locator('#nav button[data-tab="requisitions"]').click();
+  await page.getByRole('button', { name: /Request a resource/ }).click();
+  await page.locator('#modalContent [name="roleTitle"]').fill('Accessibility Specialist');
+  await page.locator('#modalContent [name="team"]').fill('Product');
+  await page.locator('#modalContent [name="need"]').fill('Accessibility audit workload is exceeding available team capacity.');
+  await page.locator('#modalContent [name="responsibilities"]').fill('Audit product accessibility and partner with engineering on fixes.');
+  await page.locator('#modalContent [name="competencies"]').fill('Accessibility standards, UX review');
+  await page.locator('#modalContent [name="experience"]').selectOption({ label: 'Intermediate / 2–5 years' });
+  await page.locator('#modalContent [name="location"]').fill('Remote');
+  await page.locator('#modalContent [name="currency"]').selectOption('INR');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Compensation estimate unavailable');
+  await expect(page.locator('#mainContent')).not.toContainText('market salary is');
+});
