@@ -1045,7 +1045,7 @@ test('policy insights stay grounded in published policy records', async ({ page 
   await page.locator('#aiOpen').click();
   await page.locator('#chatInput').fill('What is the policy for leave?');
   await page.locator('#chatSend').click();
-  await expect(page.locator('#chatBox')).toContainText('1 published workplace policy');
+  await expect(page.locator('#chatBox')).toContainText('I can see 1 published workplace policy');
   await expect(page.locator('#chatBox')).toContainText('approved wording and effective date');
 });
 
