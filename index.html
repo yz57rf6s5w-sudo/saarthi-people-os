@@ -738,7 +738,13 @@ function renderCandidate(el){
   $('candidateSupport').addEventListener('click',()=>openForm('Contact candidate support',[
     {name:'subject',label:'What do you need help with?',type:'text',required:true},
     {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
-  ],v=>{state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate: '+v.subject,priority:v.priority,status:'Open'});saveState();currentTab='helpdesk';renderApp();notify('Support request submitted')}));
+  ],v=>{
+    const subject=String(v.subject||'').trim();
+    if(subject.length<4){notify('Describe your question in at least 4 characters.');return false}
+    if(subject.length>120){notify('Keep your question to 120 characters or fewer.');return false}
+    state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate: '+subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});
+    saveState();currentTab='helpdesk';renderApp();notify('Support request submitted')
+  }));
 }
 
 function localISODate(offsetDays=0){
