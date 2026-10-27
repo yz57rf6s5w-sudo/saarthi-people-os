@@ -151,6 +151,28 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
+test('manager sidebar summary only counts direct reports and their approvals', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    employees: [
+      { id: 971, name: 'My Report QA', role: 'Engineer', manager: 'Manager Summary QA', status: 'Active' },
+      { id: 972, name: 'Other Report QA', role: 'Engineer', manager: 'Another Manager QA', status: 'Active' },
+      { id: 973, name: 'Inactive Report QA', role: 'Engineer', manager: 'Manager Summary QA', status: 'Inactive' }
+    ],
+    leaves: [
+      { id: 971, employee: 'My Report QA', type: 'Casual Leave', days: 1, date: '2026-11-02', status: 'Pending' },
+      { id: 972, employee: 'Other Report QA', type: 'Sick Leave', days: 1, date: '2026-11-03', status: 'Pending' }
+    ],
+    reimbursements: [
+      { id: 971, employee: 'My Report QA', category: 'Travel', amount: 500, status: 'Pending' },
+      { id: 972, employee: 'Other Report QA', category: 'Software', amount: 600, status: 'Pending' }
+    ]
+  })));
+  await login(page, 'manager', 'Manager Summary QA');
+  await expect(page.locator('#sidebarSummary')).toContainText('1 active direct reports');
+  await expect(page.locator('#sidebarSummary')).toContainText('1 leave · 1 expense pending');
+  await expect(page.locator('#sidebarSummary')).not.toContainText('2 leave');
+});
+
 test('mobile navigation exposes state and closes with Escape', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 'hr', 'Mobile Menu QA');
