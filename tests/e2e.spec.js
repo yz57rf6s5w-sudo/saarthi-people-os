@@ -740,7 +740,9 @@ test('manager sees team leave history and availability before approving leave', 
       { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 1, date: '2026-10-28', reason: 'Medical appointment', status: 'Pending', approver: '' },
       { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
       { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
-    ]
+    ],
+    onboarding: [{ id: 951, title: 'Release design handoff', detail: 'Prepare handoff', owner: 'Asha Team QA', dueDate: '2026-10-28', status: 'In Progress' }],
+    projects: [{ id: 952, name: 'Design QA launch', owner: 'Asha Team QA', due: '2026-10-28', status: 'On track', keyResults: [] }]
   })));
   await login(page, 'manager', 'Manager Leave QA');
   await page.getByRole('button', { name: /Leave/ }).click();
@@ -753,6 +755,11 @@ test('manager sees team leave history and availability before approving leave', 
   await page.locator('#teamImpactDate').fill('2026-10-28');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('2 / 3');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('1');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Work that may need reassignment');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Release design handoff');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Design QA launch');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Cover needed');
+  await expect(page.locator('#teamLeaveInsightBody')).toContainText('Review cover plan');
   const pendingRow = page.locator('#leaveTable tbody tr').filter({ hasText: 'Ravi Team QA' });
   await expect(pendingRow).toContainText('Pending');
   await pendingRow.getByRole('button', { name: 'Approve' }).click();
