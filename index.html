@@ -940,10 +940,26 @@ function renderAttendance(el,role){
         <button class="secondary" id="attendanceCheckOut" ${!todayRecord?.checkIn||todayRecord?.checkOut?'disabled':''}>Check out</button>
       </div>
     </section>
-    <section class="card" style="margin-top:16px"><div class="card-head"><h3>Recent attendance</h3><span class="muted tiny">Last 7 records</span></div>
+    <section class="card" style="margin-top:16px"><div class="card-head"><h3>Recent attendance</h3><div class="button-row"><span class="muted tiny">Last 7 records</span><button class="secondary small" id="attendanceCorrectionBtn">Request a correction</button></div></div>
       ${latest.length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>Check in</th><th>Check out</th><th>Status</th></tr></thead><tbody>'+latest.map(a=>'<tr><td>'+escapeHTML(a.date)+'</td><td>'+formatTime(a.checkIn)+'</td><td>'+formatTime(a.checkOut)+'</td><td>'+(a.checkOut?'Complete':a.checkIn?'In progress':'Needs review')+'</td></tr>').join('')+'</tbody></table></div>':'<p class="muted tiny">No attendance recorded yet. Your check-ins will appear here.</p>'}
     </section>
     ${canSeeTeam?'<section class="card" style="margin-top:16px"><div class="card-head"><h3>Team attendance overview</h3><span class="muted tiny">Today · demo data</span></div><p class="muted tiny">Use this as an operational signal, not a performance score. Absence of a check-in does not prove someone is absent.</p><div class="metrics"><div class="metric-card"><span class="muted tiny">Checked in</span><strong>'+team.filter(a=>a.checkIn).length+'</strong></div><div class="metric-card"><span class="muted tiny">Checked out</span><strong>'+team.filter(a=>a.checkOut).length+'</strong></div><div class="metric-card"><span class="muted tiny">No check-in recorded</span><strong>'+Math.max(0,state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active').length-new Set(team.map(a=>a.employee)).size)+'</strong></div></div></section>':''}`;
+  state.attendanceCorrections=Array.isArray(state.attendanceCorrections)?state.attendanceCorrections:[];
+  const correctionBtn=document.getElementById('attendanceCorrectionBtn');
+  if(correctionBtn)correctionBtn.addEventListener('click',()=>openForm('Request attendance correction',[
+    {name:'date',label:'Attendance date',type:'date',required:true,max:dayKey,value:dayKey},
+    {name:'requestedCheckIn',label:'Correct check-in time (optional, HH:MM)',type:'text',required:false},
+    {name:'requestedCheckOut',label:'Correct check-out time (optional, HH:MM)',type:'text',required:false},
+    {name:'reason',label:'Why is a correction needed?',type:'textarea',required:true}
+  ],v=>{
+    const validTime=t=>!t||/^([01]\\d|2[0-3]):[0-5]\\d$/.test(t);
+    const reason=String(v.reason||'').trim();
+    if(!validTime(v.requestedCheckIn)||!validTime(v.requestedCheckOut)){notify('Enter times in 24-hour HH:MM format.');return false}
+    if(!v.requestedCheckIn&&!v.requestedCheckOut){notify('Enter at least one corrected time.');return false}
+    if(reason.length<5){notify('Please add a short reason.');return false}
+    state.attendanceCorrections.unshift({id:Date.now(),employee:employeeName,date:v.date,requestedCheckIn:v.requestedCheckIn||'',requestedCheckOut:v.requestedCheckOut||'',reason,status:'Pending',requestedAt:new Date().toISOString()});
+    saveState();renderApp();notify('Correction request submitted for review.');
+  }));
   const checkIn=document.getElementById('attendanceCheckIn');
   const checkOut=document.getElementById('attendanceCheckOut');
   if(checkIn)checkIn.addEventListener('click',()=>{
