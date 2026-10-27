@@ -184,13 +184,13 @@ test('completing an onboarding prerequisite unblocks the next step', async ({ pa
   })));
   await login(page, 'hr', 'Dependency Release QA');
   await page.getByRole('button', { name: /Onboarding/ }).click();
-  const prerequisite = page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' });
-  const dependent = page.locator('.onboard-step').filter({ hasText: 'Provision system access' });
+  const prerequisite = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Mark done' }) }).filter({ hasText: 'Verify signed documents' });
+  const dependent = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Waiting' }) }).filter({ hasText: 'Provision system access' });
   await expect(dependent).toContainText('Blocked');
   await expect(dependent.getByRole('button', { name: 'Waiting' })).toBeDisabled();
   await prerequisite.getByRole('button', { name: 'Mark done' }).click();
-  await expect(page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' })).toContainText('Done');
-  const released = page.locator('.onboard-step').filter({ hasText: 'Provision system access' });
+  await expect(page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Reopen' }) }).filter({ hasText: 'Verify signed documents' })).toContainText('Done');
+  const released = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Mark done' }) }).filter({ hasText: 'Provision system access' });
   await expect(released).not.toContainText('Blocked');
   await expect(released.getByRole('button', { name: 'Mark done' })).toBeEnabled();
   await expect(released).toContainText('Depends on Verify signed documents');
@@ -205,7 +205,7 @@ test('onboarding dependency loop validation keeps the edit form open', async ({ 
   })));
   await login(page, 'hr', 'Dependency Loop QA');
   await page.getByRole('button', { name: /Onboarding/ }).click();
-  const firstStep = page.locator('.onboard-step').filter({ hasText: 'Verify signed documents' });
+  const firstStep = page.locator('.onboard-step').filter({ has: page.getByRole('button', { name: 'Edit' }) }).filter({ hasText: 'Verify signed documents' });
   await firstStep.getByRole('button', { name: 'Edit' }).click();
   await page.locator('#field-dependsOn').selectOption({ label: 'Provision system access — IT · In Progress (ID 902)' });
   await page.locator('#modalOk').click();
