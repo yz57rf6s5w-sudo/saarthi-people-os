@@ -684,9 +684,20 @@ function renderLeaves(el,role){
     {name:'days',label:'Number of days',type:'number',min:1,required:true,value:'1'},
     {name:'date',label:'Start date',type:'date',required:true,min:localISODate(),value:localISODate(1)},
     {name:'reason',label:'Reason',type:'textarea',required:true}
-  ],v=>{if(v.date<localISODate()){notify('Choose today or a future start date.');return}const days=Number(v.days);if(!Number.isInteger(days)||days<1){notify('Enter a whole number of leave days, at least 1.');return}state.leaves.unshift({id:Date.now(),employee:state.displayName,type:v.type,days,date:v.date,reason:v.reason,status:state.workflowSettings?.leaveApproval===false?'Approved':'Pending',approver:state.workflowSettings?.leaveApproval===false?'Workspace rule':''});saveState();renderApp();notify(state.workflowSettings?.leaveApproval===false?'Leave auto-approved by workspace rule':'Leave submitted')}));
-  el.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.approve));if(l){l.status='Approved';l.approver=role;saveState();renderApp();notify('Leave approved')}}));
-  el.querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.reject));if(l){l.status='Rejected';l.approver=role;saveState();renderApp();notify('Leave rejected')}}));
+  ],v=>{
+    const reason=String(v.reason||'').trim();
+    if(v.date<localISODate()){notify('Choose today or a future start date.');return false}
+    const days=Number(v.days);
+    if(!Number.isInteger(days)||days<1){notify('Enter a whole number of leave days, at least 1.');return false}
+    if(reason.length<4){notify('Add a brief reason of at least 4 characters.');return false}
+    if(reason.length>500){notify('Keep the reason to 500 characters or fewer.');return false}
+    const now=new Date().toISOString();
+    const autoApprove=state.workflowSettings?.leaveApproval===false;
+    state.leaves.unshift({id:Date.now(),employee:state.displayName,type:v.type,days,date:v.date,reason,status:autoApprove?'Approved':'Pending',approver:autoApprove?'Workspace rule':'',requestedAt:now,reviewedAt:autoApprove?now:null});
+    saveState();renderApp();notify(autoApprove?'Leave auto-approved by workspace rule':'Leave submitted')
+  }));
+  el.querySelectorAll('[data-approve]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.approve));if(l){l.status='Approved';l.approver=role;l.reviewedAt=new Date().toISOString();saveState();renderApp();notify('Leave approved')}}));
+  el.querySelectorAll('[data-reject]').forEach(b=>b.addEventListener('click',()=>{const l=state.leaves.find(x=>x.id===Number(b.dataset.reject));if(l){l.status='Rejected';l.approver=role;l.reviewedAt=new Date().toISOString();saveState();renderApp();notify('Leave rejected')}}));
 }
 
 function renderReimbursements(el,role){
