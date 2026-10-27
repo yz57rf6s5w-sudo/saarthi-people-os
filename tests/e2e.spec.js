@@ -983,3 +983,45 @@ test('Saarthi Copilot preview offers role-aware guidance without external AI cal
   await expect(page.locator('#sidebarSummary')).toBeEmpty();
   await expect(page.locator('#sidebarSummary')).not.toContainText(/headcount|expense|claim/i);
 });
+
+
+test('employee profile can be edited and retained in the browser demo', async ({ page }) => {
+  await login(page, 'employee', 'Profile QA Employee');
+  await page.locator('#nav button[data-tab="profile"]').click();
+  await expect(page.locator('#mainContent')).toContainText('My profile');
+  await page.locator('#employeeProfileForm [name="phone"]').fill('555-0101');
+  await page.locator('#employeeProfileForm [name="workEmail"]').fill('profile.qa@example.test');
+  await page.getByRole('button', { name: 'Save profile' }).click();
+  await expect(page.locator('#toast')).toContainText('Profile saved');
+  await page.reload();
+  await login(page, 'employee', 'Profile QA Employee');
+  await page.locator('#nav button[data-tab="profile"]').click();
+  await expect(page.locator('#employeeProfileForm [name="phone"]')).toHaveValue('555-0101');
+  await expect(page.locator('#employeeProfileForm [name="workEmail"]')).toHaveValue('profile.qa@example.test');
+});
+
+test('policy documents show clear draft status and exit support avoids automatic resignation', async ({ page }) => {
+  await login(page, 'employee', 'Policy QA Employee');
+  await page.locator('#nav button[data-tab="policy_docs"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Policy documents');
+  await expect(page.locator('#mainContent')).toContainText('Leave and time-off policy');
+  await expect(page.locator('#mainContent')).toContainText('Draft');
+  await page.locator('#nav button[data-tab="exit"]').click();
+  await expect(page.locator('#mainContent')).toContainText('This does not submit a resignation');
+  await page.getByRole('button', { name: 'Request confidential conversation' }).click();
+  await expect(page.locator('#toast')).toContainText('Request saved');
+});
+
+test('HR can start and manage an offboarding case and policy documents', async ({ page }) => {
+  await login(page, 'hr', 'HR Module QA');
+  await page.locator('#nav button[data-tab="policy_docs"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Add policy');
+  await page.locator('#nav button[data-tab="exit"]').click();
+  await page.getByRole('button', { name: 'Start offboarding' }).click();
+  await expect(page.locator('#modalContent')).toContainText('Manage offboarding');
+  await page.locator('#modalContent [name="employee"]').fill('Exit Module QA');
+  await page.locator('#modalContent [name="lastWorkingDay"]').fill('2027-02-15');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Exit Module QA');
+  await expect(page.locator('#mainContent')).toContainText('2027-02-15');
+});
