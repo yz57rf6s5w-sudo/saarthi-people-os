@@ -151,6 +151,20 @@ test('employee can open their onboarding checklist', async ({ page }) => {
 });
 
 
+test('onboarding remains usable on a narrow mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page, 'hr', 'Mobile Onboarding QA');
+  await page.getByRole('button', { name: /Onboarding/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('New-joiner readiness');
+  await expect(page.locator('#addOnboardingStep')).toBeVisible();
+  await expect(page.locator('.onboard-step').first()).toBeVisible();
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    page: document.documentElement.scrollWidth
+  }));
+  expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport + 1);
+});
+
 test('onboarding shows the root owner when a task is blocked by a chain of prerequisites', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
     onboarding: [
