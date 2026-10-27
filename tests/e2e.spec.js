@@ -1025,3 +1025,25 @@ test('HR can start and manage an offboarding case and policy documents', async (
   await expect(page.locator('#mainContent')).toContainText('Exit Module QA');
   await expect(page.locator('#mainContent')).toContainText('2027-02-15');
 });
+
+
+test('policy insights stay grounded in published policy records', async ({ page }) => {
+  await login(page, 'hr', 'Policy Insight QA');
+  await page.locator('#nav button[data-tab="policy_docs"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Policy-based insight');
+  await expect(page.locator('#mainContent')).toContainText('No policies are published yet');
+  await page.getByRole('button', { name: /Add policy/ }).click();
+  await page.locator('#modalContent [name="title"]').fill('QA Leave Guidance');
+  await page.locator('#modalContent [name="category"]').fill('Leave');
+  await page.locator('#modalContent [name="effectiveDate"]').fill('2026-11-01');
+  await page.locator('#modalContent [name="summary"]').fill('Submit leave requests in advance and confirm team coverage with your manager.');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Policy saved as draft');
+  await page.locator('#mainContent').getByRole('button', { name: 'Publish' }).click();
+  await expect(page.locator('#mainContent')).toContainText('1 published policy');
+  await page.locator('#aiOpen').click();
+  await page.locator('#chatInput').fill('What is the policy for leave?');
+  await page.locator('#chatSend').click();
+  await expect(page.locator('#chatBox')).toContainText('1 published workplace policy');
+  await expect(page.locator('#chatBox')).toContainText('approved wording and effective date');
+});
