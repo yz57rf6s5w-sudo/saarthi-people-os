@@ -1232,7 +1232,7 @@ function openAi(){
 
 window.saarthiLogin=function(e){
   if(e)e.preventDefault();
-  const button=$('#loginForm button[type="submit"]');
+  const button=document.querySelector('#loginForm button[type="submit"]');
   try{
     const code=$('demoCode').value.trim();
     if(code!=='demo123'){notify('Demo code did not match. Enter demo123.');$('demoCode').focus();return false;}
