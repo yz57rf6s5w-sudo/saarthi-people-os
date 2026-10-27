@@ -428,9 +428,9 @@ function saveState(){
 let state=loadState(), currentTab='dashboard', toastTimer;
 const $=id=>document.getElementById(id);
 const roles={
-  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
-  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
-  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['policy_docs','Policy documents','📄'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
+  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
+  hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
+  manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['requisitions','Resource requisitions','＋'],['policy_docs','Policy documents','📄'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
   employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['profile','My profile','♙'],['policy_docs','Policy documents','📄'],['career','My Career & Learning','🌱'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['exit','Exit support','↗'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
   candidate:{badge:'CANDIDATE PORTAL',nav:[['candidate_portal','Application Status','✎'],['helpdesk','Candidate Support','🎧']]}
 };
@@ -483,7 +483,7 @@ function renderApp(){
   $('greeting').textContent=`Hi, ${escapeHTML(state.displayName)}`;
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
-  const extraModules=[['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
+  const extraModules=[['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['requisitions','Resource requisitions','＋'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧']];
   if(role!=='candidate')extraModules.forEach(item=>{if(state.accessConfig?.[role]?.[item[0]]===true&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
@@ -514,6 +514,7 @@ function renderApp(){
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='projects') renderProjects(el,role);
   else if(currentTab==='career') renderCareer(el,role);
+  else if(currentTab==='requisitions') renderRequisitions(el,role);
   else if(currentTab==='admin_settings') renderAdminSettings(el);
   else if(currentTab==='playbook') renderPlaybook(el);
   else if(currentTab==='directory'){if(role==='founder')markSetupStep('directoryReviewed');renderDirectory(el);}
@@ -529,6 +530,41 @@ function renderApp(){
 }
 
 
+
+
+function renderRequisitions(el,role){
+ const canRequest=role==='manager',canReview=['founder','hr'].includes(role);
+ state.resourceRequisitions=Array.isArray(state.resourceRequisitions)?state.resourceRequisitions:[];
+ const items=state.resourceRequisitions;
+ const people=state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active');
+ const internal=items.filter(x=>x.status==='Approved'&&Number(x.compMin)>0&&Number(x.compMax)>=Number(x.compMin));
+ function compInsight(item){
+  const same=internal.filter(x=>String(x.roleTitle||'').toLowerCase()===String(item.roleTitle||'').toLowerCase()&&String(x.location||'').toLowerCase()===String(item.location||'').toLowerCase()&&x.currency===item.currency);
+  if(same.length>=2){const lows=same.map(x=>Number(x.compMin)).sort((a,b)=>a-b),highs=same.map(x=>Number(x.compMax)).sort((a,b)=>a-b);return 'Internal approved requisitions for this role/location: indicative range '+item.currency+' '+lows[Math.floor(lows.length/2)].toLocaleString()+'–'+highs[Math.floor(highs.length/2)].toLocaleString()+' per year, based on '+same.length+' records. This is a small internal reference, not a market benchmark.'}
+  if(Number(item.budgetMin)>0&&Number(item.budgetMax)>=Number(item.budgetMin))return 'Budget guidance: '+item.currency+' '+Number(item.budgetMin).toLocaleString()+'–'+Number(item.budgetMax).toLocaleString()+' per year, supplied by the requesting manager. No reliable market range is available in this demo.';
+  return 'Compensation estimate unavailable: add a budget range or connect a verified salary benchmark source. Saarthi will not invent a market value.';
+ }
+ function generatedJD(x){
+  return 'Role: '+x.roleTitle+'\n\nPurpose\n'+x.need+'\n\nKey responsibilities\n'+x.responsibilities+'\n\nRequired competencies\n'+x.competencies.split(',').map(v=>'• '+v.trim()).join('\n')+'\n\nExperience\n'+x.experience+'\n\nLocation / work mode\n'+x.location+'\n\nSuccess in the role\nDeliver the agreed outcomes, collaborate with stakeholders and demonstrate the listed competencies.\n\nCompensation\n'+compInsight(x)+'\n\nBefore publishing, hiring manager and People Ops should review the scope, inclusive language, competencies and compensation range.';
+ }
+ el.innerHTML=pageHead('Resource requisitions',canRequest?'Turn workload pressure into a clear hiring request, competency map and draft job description.':canReview?'Review hiring requests, role clarity, budget and competency fit.':'Review resource planning guidance.',canRequest?'<button class="primary" id="newReq">＋ Request a resource</button>':'')+
+ '<section class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#f7f8ff,#fff);border-color:#dfe5ff"><strong>✦ Workload-to-role guidance</strong><p class="muted tiny" style="margin:5px 0 0">Use sustained workload, capacity gaps and specific outcomes to justify a role. Draft job descriptions are rule-based in this prototype, not generated by an external AI service. Compensation guidance only uses available internal records or the manager-entered budget; it does not claim live market data.</p></section>'+
+ (canRequest?'<div class="metrics"><div class="card metric"><strong>'+items.filter(x=>x.requester===state.displayName).length+'</strong><span>My requests</span></div><div class="card metric"><strong>'+items.filter(x=>x.requester===state.displayName&&x.status==='Pending review').length+'</strong><span>Awaiting review</span></div><div class="card metric"><strong>'+items.filter(x=>x.requester===state.displayName&&x.status==='Approved').length+'</strong><span>Approved</span></div></div>':'')+
+ '<div class="grid-cards" id="requisitionList"></div>';
+ function draw(){
+  const visible=canReview?items:canRequest?items.filter(x=>x.requester===state.displayName):[];
+  $('requisitionList').innerHTML=visible.map(x=>'<article class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><h3 style="margin:0 0 4px">'+escapeHTML(x.roleTitle)+'</h3><p class="muted tiny" style="margin:0">'+escapeHTML(x.location)+' · '+escapeHTML(x.experience)+'</p></div><span class="pill '+(x.status==='Approved'?'approved':x.status==='Rejected'?'resolved':'pending')+'">'+escapeHTML(x.status)+'</span></div><p>'+escapeHTML(x.need)+'</p><p class="tiny"><strong>Competencies:</strong> '+escapeHTML(x.competencies)+'</p><details><summary style="cursor:pointer;font-weight:700;color:#5145e5">View draft job description & compensation guidance</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:12px;background:#f8fafc;padding:12px;border-radius:10px">'+escapeHTML(x.jobDescription||generatedJD(x))+'</pre><button class="neutral small" data-copy-jd="'+x.id+'">Copy job description</button></details><p class="muted tiny">'+escapeHTML(compInsight(x))+'</p>'+(canReview&&x.status==='Pending review'?'<div class="actions" style="margin-top:10px"><button class="success small" data-req-approve="'+x.id+'">Approve request</button><button class="danger small" data-req-reject="'+x.id+'">Decline</button></div>':'')+(canReview&&x.status==='Approved'?'<p class="tiny muted">Approved by '+escapeHTML(x.reviewer||'People Ops')+'. Confirm budget and benchmark before opening the role.</p>':'')+'</article>').join('')||'<div class="card muted">No resource requests here yet. A request should start with a clear capacity gap and expected outcome.</div>';
+  $('requisitionList').querySelectorAll('[data-req-approve]').forEach(b=>b.onclick=()=>{const x=items.find(y=>String(y.id)===b.dataset.reqApprove);if(!x)return;x.status='Approved';x.reviewer=state.displayName;x.reviewedAt=new Date().toISOString();saveState();draw();notify('Resource request approved')});
+  $('requisitionList').querySelectorAll('[data-req-reject]').forEach(b=>b.onclick=()=>{const x=items.find(y=>String(y.id)===b.dataset.reqReject);if(!x)return;x.status='Rejected';x.reviewer=state.displayName;x.reviewedAt=new Date().toISOString();saveState();draw();notify('Resource request declined')});
+  $('requisitionList').querySelectorAll('[data-copy-jd]').forEach(b=>b.onclick=async()=>{const x=items.find(y=>String(y.id)===b.dataset.copyJd);if(!x)return;try{await navigator.clipboard.writeText(x.jobDescription||generatedJD(x));notify('Draft job description copied')}catch(e){notify('Select and copy the draft text manually')}});
+ }
+ if(canRequest)$('newReq').onclick=()=>openForm('Request a resource',[{name:'roleTitle',label:'Proposed role title',required:true},{name:'team',label:'Team / function',required:true},{name:'need',label:'What workload or capacity gap needs solving?',type:'textarea',required:true},{name:'responsibilities',label:'Key outcomes / responsibilities',type:'textarea',required:true},{name:'competencies',label:'Required competencies (comma-separated)',type:'textarea',required:true},{name:'experience',label:'Experience level',type:'select',options:['Entry / 0–2 years','Intermediate / 2–5 years','Senior / 5–8 years','Lead / 8+ years'],required:true},{name:'location',label:'Location / work mode',required:true},{name:'currency',label:'Compensation currency',type:'select',options:['INR','USD','GBP','EUR'],required:true},{name:'budgetMin',label:'Annual budget minimum (optional)',type:'number',min:0},{name:'budgetMax',label:'Annual budget maximum (optional)',type:'number',min:0}],v=>{
+  const title=String(v.roleTitle||'').trim(),need=String(v.need||'').trim(),competencies=String(v.competencies||'').split(',').map(x=>x.trim()).filter(Boolean);
+  if(title.length<3||need.length<12||String(v.responsibilities||'').trim().length<12||competencies.length<2){notify('Add a clear role title, a specific workload gap, outcomes and at least two competencies.');return false}
+  const lo=Number(v.budgetMin)||0,hi=Number(v.budgetMax)||0;if((lo&&!hi)||(hi&&!lo)||(lo&&hi&&hi<lo)){notify('Enter both budget bounds, and ensure the maximum is not below the minimum.');return false}
+  const x={...v,id:'req-'+Date.now(),requester:state.displayName,createdAt:new Date().toISOString(),status:'Pending review',competencies:competencies.join(', '),budgetMin:lo,budgetMax:hi};x.jobDescription=generatedJD(x);items.unshift(x);saveState();renderApp();notify('Resource request and draft JD created')
+ });draw();
+}
 
 function renderCareer(el,role){
  const name=String(state.displayName||'').trim(),isEmployee=role==='employee',canCustomize=['founder','hr'].includes(role);
