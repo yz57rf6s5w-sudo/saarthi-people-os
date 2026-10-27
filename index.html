@@ -501,7 +501,7 @@ function renderApp(){
   const activeHeadcount=sidebarTeam.length;
   const pendingL=state.leaves.filter(l=>l.status==='Pending'&&(!managerRole||sidebarNames.has(l.employee))).length;
   const pendingR=state.reimbursements.filter(r=>r.status==='Pending'&&(!managerRole||sidebarNames.has(r.employee))).length;
-  $('sidebarSummary').innerHTML=`<div><strong>${activeHeadcount}</strong> ${managerRole?'active direct reports':'active headcount'}</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
+  $('sidebarSummary').innerHTML=role==='candidate'?'<div><strong>Candidate workspace</strong></div><div class="tiny muted" style="margin-top:4px">Application progress and interview updates</div>':`<div><strong>${activeHeadcount}</strong> ${managerRole?'active direct reports':'active headcount'}</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='projects') renderProjects(el,role);
