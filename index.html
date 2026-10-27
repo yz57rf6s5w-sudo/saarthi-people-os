@@ -493,10 +493,13 @@ function renderApp(){
   $('importDataBtn').classList.toggle('hidden',role!=='founder');
   $('resetDemoBtn').classList.toggle('hidden',role!=='founder');
   $('nav').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{currentTab=b.dataset.tab;renderApp();if(window.innerWidth<900){$('sidebar').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');$('menuToggle').setAttribute('aria-label','Open navigation menu')}}));
-  const activeHeadcount=state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
-  const pendingL=state.leaves.filter(l=>l.status==='Pending').length;
-  const pendingR=state.reimbursements.filter(r=>r.status==='Pending').length;
-  $('sidebarSummary').innerHTML=`<div><strong>${activeHeadcount}</strong> active headcount</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
+  const managerRole=role==='manager';
+  const sidebarTeam=managerRole?state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===String(state.displayName||'').trim().toLowerCase()&&String(e.status||'Active').trim().toLowerCase()==='active'):state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active');
+  const sidebarNames=managerRole?new Set(sidebarTeam.map(e=>e.name)):null;
+  const activeHeadcount=sidebarTeam.length;
+  const pendingL=state.leaves.filter(l=>l.status==='Pending'&&(!managerRole||sidebarNames.has(l.employee))).length;
+  const pendingR=state.reimbursements.filter(r=>r.status==='Pending'&&(!managerRole||sidebarNames.has(r.employee))).length;
+  $('sidebarSummary').innerHTML=`<div><strong>${activeHeadcount}</strong> ${managerRole?'active direct reports':'active headcount'}</div><div class="tiny muted" style="margin-top:4px">${pendingL} leave · ${pendingR} expense pending</div>`;
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='projects') renderProjects(el,role);
