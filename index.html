@@ -572,8 +572,12 @@ function renderAdminSettings(el){
 
 function renderDashboard(el,role){
   const activeEmployees=state.employees.filter(e=>String(e.status||'Active').trim().toLowerCase()==='active').length;
-  const pendingL=state.leaves.filter(l=>l.status==='Pending').length;
-  const pendingR=state.reimbursements.filter(r=>r.status==='Pending').length;
+  const directReportNames=new Set(state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===String(state.displayName||'').trim().toLowerCase()).map(e=>e.name));
+  const managerRole=role==='manager';
+  const pendingLeaveRows=state.leaves.filter(l=>l.status==='Pending'&&(!managerRole||directReportNames.has(l.employee)));
+  const pendingExpenseRows=state.reimbursements.filter(r=>r.status==='Pending'&&(!managerRole||directReportNames.has(r.employee)));
+  const pendingL=pendingLeaveRows.length;
+  const pendingR=pendingExpenseRows.length;
   const openT=state.tickets.filter(t=>t.status==='Open').length;
   const totalLeaveDays=state.leaves.reduce((sum,l)=>sum+Number(l.days||0),0);
   const totalExp=state.reimbursements.reduce((sum,r)=>sum+Number(r.amount||0),0);
@@ -637,7 +641,7 @@ function renderDashboard(el,role){
   }
   el.innerHTML=pageHead(role==='hr'?'People Ops Hub':role==='manager'?'Team Dashboard':role==='candidate'?'Candidate Overview':'My Workspace','Snapshot of people operations.')+
   metrics+
-  (['hr','manager'].includes(role)?`<div class="card"><h3 style="margin:0 0 10px">Pending approvals</h3>${pendingL+pendingR===0?'<p class="muted">All clear.</p>':state.leaves.filter(l=>l.status==='Pending').map(l=>`<div class="tiny" style="margin:4px 0">Leave: ${escapeHTML(l.employee)} · ${l.days}d · ${escapeHTML(l.type)}</div>`).join('')+state.reimbursements.filter(r=>r.status==='Pending').map(r=>`<div class="tiny" style="margin:4px 0">Claim: ${escapeHTML(r.employee)} · ₹${r.amount} · ${escapeHTML(r.category)}</div>`).join('')}</div>`:'');
+  (['hr','manager'].includes(role)?`<div class="card"><h3 style="margin:0 0 10px">Pending approvals</h3>${pendingL+pendingR===0?'<p class="muted">All clear — no approvals waiting for your team.</p>':pendingLeaveRows.map(l=>`<div class="tiny" style="margin:4px 0">Leave: ${escapeHTML(l.employee)} · ${l.days}d · ${escapeHTML(l.type)}</div>`).join('')+pendingExpenseRows.map(r=>`<div class="tiny" style="margin:4px 0">Claim: ${escapeHTML(r.employee)} · ₹${r.amount} · ${escapeHTML(r.category)}</div>`).join('')}</div>`:'');
 }
 
 function renderPlaybook(el){
