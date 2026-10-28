@@ -1281,4 +1281,7 @@ test('continuous feedback can be captured with explicit visibility', async ({ pa
   await page.locator('#modalOk').click();
   await expect(page.locator('#continuousFeedbackTable')).toContainText('Helped unblock the release');
   await expect(page.locator('#continuousFeedbackTable')).toContainText('Private to employee / People Ops');
+  await expect(page.locator('#growthArchetypes')).toContainText('Growth & contribution patterns');
+  await expect(page.locator('#growthArchetypeCards')).toContainText('Feedback QA Employee');
+  await expect(page.locator('#growthArchetypes')).toContainText('not personality diagnoses');
 });
