@@ -666,7 +666,7 @@ function renderPerformance(el,role){
  state.performanceReviews=Array.isArray(state.performanceReviews)?state.performanceReviews:[];
  state.continuousFeedback=Array.isArray(state.continuousFeedback)?state.continuousFeedback:[];
  const reviews=state.performanceReviews,feedback=state.continuousFeedback;
- const canCalibrate=['founder','hr'].includes(role),canReview=['founder','hr','manager'].includes(role);
+ const canCalibrate=['founder','hr'].includes(role),canReview=['founder','hr','manager'].includes(role),canStartAppraisal=role==='hr';
  const reports=role==='manager'?state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===own).map(e=>String(e.name||'').trim().toLowerCase()):[];
  const isMine=x=>String(x.employee||'').trim().toLowerCase()===own;
  const canSeeReview=x=>canCalibrate||(role==='manager'&&reports.includes(String(x.employee||'').trim().toLowerCase()))||isMine(x);
@@ -677,7 +677,7 @@ function renderPerformance(el,role){
  const safe=escapeHTML;
  const ratingText=r=>({1:'1 · Needs support',2:'2 · Developing',3:'3 · Effective',4:'4 · Strong',5:'5 · Exceptional'})[Number(r)]||'Not rated';
  const average=x=>{const nums=[x.goalRating,x.qualityRating,x.collaborationRating,x.growthRating].map(Number).filter(n=>n>=1&&n<=5);return nums.length?Math.round(nums.reduce((a,b)=>a+b,0)/nums.length*10)/10:null};
- el.innerHTML=pageHead('Performance & Continuous Feedback','Connect project outcomes and OKRs with ongoing coaching. Recommendations inform decisions; they never automatically determine pay or promotion.',(canReview?'<button class="primary" id="newPerformanceReview">+ Start appraisal</button>':'')+' <button class="neutral" id="newFeedback">+ Share feedback</button>')+
+ el.innerHTML=pageHead('Performance & Continuous Feedback','Connect project outcomes and OKRs with ongoing coaching. Recommendations inform decisions; they never automatically determine pay or promotion.',(canStartAppraisal?'<button class="primary" id="newPerformanceReview">+ Start appraisal</button>':'')+' <button class="neutral" id="newFeedback">+ Share feedback</button>')+
  '<div class="metrics"><div class="card metric"><strong>'+visibleReviews.filter(x=>x.status==='Draft').length+'</strong><span>Draft appraisals</span></div><div class="card metric"><strong>'+visibleReviews.filter(x=>x.status==='Submitted for discussion').length+'</strong><span>Ready for discussion</span></div><div class="card metric"><strong>'+visibleFeedback.filter(x=>x.createdAt&&String(x.createdAt).slice(0,7)===localISODate().slice(0,7)).length+'</strong><span>Feedback this month</span></div></div>'+
  '<section class="card" style="margin-top:14px"><h3>Appraisal & growth decisions</h3><p class="muted tiny">Review evidence from project/OKR outcomes, feedback and role expectations. Ratings are conversation starters, not a substitute for context, calibration or employee voice.</p><div class="table-wrap"><table id="performanceReviewsTable"><thead><tr><th>Employee</th><th>Cycle</th><th>Linked project / OKR</th><th>Overall</th><th>Suggested next step</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div></section>'+
  '<section class="card" style="margin-top:14px"><h3>Continuous feedback</h3><p class="muted tiny">Keep feedback specific, timely and actionable. Share with the manager only when explicitly selected; sensitive concerns should go through People Ops.</p><div class="table-wrap"><table id="continuousFeedbackTable"><thead><tr><th>About</th><th>Date</th><th>Type</th><th>Feedback</th><th>Next step</th><th>Visibility</th></tr></thead><tbody></tbody></table></div></section>';
@@ -687,11 +687,17 @@ function renderPerformance(el,role){
   $('performanceReviewsTable').querySelectorAll('[data-performance-edit]').forEach(b=>b.onclick=()=>editReview(b.dataset.performanceEdit));
  }
  function editReview(id){
+  if(id==='new'){
+   if(!canStartAppraisal){notify('Only People Ops can start a formal appraisal cycle.');return}
+   const draft={id:'review-'+Date.now(),employee:'',cycle:'2026 Mid-year',status:'Draft'};
+   reviews.unshift(draft);state.performanceReviews=reviews;saveState();
+   editReview(draft.id);return;
+  }
   const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
   if(!canReview){notify('Your appraisal is view-only. Contact your manager or People Ops to request a correction.');return}
   if(role==='manager'&&!reports.includes(String(x.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}
   openForm('Appraisal review · '+(x.employee||name),[
-   {name:'employee',label:'Employee',required:true,type:role==='manager'?'select':undefined,options:role==='manager'?state.employees.filter(e=>reports.includes(String(e.name||'').trim().toLowerCase())).map(e=>e.name):undefined,value:x.employee||name},
+   {name:'employee',label:'Employee',required:true,type:['manager','hr'].includes(role)?'select':undefined,options:role==='manager'?state.employees.filter(e=>reports.includes(String(e.name||'').trim().toLowerCase())).map(e=>e.name):role==='hr'?state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active').map(e=>e.name):undefined,value:x.employee||(['manager','hr'].includes(role)?'':name)},
    {name:'cycle',label:'Review cycle',required:true,value:x.cycle||'2026 Mid-year'},
    {name:'project',label:'Linked project / OKR',type:'select',options:['Not linked',...projectOptions],value:x.project||'Not linked'},
    {name:'goalRating',label:'Goal / OKR outcomes (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.goalRating||'Not rated'},
