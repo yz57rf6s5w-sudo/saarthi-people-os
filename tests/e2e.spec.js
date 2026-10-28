@@ -1385,3 +1385,25 @@ test('People Ops can add a geography-specific policy source and verification sta
   await expect(page.locator('#mainContent')).toContainText('Reviewed by company');
   await expect(page.locator('#mainContent').getByRole('link', { name: /Open source/ })).toHaveAttribute('href', 'https://labour.gov.in/');
 });
+
+
+test('Founder or People Ops can document an expiring policy exception', async ({ page }) => {
+  await login(page, 'hr', 'Policy Exception QA');
+  await page.locator('#nav button[data-tab="onboarding"]').click();
+  await page.getByRole('button', { name: /Add policy or source/ }).click();
+  await page.locator('#modalContent [name="title"]').fill('Regional attendance policy');
+  await page.locator('#modalContent [name="geography"]').fill('India');
+  await page.locator('#modalContent [name="category"]').fill('Attendance');
+  await page.locator('#modalContent [name="summary"]').fill('Standard attendance policy for testing.');
+  await page.locator('#modalContent [name="status"]').selectOption({ label: 'Reviewed by company' });
+  await page.locator('#modalOk').click();
+  await page.getByRole('button', { name: /Manage exception/ }).click();
+  await page.locator('#modalContent [name="exceptionStatus"]').selectOption({ label: 'Approved exception' });
+  await page.locator('#modalContent [name="exceptionApprovedBy"]').selectOption({ label: 'People Ops' });
+  await page.locator('#modalContent [name="exceptionReason"]').fill('Temporary adjustment for an approved regional operating requirement.');
+  await page.locator('#modalContent [name="exceptionExpires"]').fill('2026-12-31');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Approved exception');
+  await expect(page.locator('#mainContent')).toContainText('People Ops');
+  await expect(page.locator('#mainContent')).toContainText('2026-12-31');
+});
