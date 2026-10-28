@@ -1241,7 +1241,7 @@ test('People Ops can start an appraisal, link OKRs, save evidence and record a r
   await page.locator('#nav button[data-tab="performance"]').click();
   await expect(page.locator('#mainContent')).toContainText('Performance & Continuous Feedback');
   await page.getByRole('button', { name: /Start appraisal/ }).click();
-  await page.locator('#modalContent [name="employee"]').selectOption({ label: 'Asha Performance QA' });
+  await page.locator('#modalContent [name="employee"]').selectOption({ label: 'Priya Verma' });
   await page.locator('#modalContent [name="cycle"]').fill('2026 Mid-year');
   await page.locator('#modalContent [name="goalRating"]').selectOption({ label: '4' });
   await page.locator('#modalContent [name="qualityRating"]').selectOption({ label: '4' });
@@ -1253,7 +1253,7 @@ test('People Ops can start an appraisal, link OKRs, save evidence and record a r
   await page.locator('#modalContent [name="decisionRationale"]').fill('Discuss scope, sustained outcomes, internal equity and approved budget.');
   await page.locator('#modalContent [name="status"]').selectOption({ label: 'Submitted for discussion' });
   await page.locator('#modalOk').click();
-  await expect(page.locator('#performanceReviewsTable')).toContainText('Asha Performance QA');
+  await expect(page.locator('#performanceReviewsTable')).toContainText('Priya Verma');
   await expect(page.locator('#performanceReviewsTable')).toContainText('4 · Strong');
   await expect(page.locator('#performanceReviewsTable')).toContainText('Promotion consideration');
   await expect(page.locator('#performanceReviewsTable')).toContainText('Submitted for discussion');
