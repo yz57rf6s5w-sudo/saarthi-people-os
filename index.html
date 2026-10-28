@@ -729,7 +729,7 @@ function renderPeopleBudget(el){
     {name:'cost',label:'Estimated annual cost ('+b.currency+')',type:'number',min:0,required:true},
     {name:'value',label:'Expected annual value ('+b.currency+')',type:'number',min:0,required:true},
     {name:'assumptions',label:'Evidence, assumptions, one-off costs and risks',type:'textarea',required:true}
-  ],v=>{const cost=Number(v.cost),value=Number(v.value),assumptions=String(v.assumptions||'').trim();if(!Number.isFinite(cost)||cost<0||!Number.isFinite(value)||value<0){notify('Enter valid non-negative cost and value estimates.');return false}if(assumptions.length<8){notify('Add the basis for the estimate and key risks.');return false}b.decisions=Array.isArray(b.decisions)?b.decisions:[];b.decisions.unshift({id:Date.now(),project:v.project.trim(),option:v.option,cost,value,assumptions,createdAt:new Date().toISOString()});saveState();renderApp();notify('Decision added with assumptions.');});
+  ],v=>{const cost=Number(v.cost),value=Number(v.value),assumptions=String(v.assumptions||'').trim();if(!Number.isFinite(cost)||cost<0||!Number.isFinite(value)||value<0){notify('Enter valid non-negative cost and value estimates.');return false}if(assumptions.length<8){notify('Add the basis for the estimate and key risks.');return false}b.decisions=Array.isArray(b.decisions)?b.decisions:[];b.decisions.unshift({id:Date.now(),project:v.project.trim(),option:v.option,cost,value,assumptions,createdAt:new Date().toISOString()});saveState();renderApp();notify('Decision added with assumptions.');}));
 }
 
 function renderDashboard(el,role){
