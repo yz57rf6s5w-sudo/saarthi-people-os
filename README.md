@@ -9,6 +9,16 @@ A lightweight, plug-and-play People Operations prototype for early-stage teams. 
 
 Use the demo code `demo123` and select a role on the sign-in screen. Enter a display name for the session. The prototype seeds example data to help explore dashboards and workflows.
 
+## Install on a device
+
+Saarthi is an installable web app (PWA) for supported browsers. Open the live demo over HTTPS, then:
+
+- **Chrome / Edge on desktop or Android:** select **Install Saarthi** on the sign-in screen, or choose **Install app** from the browser menu.
+- **iPhone / iPad:** open the demo in Safari, tap **Share**, then choose **Add to Home Screen**.
+- **If the install button does not open a prompt:** use the browser's own menu; availability depends on browser and device support.
+
+Installation creates a convenient app-like shortcut. It does **not** turn this demo into a secure production HR system, and demo data remains local to the browser. Use synthetic data only.
+
 ## What you can explore
 
 - **Onboarding:** owners, due dates, prerequisite dependencies, blocker chains and root-blocker attribution.
