@@ -1369,7 +1369,7 @@ test('People Ops can create multiple geography-scoped onboarding templates', asy
 });
 
 
-test('People Ops can add a geography-specific policy source and verification status', async ({ page }) => {
+test('People Ops can add a geography-specific policy source and flag stale verification', async ({ page }) => {
   await login(page, 'hr', 'Policy Library QA');
   await page.locator('#nav button[data-tab="onboarding"]').click();
   await expect(page.locator('#mainContent')).toContainText('LOCAL POLICY LIBRARY');
@@ -1380,8 +1380,10 @@ test('People Ops can add a geography-specific policy source and verification sta
   await page.locator('#modalContent [name="sourceUrl"]').fill('https://labour.gov.in/');
   await page.locator('#modalContent [name="summary"]').fill('Company-approved leave policy summary for India-based hires.');
   await page.locator('#modalContent [name="status"]').selectOption({ label: 'Reviewed by company' });
+  await page.locator('#modalContent [name="verifiedDate"]').fill('2025-01-01');
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('India leave policy');
+  await expect(page.locator('#mainContent')).toContainText('Review due');
   await expect(page.locator('#mainContent')).toContainText('Reviewed by company');
   await expect(page.locator('#mainContent').getByRole('link', { name: /Open source/ })).toHaveAttribute('href', 'https://labour.gov.in/');
 });
