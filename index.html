@@ -711,7 +711,7 @@ function renderPerformance(el,role){
    else if(label.startsWith('Novice'))action='Agree one or two clear expectations, pair them with practical coaching, and set a supportive follow-up date.';
    else if(label==='Developing Navigator')action='Discuss the mixed signals together; choose one strength to build on and one obstacle to remove.';
    const evidence=[ratings.length?ratings.length+' appraisal rating(s)':'',fb.length?fb.length+' visible feedback item(s)':'',recognition?recognition+' recognition signal(s)':'',coaching?coaching+' coaching/support signal(s)':''].filter(Boolean).join(' · ')||'No supporting evidence yet';
-   const contextList=(Array.isArray(state.growthContexts)?state.growthContexts:[]).filter(c=>String(c.employee||'').trim().toLowerCase()===p.name.toLowerCase()&&(isMine({employee:p.name})||['hr','founder'].includes(role)));
+   const contextList=(Array.isArray(state.growthContexts)?state.growthContexts:[]).filter(c=>String(c.employee||'').trim().toLowerCase()===p.name.toLowerCase()&&(isMine({employee:p.name})||['hr','founder'].includes(role)||(role==='manager'&&reports.includes(p.name.toLowerCase())&&c.shareWithManager)));
    return {name:p.name,label,icon,desc,action,basis:basis.join(' · ')||'No visible evidence',evidence,avg,contexts:contextList};
   });
   const target=$('growthArchetypeCards');if(!target)return;
