@@ -689,11 +689,10 @@ function renderPerformance(el,role){
  function editReview(id){
   if(id==='new'){
    if(!canStartAppraisal){notify('Only People Ops can start a formal appraisal cycle.');return}
-   const draft={id:'review-'+Date.now(),employee:'',cycle:'2026 Mid-year',status:'Draft'};
-   reviews.unshift(draft);state.performanceReviews=reviews;saveState();
-   editReview(draft.id);return;
+   const draft={employee:'',cycle:'2026 Mid-year',status:'Draft'};
+   editReview(draft);return;
   }
-  const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
+  const x=id&&typeof id==='object'?id:reviews.find(a=>String(a.id)===String(id));if(!x||(!canSeeReview(x)&&!(role==='hr'&&!x.id)))return;
   if(!canReview){notify('Your appraisal is view-only. Contact your manager or People Ops to request a correction.');return}
   if(role==='manager'&&!reports.includes(String(x.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}
   openForm('Appraisal review · '+(x.employee||name),[
@@ -712,7 +711,7 @@ function renderPerformance(el,role){
   ],v=>{
    const n={...x,...v,id:x.id||'review-'+Date.now(),overallRating:average(v),updatedAt:localISODate(),updatedBy:name};
    ['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});
-   if(!x.id)reviews.unshift(n);else Object.assign(x,n);
+   if(!x.id||!reviews.some(a=>String(a.id)===String(x.id))){n.id=x.id||'review-'+Date.now();reviews.unshift(n)}else Object.assign(x,n);
    state.performanceReviews=reviews;saveState();renderApp();notify('Appraisal saved. Any promotion or compensation decision remains subject to review and approval.');
   });
  }
