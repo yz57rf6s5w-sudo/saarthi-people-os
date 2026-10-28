@@ -571,6 +571,11 @@ function renderApp(){
   else if(currentTab==='helpdesk') renderHelpdesk(el,role);
   else if(currentTab==='saarthi_assistant') renderSaarthiAssistant(el,role);
   else if(currentTab==='candidate_portal') renderCandidate(el);
+  // Never leave a signed-in user on an empty workspace if a renderer returns without content.
+  if(el && !el.innerHTML.trim()){
+    console.error('Saarthi rendered an empty workspace', {role, currentTab});
+    el.innerHTML='<section class="card" role="status"><h2>Your workspace is ready</h2><p class="muted">This section did not display its content. Try Dashboard or refresh the demo.</p><p class="tiny muted">Diagnostic: empty render for '+String(currentTab).replace(/[^a-z0-9_-]/gi,'')+'</p><button class="primary" type="button" onclick="currentTab=\'dashboard\';renderApp()">Open dashboard</button></section>';
+  }
 }
 
 
