@@ -1332,7 +1332,7 @@ test('People Ops can customize an onboarding workflow and apply its template ste
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('Engineering new joiner');
   await expect(page.locator('#mainContent')).toContainText('45 days');
-  await page.getByRole('button', { name: /Add template steps to checklist/ }).click();
+  await page.getByRole('button', { name: /Add steps to checklist/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Set up development environment');
   await expect(page.locator('#mainContent')).toContainText('Review architecture and security');
   await expect(page.locator('#mainContent')).toContainText('Ship a mentored first change');
