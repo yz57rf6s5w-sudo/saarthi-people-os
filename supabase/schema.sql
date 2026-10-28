@@ -148,13 +148,19 @@ for delete to authenticated
 using (public.has_org_role(organization_id, array['founder','hr']));
 
 drop policy if exists "members read audit events" on public.audit_events;
-create policy "members read audit events" on public.audit_events
-for select to authenticated using (public.is_org_member(organization_id));
-
 drop policy if exists "members add audit events" on public.audit_events;
-create policy "members add audit events" on public.audit_events
+drop policy if exists "founders HR read audit events" on public.audit_events;
+create policy "founders HR read audit events" on public.audit_events
+for select to authenticated
+using (public.has_org_role(organization_id, array['founder','hr']));
+
+drop policy if exists "founders HR add audit events" on public.audit_events;
+create policy "founders HR add audit events" on public.audit_events
 for insert to authenticated
-with check (public.is_org_member(organization_id) and actor_user_id = (select auth.uid()));
+with check (
+  public.has_org_role(organization_id, array['founder','hr'])
+  and actor_user_id = (select auth.uid())
+);
 
 -- Intentionally no public signup / organization bootstrap policy. Provision the first
 -- founder membership through a trusted admin workflow; never expose service-role keys
