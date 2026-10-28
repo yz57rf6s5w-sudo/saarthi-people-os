@@ -45,7 +45,7 @@ Deno.test("allows a same-origin preflight without requiring provider secrets", a
 Deno.test("rejects an oversized request before authentication", async () => {
   const response = await handleRecruitmentBriefRequest(new Request("https://example.invalid", {
     method: "POST",
-    headers: { "Content-Length": "9000", Origin: "https://yz57f6s5w-sudo.github.io" },
+    headers: { "Content-Length": "9000", Origin: "https://yz57rf6s5w-sudo.github.io" },
   }));
   assertEquals(response.status, 413);
 });
