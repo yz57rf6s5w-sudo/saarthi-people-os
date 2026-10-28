@@ -1338,3 +1338,32 @@ test('People Ops can customize an onboarding workflow and apply its template ste
   await expect(page.locator('#mainContent')).toContainText('Ship a mentored first change');
   await expect(page.locator('#mainContent')).toContainText('Engineering People Partner');
 });
+
+
+test('People Ops can create multiple geography-scoped onboarding templates', async ({ page }) => {
+  await login(page, 'hr', 'Multi Geography Workflow QA');
+  await page.locator('#nav button[data-tab="onboarding"]').click();
+  await page.getByRole('button', { name: /New workflow/ }).click();
+  await page.locator('#modalContent [name="name"]').fill('India engineering onboarding');
+  await page.locator('#modalContent [name="audience"]').fill('Engineering hires');
+  await page.locator('#modalContent [name="geographyScope"]').fill('India');
+  await page.locator('#modalContent [name="defaultOwner"]').fill('India People Ops');
+  await page.locator('#modalContent [name="durationDays"]').fill('30');
+  await page.locator('#modalContent [name="stepsText"]').fill('Review India employment policies\nProvision local tools and access');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('India engineering onboarding');
+  await expect(page.locator('#mainContent')).toContainText('Geography: India');
+  await page.getByRole('button', { name: /New workflow/ }).click();
+  await page.locator('#modalContent [name="name"]').fill('UK sales onboarding');
+  await page.locator('#modalContent [name="audience"]').fill('Sales hires');
+  await page.locator('#modalContent [name="geographyScope"]').fill('United Kingdom');
+  await page.locator('#modalContent [name="defaultOwner"]').fill('UK People Partner');
+  await page.locator('#modalContent [name="durationDays"]').fill('21');
+  await page.locator('#modalContent [name="stepsText"]').fill('Complete local policy orientation\nMeet regional sales lead');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#onboardingWorkflowSelect')).toContainText('India engineering onboarding');
+  await expect(page.locator('#onboardingWorkflowSelect')).toContainText('UK sales onboarding');
+  await expect(page.locator('#mainContent')).toContainText('Geography: United Kingdom');
+  await page.locator('#onboardingWorkflowSelect').selectOption({ label: /India engineering onboarding/ });
+  await expect(page.locator('#mainContent')).toContainText('Geography: India');
+});
