@@ -727,12 +727,15 @@ function renderPerformance(el,role){
  const originalEdit=editReview;
  function editReview(id){
   if(id==='new'){
-   const firstReport=state.employees.find(e=>String(e.manager||'').trim().toLowerCase()===own);const x={id:'review-'+Date.now(),employee:role==='manager'?String(firstReport?.name||''):name,cycle:'2026 Mid-year',status:'Draft'};
+   if(role!=='hr'){notify('Only People Ops can start a formal appraisal cycle.');return}
+   const x={id:'review-'+Date.now(),employee:'',cycle:'2026 Mid-year',status:'Draft'};
    reviews.unshift(x);editReview(x.id);return;
   }
   const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
+  if(!['founder','hr','manager'].includes(role)){notify('Your appraisal is view-only. Contact People Ops to request a correction.');return}
+  if(role==='manager'&&!reports.includes(String(x.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}
   openForm('Appraisal review · '+(x.employee||name),[
-   {name:'employee',label:'Employee',required:true,value:x.employee||name},
+   {name:'employee',label:'Employee',required:true,type:['manager','hr'].includes(role)?'select':undefined,options:role==='manager'?state.employees.filter(e=>reports.includes(String(e.name||'').trim().toLowerCase())).map(e=>e.name):role==='hr'?state.employees.filter(e=>String(e.status||'Active').toLowerCase()==='active').map(e=>e.name):undefined,value:x.employee||(['manager','hr'].includes(role)?'':name)},
    {name:'cycle',label:'Review cycle',required:true,value:x.cycle||'2026 Mid-year'},
    {name:'project',label:'Linked project / OKR',type:'select',options:['Not linked',...projectOptions],value:x.project||'Not linked'},
    {name:'goalRating',label:'Goal / OKR outcomes (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.goalRating||'Not rated'},
@@ -744,7 +747,7 @@ function renderPerformance(el,role){
    {name:'recommendation',label:'Decision to discuss',type:'select',options:['Discussion needed','Continue in role with goals','Development plan / mentoring','Promotion consideration','Compensation review','Role change consideration','No change proposed'],value:x.recommendation||'Discussion needed'},
    {name:'decisionRationale',label:'Rationale and equity / budget checks',type:'textarea',value:x.decisionRationale||''},
    {name:'status',label:'Status',type:'select',options:['Draft','Submitted for discussion','Calibration / HR review','Discussed with employee','Closed'],value:x.status||'Draft'}
-  ],v=>{if(role==='manager'&&!reports.includes(String(v.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}const n={...x,...v,overallRating:average(v),updatedAt:localISODate(),updatedBy:name};['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});Object.assign(x,n);saveState();renderApp();notify('Appraisal saved. Promotion and compensation recommendations require review and approval.')});
+  ],v=>{if(role==='manager'&&!reports.includes(String(v.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}if(!['founder','hr','manager'].includes(role)){notify('Your appraisal is view-only.');return}const n={...x,...v,overallRating:average(v),updatedAt:localISODate(),updatedBy:name};['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});Object.assign(x,n);saveState();renderApp();notify('Appraisal saved. Promotion and compensation recommendations require review and approval.')});
  }
  draw();
 }
