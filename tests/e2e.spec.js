@@ -1322,8 +1322,8 @@ test('Saarthi guide avoids inventing policy when no matching source exists', asy
 test('People Ops can customize an onboarding workflow and apply its template steps', async ({ page }) => {
   await login(page, 'hr', 'Workflow Builder QA');
   await page.locator('#nav button[data-tab="onboarding"]').click();
-  await expect(page.locator('#mainContent')).toContainText('WORKFLOW TEMPLATE');
-  await page.getByRole('button', { name: /Customize workflow/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('WORKFLOW LIBRARY');
+  await page.getByRole('button', { name: /Customize selected/ }).click();
   await page.locator('#modalContent [name="name"]').fill('Engineering new joiner');
   await page.locator('#modalContent [name="audience"]').fill('Engineering hires');
   await page.locator('#modalContent [name="defaultOwner"]').fill('Engineering People Partner');
@@ -1364,7 +1364,7 @@ test('People Ops can create multiple geography-scoped onboarding templates', asy
   await expect(page.locator('#onboardingWorkflowSelect')).toContainText('India engineering onboarding');
   await expect(page.locator('#onboardingWorkflowSelect')).toContainText('UK sales onboarding');
   await expect(page.locator('#mainContent')).toContainText('Geography: United Kingdom');
-  await page.locator('#onboardingWorkflowSelect').selectOption({ label: /India engineering onboarding/ });
+  await page.locator('#onboardingWorkflowSelect').selectOption({ label: 'India engineering onboarding · Engineering hires' });
   await expect(page.locator('#mainContent')).toContainText('Geography: India');
 });
 
