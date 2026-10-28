@@ -1414,3 +1414,30 @@ test('Founder or People Ops can document an expired policy exception and see a r
   await expect(page.locator('#mainContent')).toContainText('Expired');
   await expect(page.locator('#mainContent')).toContainText('review and close this exception');
 });
+
+
+test('candidate portal explains the journey and offers interview preparation and adjustments', async ({ page }) => {
+  await login(page, 'candidate', 'Candidate Journey QA');
+  await expect(page.locator('#mainContent')).toContainText('Your application timeline');
+  await expect(page.locator('#mainContent')).toContainText('illustrative demo journey');
+  await expect(page.locator('#mainContent')).toContainText('Prepare with confidence');
+  await page.getByRole('button', { name: 'Request an adjustment' }).click();
+  await expect(page.locator('#modalContent')).toContainText('Request an interview adjustment');
+  await page.locator('#modalContent [name="subject"]').fill('Please share interview questions in advance');
+  await page.locator('#modalContent [name="topic"]').selectOption({ label: 'Interview format' });
+  await page.locator('#modalContent [name="priority"]').selectOption({ label: 'Medium' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Candidate · Interview format: Please share interview questions in advance');
+  await expect(page.locator('#toast')).toContainText('No message was sent');
+});
+
+test('candidate support validates too-short requests', async ({ page }) => {
+  await login(page, 'candidate', 'Candidate Support Validation QA');
+  await page.getByRole('button', { name: 'Contact candidate support' }).click();
+  await page.locator('#modalContent [name="subject"]').fill('no');
+  await page.locator('#modalContent [name="topic"]').selectOption({ label: 'Application status' });
+  await page.locator('#modalContent [name="priority"]').selectOption({ label: 'Low' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#modalBg')).toBeVisible();
+  await expect(page.locator('#toast')).toContainText('at least 4 characters');
+});
