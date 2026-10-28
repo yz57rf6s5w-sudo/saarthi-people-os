@@ -1387,7 +1387,7 @@ test('People Ops can add a geography-specific policy source and verification sta
 });
 
 
-test('Founder or People Ops can document an expiring policy exception', async ({ page }) => {
+test('Founder or People Ops can document an expired policy exception and see a review alert', async ({ page }) => {
   await login(page, 'hr', 'Policy Exception QA');
   await page.locator('#nav button[data-tab="onboarding"]').click();
   await page.getByRole('button', { name: /Add policy or source/ }).click();
@@ -1401,9 +1401,11 @@ test('Founder or People Ops can document an expiring policy exception', async ({
   await page.locator('#modalContent [name="exceptionStatus"]').selectOption({ label: 'Approved exception' });
   await page.locator('#modalContent [name="exceptionApprovedBy"]').selectOption({ label: 'People Ops' });
   await page.locator('#modalContent [name="exceptionReason"]').fill('Temporary adjustment for an approved regional operating requirement.');
-  await page.locator('#modalContent [name="exceptionExpires"]').fill('2026-12-31');
+  await page.locator('#modalContent [name="exceptionExpires"]').fill('2020-12-31');
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('Approved exception');
   await expect(page.locator('#mainContent')).toContainText('People Ops');
-  await expect(page.locator('#mainContent')).toContainText('2026-12-31');
+  await expect(page.locator('#mainContent')).toContainText('2020-12-31');
+  await expect(page.locator('#mainContent')).toContainText('Expired');
+  await expect(page.locator('#mainContent')).toContainText('review and close this exception');
 });
