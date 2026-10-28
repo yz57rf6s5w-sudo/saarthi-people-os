@@ -1441,3 +1441,18 @@ test('candidate support validates too-short requests', async ({ page }) => {
   await expect(page.locator('#modalBg')).toBeVisible();
   await expect(page.locator('#toast')).toContainText('at least 4 characters');
 });
+
+
+test('founder can plan a supervised AI workforce pilot without implying a live AI agent', async ({ page }) => {
+  await login(page, 'founder', 'AI Workforce QA');
+  await page.getByRole('button', { name: /AI Workforce/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Capacity on demand, with people in control');
+  await expect(page.locator('#mainContent')).toContainText('does not connect to an AI agent');
+  await page.locator('#aiTaskList').getByLabel(/Organize and summarize applications/).check();
+  await page.locator('#activateAIPlan').click();
+  await expect(page.locator('#aiPlanStatus')).toContainText('Pilot plan saved locally');
+  await expect(page.locator('#aiPlanStatus')).toContainText('No AI worker has been activated');
+  await page.locator('#aiApproval').uncheck();
+  await page.locator('#activateAIPlan').click();
+  await expect(page.locator('#aiPlanStatus')).toContainText('human-review safeguards');
+});
