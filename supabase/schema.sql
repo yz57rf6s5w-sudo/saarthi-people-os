@@ -2,6 +2,10 @@
 -- Apply in a new Supabase project via SQL Editor. Review before production use.
 create extension if not exists pgcrypto;
 
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
+
 create table if not exists public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(trim(name)) between 1 and 120),
@@ -54,7 +58,7 @@ create index if not exists audit_events_org_created_idx
   on public.audit_events (organization_id, created_at desc);
 
 -- Security helpers avoid recursive RLS policy lookups on memberships.
-create or replace function public.is_org_member(target_org uuid)
+create or replace function private.is_org_member(target_org uuid)
 returns boolean language sql stable security definer
 set search_path = '' as $$
   select exists (
@@ -63,7 +67,7 @@ set search_path = '' as $$
   );
 $$;
 
-create or replace function public.has_org_role(target_org uuid, allowed_roles text[])
+create or replace function private.has_org_role(target_org uuid, allowed_roles text[])
 returns boolean language sql stable security definer
 set search_path = '' as $$
   select exists (
@@ -73,10 +77,10 @@ set search_path = '' as $$
   );
 $$;
 
-revoke all on function public.is_org_member(uuid) from public;
-revoke all on function public.has_org_role(uuid, text[]) from public;
-grant execute on function public.is_org_member(uuid) to authenticated;
-grant execute on function public.has_org_role(uuid, text[]) to authenticated;
+revoke all on function private.is_org_member(uuid) from public, anon, authenticated;
+revoke all on function private.has_org_role(uuid, text[]) from public, anon, authenticated;
+grant execute on function private.is_org_member(uuid) to authenticated;
+grant execute on function private.has_org_role(uuid, text[]) to authenticated;
 
 alter table public.organizations enable row level security;
 alter table public.memberships enable row level security;
@@ -85,24 +89,32 @@ alter table public.audit_events enable row level security;
 
 drop policy if exists "members can read their organizations" on public.organizations;
 create policy "members can read their organizations" on public.organizations
-for select to authenticated using (public.is_org_member(id));
+for select to authenticated using (private.is_org_member(id));
 
 drop policy if exists "members can read org memberships" on public.memberships;
 create policy "members can read org memberships" on public.memberships
-for select to authenticated using (public.is_org_member(organization_id));
+for select to authenticated using (private.is_org_member(organization_id));
 
 -- Membership changes go through a constrained function so HR cannot promote
 -- users to founder or edit/delete their own membership through a broad policy.
 drop policy if exists "founders and HR manage memberships" on public.memberships;
 drop policy if exists "founders manage memberships" on public.memberships;
-create policy "founders manage memberships" on public.memberships
-for all to authenticated
-using (public.has_org_role(organization_id, array['founder']))
-with check (public.has_org_role(organization_id, array['founder']));
+create policy "founders create memberships" on public.memberships
+for insert to authenticated
+with check (private.has_org_role(organization_id, array['founder']));
+
+create policy "founders update memberships" on public.memberships
+for update to authenticated
+using (private.has_org_role(organization_id, array['founder']))
+with check (private.has_org_role(organization_id, array['founder']));
+
+create policy "founders delete memberships" on public.memberships
+for delete to authenticated
+using (private.has_org_role(organization_id, array['founder']));
 
 -- Safe first-workspace bootstrap: the authenticated caller becomes the first
 -- founder of a new organization. No arbitrary user ID or role is accepted.
-create or replace function public.create_workspace(workspace_name text)
+create or replace function private.create_workspace(workspace_name text)
 returns uuid
 language plpgsql
 security definer
@@ -129,33 +141,36 @@ grant execute on function public.create_workspace(text) to authenticated;
 
 drop policy if exists "members read onboarding tasks" on public.onboarding_tasks;
 create policy "members read onboarding tasks" on public.onboarding_tasks
-for select to authenticated using (public.is_org_member(organization_id));
+for select to authenticated using (private.is_org_member(organization_id));
 
 drop policy if exists "founders HR managers create onboarding tasks" on public.onboarding_tasks;
 create policy "founders HR managers create onboarding tasks" on public.onboarding_tasks
 for insert to authenticated
-with check (public.has_org_role(organization_id, array['founder','hr','manager']));
+with check (private.has_org_role(organization_id, array['founder','hr','manager']));
 
 drop policy if exists "founders HR managers update onboarding tasks" on public.onboarding_tasks;
 create policy "founders HR managers update onboarding tasks" on public.onboarding_tasks
 for update to authenticated
-using (public.has_org_role(organization_id, array['founder','hr','manager']))
-with check (public.has_org_role(organization_id, array['founder','hr','manager']));
+using (private.has_org_role(organization_id, array['founder','hr','manager']))
+with check (private.has_org_role(organization_id, array['founder','hr','manager']));
 
 drop policy if exists "founders HR delete onboarding tasks" on public.onboarding_tasks;
 create policy "founders HR delete onboarding tasks" on public.onboarding_tasks
 for delete to authenticated
-using (public.has_org_role(organization_id, array['founder','hr']));
+using (private.has_org_role(organization_id, array['founder','hr']));
 
 drop policy if exists "members read audit events" on public.audit_events;
-create policy "members read audit events" on public.audit_events
-for select to authenticated using (public.is_org_member(organization_id));
+create policy "founders HR read audit events" on public.audit_events
+for select to authenticated using (private.has_org_role(organization_id, array['founder','hr']));
 
 drop policy if exists "members add audit events" on public.audit_events;
-create policy "members add audit events" on public.audit_events
+create policy "founders HR add audit events" on public.audit_events
 for insert to authenticated
-with check (public.is_org_member(organization_id) and actor_user_id = (select auth.uid()));
+with check (
+  private.has_org_role(organization_id, array['founder','hr'])
+  and actor_user_id = (select auth.uid())
+);
 
--- Intentionally no public signup / organization bootstrap policy. Provision the first
--- founder membership through a trusted admin workflow; never expose service-role keys
--- in browser code or GitHub Pages.
+-- Workspace creation is available only through private.create_workspace(text), which
+-- requires an authenticated caller and makes that caller the new organization's founder.
+-- Never expose service-role keys in browser code or GitHub Pages.
