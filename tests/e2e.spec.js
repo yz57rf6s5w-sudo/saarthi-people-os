@@ -1235,3 +1235,40 @@ test('employee can raise an exit request and HR can review it', async ({ page })
   await expect(page.locator('#exitRequestsTable')).toContainText('Conversation to be scheduled');
   await expect(page.locator('#mainContent')).not.toContainText('Arrange a private discussion.');
 });
+
+test('performance appraisal links OKRs, saves evidence and records a recommendation for discussion', async ({ page }) => {
+  await login(page, 'founder', 'Performance QA Founder');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Performance & Continuous Feedback');
+  await page.getByRole('button', { name: /Start appraisal/ }).click();
+  await page.locator('#modalContent [name="employee"]').fill('Asha Performance QA');
+  await page.locator('#modalContent [name="cycle"]').fill('2026 Mid-year');
+  await page.locator('#modalContent [name="goalRating"]').selectOption({ label: '4' });
+  await page.locator('#modalContent [name="qualityRating"]').selectOption({ label: '4' });
+  await page.locator('#modalContent [name="collaborationRating"]').selectOption({ label: '3' });
+  await page.locator('#modalContent [name="growthRating"]').selectOption({ label: '5' });
+  await page.locator('#modalContent [name="evidence"]').fill('Delivered the launch milestone and documented handover.');
+  await page.locator('#modalContent [name="employeeReflection"]').fill('Would benefit from mentoring on stakeholder management.');
+  await page.locator('#modalContent [name="recommendation"]').selectOption({ label: 'Promotion consideration' });
+  await page.locator('#modalContent [name="decisionRationale"]').fill('Discuss scope, sustained outcomes, internal equity and approved budget.');
+  await page.locator('#modalContent [name="status"]').selectOption({ label: 'Submitted for discussion' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#performanceReviewsTable')).toContainText('Asha Performance QA');
+  await expect(page.locator('#performanceReviewsTable')).toContainText('3.8');
+  await expect(page.locator('#performanceReviewsTable')).toContainText('Promotion consideration');
+  await expect(page.locator('#performanceReviewsTable')).toContainText('Submitted for discussion');
+});
+
+test('continuous feedback can be captured with explicit visibility', async ({ page }) => {
+  await login(page, 'employee', 'Feedback QA Employee');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await page.getByRole('button', { name: /Share feedback/ }).click();
+  await page.locator('#modalContent [name="employee"]').fill('Feedback QA Employee');
+  await page.locator('#modalContent [name="kind"]').selectOption({ label: 'Recognition' });
+  await page.locator('#modalContent [name="message"]').fill('Helped unblock the release by documenting the deployment steps.');
+  await page.locator('#modalContent [name="nextStep"]').fill('Share the checklist with the wider team.');
+  await page.locator('#modalContent [name="shareWithManager"]').selectOption({ label: 'Private to employee / People Ops' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#continuousFeedbackTable')).toContainText('Helped unblock the release');
+  await expect(page.locator('#continuousFeedbackTable')).toContainText('Private to employee / People Ops');
+});
