@@ -1587,23 +1587,36 @@ function openForm(title,fields,onSubmit){
 
 function openAi(){
   const bg=$('modalBg'),c=$('modalContent');
-  c.innerHTML=`<h3>Ask Saarthi</h3><div class="chat-box" id="chatBox"><div class="bubble bot">Hi! I can help with leave, expenses, onboarding, ESOPs, policies, or helpdesk. What do you need?</div></div><div style="display:flex;gap:6px"><input id="chatInput" placeholder="Type a question..." style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px"><button class="primary small" id="chatSend">Send</button></div><div style="text-align:right;margin-top:8px"><button class="neutral small" id="aiClose">Close</button></div>`;
+  const roleLabels={founder:'Founder',hr:'People Ops',manager:'Manager',employee:'Employee',candidate:'Candidate'};
+  const roleLabel=roleLabels[state.activeRole]||'Team member';
+  const prompts=state.activeRole==='founder'
+    ?['What needs my attention today?','Help me plan a hiring request','How should I review people costs?']
+    :state.activeRole==='hr'
+      ?['Help me plan onboarding','Where can I check a policy?','What should a good hiring brief include?']
+      :state.activeRole==='manager'
+        ?['How do I prepare for a leave approval?','Help me plan team workload','How can I give useful feedback?']
+        :state.activeRole==='candidate'
+          ?['How can I prepare for an interview?','How do I request an adjustment?','What should I ask the recruiter?']
+          :['How do I apply for leave?','Where can I check a policy?','How do I submit an expense?'];
+  c.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h3 style="margin:0 0 4px">Ask Saarthi</h3><p class="muted tiny" style="margin:0">Your People OS companion · ${roleLabel} view</p></div><span class="pill open">Prototype</span></div><div class="card" style="margin:12px 0;padding:10px;background:var(--surface,#f8fafc)"><strong style="font-size:12px">A helpful first step</strong><p class="muted tiny" style="margin:4px 0 0">Ask a question to get guided to the right workflow. You stay in control of the next action.</p></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px" id="aiPromptChips">${prompts.map((p,i)=>'<button type="button" class="secondary small" data-ai-prompt="'+i+'">'+escapeHTML(p)+'</button>').join('')}</div><div class="chat-box" id="chatBox"><div class="bubble bot">Hi! I can help you find the right Saarthi workflow, understand general people processes, or prepare questions for your People team. What would make your day easier?</div></div><div style="display:flex;gap:6px"><input id="chatInput" aria-label="Ask Saarthi a question" placeholder="Ask a question..." style="flex:1;padding:8px;border:1px solid var(--line);border-radius:8px"><button class="primary small" id="chatSend">Send</button></div><p class="muted tiny" style="margin:8px 0 0">Prototype guidance only — this assistant is not connected to a live AI service or company records. Verify policy, eligibility and employment decisions with the appropriate person.</p><div style="text-align:right;margin-top:8px"><button class="neutral small" id="aiClose">Close</button></div>`;
   bg.classList.remove('hidden');
   function addBubble(kind,text){const b=document.createElement('div');b.className='bubble '+kind;b.textContent=text;$('chatBox').appendChild(b);$('chatBox').scrollTop=$('chatBox').scrollHeight}
   function reply(q){
     const lower=q.toLowerCase();
-    let answer='I can guide you on leave, expenses, onboarding, ESOPs, compliance, or helpdesk. Confirm company-specific rules with your People team.';
-    if(lower.includes('policy')||lower.includes('compliance')||lower.includes('posh')||lower.includes('pf')){const approved=(state.policyDocuments||[]).filter(d=>d.status==='Published');answer=approved.length?'I can see '+approved.length+' published workplace '+(approved.length===1?'policy':'policies')+' in this workspace. Open Policy Documents and search the topic; follow the approved wording and effective date. If it does not answer your situation, ask HR. I will not infer eligibility or claim legal compliance from a policy title alone.':'I can’t find a published policy in this demo to support a reliable answer. Open Policy Documents or ask HR for the current approved rule. Don’t rely on an unreviewed draft for a decision. Legal obligations depend on your organisation and circumstances.';}
-    else if(lower.includes('helpdesk')||lower.includes('ticket'))answer='Open Helpdesk Tickets, raise a ticket, and Founder/HR roles can mark it resolved.';
-    else if(lower.includes('leave'))answer='Open Leave Management and choose “Apply leave”. Supported types include Casual, Sick, Earned, Unpaid. Maternity/Paternity eligibility should be confirmed with HR and policy.';
-    else if(lower.includes('expense')||lower.includes('reimburse')||lower.includes('claim'))answer='Open Reimbursements and select “New claim”. Add category, amount and description. The demo stores it locally.';
-    else if(lower.includes('onboard'))answer='Open Onboarding Engine to review the sample checklist. Mark steps done to update progress.';
-    else if(lower.includes('esop')||lower.includes('equity'))answer='ESOPs need clear eligibility, vesting, exercise, dilution and tax documentation. Have the plan reviewed by legal and tax professionals.';
-
-    setTimeout(()=>addBubble('bot',answer),150);
+    let answer='I can point you to a relevant workflow or help you prepare a question. For company-specific rules, confirm the current approved policy with People Ops.';
+    if(lower.includes('attention')||lower.includes('today'))answer=state.activeRole==='founder'?'Start with your executive dashboard, open decisions and people budget. Review any hiring request against the approved plan before committing spend.':'Start with your role dashboard, then review pending actions and due dates. This prototype does not have live company activity.';
+    else if(lower.includes('hiring')||lower.includes('requisition')||lower.includes('role brief'))answer=['founder','hr'].includes(state.activeRole)?'Open Resource Requisitions to review the hiring need. Capture the role purpose, outcomes, must-have skills, budget owner and interview plan. The AI recruitment brief is a planned backend feature and is not live in this prototype.':'Ask your manager or People Ops to clarify the role purpose, outcomes, must-have skills and approval path before recruitment begins.';
+    else if(lower.includes('cost')||lower.includes('budget')||lower.includes('expense')||lower.includes('reimburse')||lower.includes('claim'))answer=state.activeRole==='founder'?'Open People Budget to review planned people costs and assumptions. Treat the sample figures as demo data, not actual company finances.': 'Open Reimbursements for the demo workflow, or ask your manager/People Ops about the current approval path. Any figures shown here are sample data.';
+    else if(lower.includes('policy')||lower.includes('compliance')||lower.includes('posh')||lower.includes('pf')){const approved=(state.policyDocuments||[]).filter(d=>d.status==='Published');answer=approved.length?'This demo contains '+approved.length+' published policy item(s). Open Policy Documents and check the approved wording and effective date. If it does not answer your situation, ask HR.':'I can’t find a published policy in this demo to support a reliable answer. Ask People Ops for the current approved policy; don’t rely on an unreviewed draft for a decision.';}
+    else if(lower.includes('leave'))answer=state.activeRole==='manager'?'Open Leave Management and review the team’s availability and workload before deciding. Consider coverage, overlapping leave and urgent deliverables, then apply your organisation’s approved policy.':'Open Leave Management and choose Apply Leave. This is a demo workflow; confirm eligibility and the current rule in your organisation’s approved policy.';
+    else if(lower.includes('onboard'))answer='Open Onboarding Engine to review the sample checklist. A real onboarding workflow should assign an owner and due date to each task and track completion after authentication is connected.';
+    else if(lower.includes('interview')||lower.includes('candidate')||lower.includes('adjustment'))answer='For interviews, focus on role-related evidence and consistent questions. Candidates should be able to request an adjustment privately. Hiring decisions must remain with accountable people; this prototype does not assess or rank candidates.';
+    else if(lower.includes('feedback')||lower.includes('workload')||lower.includes('team'))answer='Open the team and project views to prepare a workload conversation. Use current assignments, availability and agreed outcomes; avoid drawing conclusions from incomplete or sample data.';
+    addBubble('bot',answer);
   }
   $('chatSend').onclick=()=>{const q=$('chatInput').value.trim();if(!q)return;addBubble('user',q);$('chatInput').value='';reply(q)};
-  $('chatInput').onkeydown=e=>{if(e.key==='Enter'){$('chatSend').click()}};
+  $('chatInput').onkeydown=e=>{if(e.key==='Enter')$('chatSend').click()};
+  c.querySelectorAll('[data-ai-prompt]').forEach(button=>button.addEventListener('click',()=>{const prompt=prompts[Number(button.dataset.aiPrompt)];$('chatInput').value=prompt;$('chatInput').focus()}));
   $('aiClose').onclick=()=>bg.classList.add('hidden');
   $('chatInput').focus();
 }
