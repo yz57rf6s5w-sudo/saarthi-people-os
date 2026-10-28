@@ -525,7 +525,7 @@ function renderApp(){
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
   const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧'],['saarthi_assistant','Saarthi Guide','✦']];
-  if(role!=='candidate')extraModules.forEach(item=>{if(state.accessConfig?.[role]?.[item[0]]===true&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
+  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';if((isGuide||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   const canImportEmployees=['founder','hr'].includes(role);
@@ -708,7 +708,7 @@ function renderPeopleBudget(el){
   const b=state.peopleBudget;
   state.resourceRequisitions=Array.isArray(state.resourceRequisitions)?state.resourceRequisitions:[];
   state.projects=Array.isArray(state.projects)?state.projects:[];
-  const money=n=>b.currency+' '+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+  const money=n=>b.currency+' '+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
   const approved=state.resourceRequisitions.filter(x=>x.status==='Approved').reduce((sum,x)=>sum+Math.max(0,Number(x.budgetMin)||0),0);
   const proposed=state.resourceRequisitions.filter(x=>['Pending review','Pending'].includes(x.status)).reduce((sum,x)=>sum+Math.max(0,Number(x.budgetMin)||0),0);
   const total=Number(b.existingAnnualCost||0)+approved;
@@ -1195,7 +1195,7 @@ function renderHelpdesk(el,role){
   const canResolve=['founder','hr'].includes(role);
   const ownOnly=['employee','manager','candidate'].includes(role);
   const visibleTickets=state.tickets.filter(t=>!ownOnly||t.user===state.displayName);
-  el.innerHTML=pageHead(role==='employee'?'My support requests':role==='manager'?'Team support':'Helpdesk','Get help without chasing updates. You can see your own requests; only People Ops and founders can resolve them.',`<button class="primary" id="raiseTicket">+ Ask Saarthi for help</button>`)+
+  el.innerHTML=pageHead(role==='employee'?'My support requests':role==='manager'?'Team support':'Helpdesk','Get help without chasing updates. You can see your own requests; only People Ops and founders can resolve them.',`<button class="primary" id="raiseTicket">+ Raise ticket · Ask Saarthi for help</button>`)+
   `<div class="metrics">
     <div class="card metric"><strong>${visibleTickets.length}</strong><span>${ownOnly?"My requests":"Visible requests"}</span></div>
     <div class="card metric"><strong>${visibleTickets.filter(t=>t.status==='Open').length}</strong><span>Open</span></div>
