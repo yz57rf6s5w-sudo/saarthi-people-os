@@ -1236,12 +1236,12 @@ test('employee can raise an exit request and HR can review it', async ({ page })
   await expect(page.locator('#mainContent')).not.toContainText('Arrange a private discussion.');
 });
 
-test('performance appraisal links OKRs, saves evidence and records a recommendation for discussion', async ({ page }) => {
-  await login(page, 'founder', 'Performance QA Founder');
+test('People Ops can start an appraisal, link OKRs, save evidence and record a recommendation for discussion', async ({ page }) => {
+  await login(page, 'hr', 'Performance QA People Ops');
   await page.locator('#nav button[data-tab="performance"]').click();
   await expect(page.locator('#mainContent')).toContainText('Performance & Continuous Feedback');
   await page.getByRole('button', { name: /Start appraisal/ }).click();
-  await page.locator('#modalContent [name="employee"]').fill('Asha Performance QA');
+  await page.locator('#modalContent [name="employee"]').selectOption({ label: 'Asha Performance QA' });
   await page.locator('#modalContent [name="cycle"]').fill('2026 Mid-year');
   await page.locator('#modalContent [name="goalRating"]').selectOption({ label: '4' });
   await page.locator('#modalContent [name="qualityRating"]').selectOption({ label: '4' });
