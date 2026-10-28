@@ -30,3 +30,5 @@ jobs:
         run: deno fmt --check supabase/functions/ai-recruitment-brief/index.ts
       - name: Type-check Edge Function
         run: deno check supabase/functions/ai-recruitment-brief/index.ts
+      - name: Run endpoint validation tests
+        run: deno test --allow-env supabase/functions/ai-recruitment-brief/tests/handler_test.ts
