@@ -1383,6 +1383,8 @@ test('People Ops can add a geography-specific policy source and flag stale verif
   await page.locator('#modalContent [name="verifiedDate"]').fill('2025-01-01');
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('India leave policy');
+  await expect(page.locator('#mainContent')).toContainText('Policies needing review');
+  await expect(page.locator('#mainContent')).toContainText('Exceptions due / expired');
   await expect(page.locator('#mainContent')).toContainText('Review due');
   await expect(page.locator('#mainContent')).toContainText('Reviewed by company');
   await expect(page.locator('#mainContent').getByRole('link', { name: /Open source/ })).toHaveAttribute('href', 'https://labour.gov.in/');
