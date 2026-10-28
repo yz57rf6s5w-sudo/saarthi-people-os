@@ -1309,7 +1309,7 @@ test('continuous feedback can be captured with explicit visibility', async ({ pa
 
 test('Saarthi guide avoids inventing policy when no matching source exists', async ({ page }) => {
   await login(page, 'employee', 'Policy Guidance QA');
-  await page.locator('#nav button[data-tab="saarthi"]').click();
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
   await page.locator('#assistantQuestion').fill('What is my legal entitlement for an unusual leave category?');
   await page.getByRole('button', { name: /Find my next step/ }).click();
   await expect(page.locator('#assistantAnswer')).toContainText('could not identify a reliable matching policy source');
