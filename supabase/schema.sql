@@ -136,8 +136,8 @@ begin
   return new_org_id;
 end;
 $$;
-revoke all on function public.create_workspace(text) from public, anon;
-grant execute on function public.create_workspace(text) to authenticated;
+revoke all on function private.create_workspace(text) from public, anon, authenticated;
+grant execute on function private.create_workspace(text) to authenticated;
 
 drop policy if exists "members read onboarding tasks" on public.onboarding_tasks;
 create policy "members read onboarding tasks" on public.onboarding_tasks
