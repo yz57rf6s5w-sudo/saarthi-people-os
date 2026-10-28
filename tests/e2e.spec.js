@@ -1259,6 +1259,16 @@ test('People Ops can start an appraisal, link OKRs, save evidence and record a r
   await expect(page.locator('#performanceReviewsTable')).toContainText('Submitted for discussion');
 });
 
+test('cancelling a new appraisal does not leave a blank draft behind', async ({ page }) => {
+  await login(page, 'hr', 'Cancel Appraisal QA');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await expect(page.locator('#performanceReviewsTable')).toContainText('No appraisal records yet');
+  await page.getByRole('button', { name: /Start appraisal/ }).click();
+  await expect(page.locator('#modalContent')).toContainText('Appraisal review');
+  await page.locator('#modalCancel').click();
+  await expect(page.locator('#performanceReviewsTable')).toContainText('No appraisal records yet');
+});
+
 test('continuous feedback can be captured with explicit visibility', async ({ page }) => {
   await login(page, 'employee', 'Feedback QA Employee');
   await page.locator('#nav button[data-tab="performance"]').click();
