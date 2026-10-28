@@ -553,12 +553,17 @@ test('employee and candidate dashboards show role-appropriate information, not c
   await expect(page.locator('#mainContent')).toContainText('My expenses');
   await expect(page.locator('#mainContent')).toContainText('My onboarding');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#mainContent')).not.toContainText('Claimed amount');
+  await expect(page.locator('#mainContent')).not.toContainText('Company expense total');
   await expect(page.locator('#sidebarSummary')).toBeEmpty();
+  await expect(page.locator('#sidebarSummary')).not.toContainText(/headcount|claimed amount|expense total/i);
   await expect(page.locator('#mainContent')).not.toContainText('Someone Else');
   await page.locator('#roleSelector').selectOption('candidate');
   await expect(page.locator('#mainContent')).toContainText('Application Status');
   await expect(page.locator('#mainContent')).toContainText('Interview scheduled');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
+  await expect(page.locator('#mainContent')).not.toContainText('Claimed amount');
+  await expect(page.locator('#mainContent')).not.toContainText('Company expense total');
   await expect(page.locator('#mainContent')).not.toContainText('My leave requests pending');
   await expect(page.locator('#sidebarSummary')).toBeEmpty();
   await expect(page.locator('#sidebarSummary')).not.toContainText('headcount');
