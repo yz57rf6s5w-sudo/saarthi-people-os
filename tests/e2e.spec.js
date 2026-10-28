@@ -1163,6 +1163,7 @@ test('Saarthi guide shows proactive next actions for each role', async ({ page }
   await login(page, 'employee', 'Action Guide QA');
   await page.getByRole('button', { name: /Saarthi Guide/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Your next best actions');
+  await expect(page.locator('#mainContent')).toContainText('Priority:');
   await expect(page.locator('#mainContent')).toContainText('My leave requests');
   await login(page, 'founder', 'Founder Action QA');
   await page.getByRole('button', { name: /Saarthi Guide/ }).click();
