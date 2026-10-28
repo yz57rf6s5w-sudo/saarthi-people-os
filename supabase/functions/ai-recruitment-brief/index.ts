@@ -17,13 +17,13 @@ function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
 }
 
-function boundedString(value: unknown, max: number): string | null {
+export function boundedString(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length <= max ? trimmed : null;
 }
 
-Deno.serve(async (req: Request) => {
+export async function handleRecruitmentBriefRequest(req: Request): Promise<Response> {
   const origin = req.headers.get("Origin");
   // Browser calls must come from the configured app origin. Requests without
   // Origin (for example, trusted server-to-server calls) are still authenticated below.
@@ -138,4 +138,6 @@ Deno.serve(async (req: Request) => {
     brief,
     note: "AI-assisted draft only. Review for accuracy, fairness and role relevance before use. No candidate decision was made.",
   });
-});
+}
+
+if (import.meta.main) Deno.serve(handleRecruitmentBriefRequest);
