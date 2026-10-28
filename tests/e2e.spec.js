@@ -1169,7 +1169,7 @@ test('Saarthi guide explains live demo signals and links to review context', asy
   await expect(page.locator('#mainContent')).toContainText('Your pending leave requests');
   await expect(page.locator('#mainContent')).toContainText('Counts are calculated from the current demo data');
   await page.getByRole('button', { name: /Your pending leave requests/ }).click();
-  await expect(page.locator('#mainContent')).toContainText('Leave');
+  await expect(page.locator('#mainContent')).toContainText('My leave requests');
 });
 
 test('Saarthi does not invent policy answers when no source is available', async ({ page }) => {
