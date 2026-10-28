@@ -1,6 +1,13 @@
 name: Saarthi browser regression tests
 
 on:
+  pull_request:
+    paths:
+      - "index.html"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/browser-tests.yml"
   push:
     branches: [main]
   workflow_dispatch:
