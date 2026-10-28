@@ -961,12 +961,7 @@ function renderExitModule(el){
   requests.push(req);saveState();renderApp();notify('Exit request saved in this browser demo. No real notification was sent.');
  });
  function impactFor(x){
-  const emp=(Array.isArray(state.employees)?state.employees:[]).find(e=>String(e.name||e.employee||'').trim().toLowerCase()===String(x.employee||'').trim().toLowerCase())||{};
-  const title=String(emp.title||emp.roleTitle||emp.position||emp.role||'').toLowerCase();
   const reason=String(x.reasonCategory||'').toLowerCase();
-  const critical=/lead|manager|architect|specialist|owner|head|principal|admin/.test(title);
-  const severity=critical?'Higher continuity risk':'Impact needs manager assessment';
-  const why=critical?'Role title suggests specialist or leadership coverage may be needed. Confirm dependencies and backup coverage.':'Use a short handover review to identify customer, delivery, knowledge and team dependencies.';
   const suggestions={
    'career opportunity':'Explore growth goals, a meaningful next role, expanded scope or a development plan with clear milestones.',
    'role or growth fit':'Ask what feels misaligned; discuss role redesign, scope clarity, mentoring or an internal move if available.',
@@ -979,7 +974,9 @@ function renderExitModule(el){
    'not specified':'Start by listening and understanding the employee’s priorities before suggesting a retention option.'
   };
   const advice=suggestions[reason]||suggestions['not specified'];
-  return {severity,why,advice,critical};
+  const severity=x.roleCriticality==='High'?'High role criticality':x.roleCriticality==='Medium'?'Medium role criticality':x.roleCriticality==='Low'?'Low role criticality':'Criticality not assessed';
+  const details=[x.deliveryDependency&&x.deliveryDependency.trim()?('Dependencies: '+x.deliveryDependency):'',x.backupCoverage&&x.backupCoverage!=='Not assessed'?('Backup: '+x.backupCoverage):'',x.handoverReadiness&&x.handoverReadiness!=='Not assessed'?('Handover: '+x.handoverReadiness):''].filter(Boolean).join(' · ');
+  return {severity,why:details||'Complete the impact assessment to identify continuity actions.',advice,assessed:Boolean(x.roleCriticality&&x.roleCriticality!=='Not assessed')};
  }
  function drawRequests(){
   const rows=manage?requests:manager?requests.filter(x=>canSeeRequest(x)):requests.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
@@ -994,6 +991,10 @@ function renderExitModule(el){
   const x=requests.find(a=>String(a.id)===String(id));if(!x||!canSeeRequest(x))return;
   const impact=impactFor(x);
   openForm('Retention conversation plan',[
+   {name:'roleCriticality',label:'Role criticality',type:'select',options:['Not assessed','Low','Medium','High'],value:x.roleCriticality||'Not assessed'},
+   {name:'deliveryDependency',label:'Key delivery / customer / knowledge dependencies',type:'textarea',value:x.deliveryDependency||''},
+   {name:'backupCoverage',label:'Backup coverage',type:'select',options:['Not assessed','Ready backup identified','Partial coverage','No backup identified'],value:x.backupCoverage||'Not assessed'},
+   {name:'handoverReadiness',label:'Handover readiness',type:'select',options:['Not assessed','Documented and ready','Partially documented','Knowledge concentrated with employee'],value:x.handoverReadiness||'Not assessed'},
    {name:'retentionIntent',label:'Approach',type:'select',options:['Explore retention respectfully','Support transition / handover','Respect employee decision; no retention push'],value:x.retentionIntent||'Explore retention respectfully'},
    {name:'retentionAction',label:'Agreed next step',type:'textarea',value:x.retentionAction||impact.advice},
    {name:'retentionOwner',label:'Action owner',value:x.retentionOwner||state.displayName},
