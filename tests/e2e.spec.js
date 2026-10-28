@@ -1456,3 +1456,20 @@ test('founder can plan a supervised AI workforce pilot without implying a live A
   await page.locator('#activateAIPlan').click();
   await expect(page.locator('#aiPlanStatus')).toContainText('human-review safeguards');
 });
+
+
+test('founder can prepare a recruitment brief with human-review guardrails', async ({ page }) => {
+  await login(page, 'founder', 'Recruitment Brief QA');
+  await page.getByRole('button', { name: /AI Workforce/ }).click();
+  await page.locator('#briefRole').fill('Recruitment Associate');
+  await page.locator('#briefGoal').fill('Reduce time spent coordinating interviews');
+  await page.locator('#briefContext').fill('Coordinate schedules, prepare interview briefs, and draft candidate updates.');
+  await page.locator('#briefReviewer').fill('People Ops');
+  await page.locator('#buildHiringBrief').click();
+  await expect(page.locator('#hiringBriefOutput')).toContainText('Hiring brief · Recruitment Associate');
+  await expect(page.locator('#hiringBriefOutput')).toContainText('Do not use AI-generated content as an automated candidate decision');
+  await expect(page.locator('#hiringBriefOutput')).toContainText('No external AI service was called');
+  await page.locator('#briefContext').fill('');
+  await page.locator('#buildHiringBrief').click();
+  await expect(page.locator('#hiringBriefOutput')).toContainText('Add the role, hiring goal, context and reviewer');
+});
