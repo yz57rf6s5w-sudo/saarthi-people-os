@@ -80,11 +80,23 @@ export async function handleRecruitmentBriefRequest(req: Request): Promise<Respo
     return json(400, { error: "Provide organization, role, hiring goal and requirements within the stated limits." });
   }
 
-  const { data: allowed, error: roleError } = await supabase.rpc("has_org_role", {
-    target_org: organizationId,
-    allowed_roles: ["founder", "hr"],
-  });
-  if (roleError || allowed !== true) return json(403, { error: "Founder or People Ops access is required for this organization." });
+  // Check the signed-in user's own membership under the table's RLS policies.
+  const { data: membership, error: membershipError } = await supabase
+    .from("memberships")
+    .select("role")
+    .eq("organization_id", organizationId)
+    .eq("user_id", authData.user.id)
+    .maybeSingle();
+
+  if (
+    membershipError ||
+    !membership ||
+    !["founder", "hr"].includes(membership.role)
+  ) {
+    return json(403, {
+      error: "Founder or People Ops access is required for this organization.",
+    });
+  }
 
   let providerResponse: Response;
   try {
