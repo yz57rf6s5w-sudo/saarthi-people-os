@@ -1263,7 +1263,7 @@ test('continuous feedback can be captured with explicit visibility', async ({ pa
   await login(page, 'employee', 'Feedback QA Employee');
   await page.locator('#nav button[data-tab="performance"]').click();
   await page.getByRole('button', { name: /Share feedback/ }).click();
-  await page.locator('#modalContent [name="employee"]').fill('Feedback QA Employee');
+  await page.locator('#modalContent [name="employee"]').selectOption({ label: 'Feedback QA Employee' });
   await page.locator('#modalContent [name="kind"]').selectOption({ label: 'Recognition' });
   await page.locator('#modalContent [name="message"]').fill('Helped unblock the release by documenting the deployment steps.');
   await page.locator('#modalContent [name="nextStep"]').fill('Share the checklist with the wider team.');
