@@ -3,8 +3,11 @@
 // Never place provider credentials in browser code or GitHub Pages.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") ?? "https://yz57rf6s5w-sudo.github.io";
+const maxBodyBytes = 8_192;
 const corsHeaders = {
-  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") ?? "https://yz57rf6s5w-sudo.github.io",
+  "Access-Control-Allow-Origin": allowedOrigin,
+  "Vary": "Origin",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
@@ -21,8 +24,17 @@ function boundedString(value: unknown, max: number): string | null {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const origin = req.headers.get("Origin");
+  // Browser calls must come from the configured app origin. Requests without
+  // Origin (for example, trusted server-to-server calls) are still authenticated below.
+  if (origin && origin !== allowedOrigin) return json(403, { error: "Origin not allowed." });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return json(405, { error: "Method not allowed." });
+
+  const contentLength = Number(req.headers.get("Content-Length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > maxBodyBytes) {
+    return json(413, { error: "Request body is too large." });
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -42,9 +54,18 @@ Deno.serve(async (req: Request) => {
   const { data: authData, error: authError } = await supabase.auth.getUser(token);
   if (authError || !authData.user) return json(401, { error: "Your session is invalid or expired." });
 
+  const contentType = req.headers.get("Content-Type") ?? "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    return json(415, { error: "Content-Type must be application/json." });
+  }
+
   let body: Record<string, unknown>;
   try {
-    const parsed = await req.json();
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > maxBodyBytes) {
+      return json(413, { error: "Request body is too large." });
+    }
+    const parsed: unknown = JSON.parse(rawBody);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return json(400, { error: "A JSON object is required." });
     body = parsed as Record<string, unknown>;
   } catch {
