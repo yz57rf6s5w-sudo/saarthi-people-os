@@ -1284,4 +1284,8 @@ test('continuous feedback can be captured with explicit visibility', async ({ pa
   await expect(page.locator('#growthArchetypes')).toContainText('Growth & contribution patterns');
   await expect(page.locator('#growthArchetypeCards')).toContainText('Feedback QA Employee');
   await expect(page.locator('#growthArchetypes')).toContainText('not personality diagnoses');
+  await page.getByRole('button', { name: /Add context \/ challenge signal/ }).click();
+  await page.locator('#modalContent [name="context"]').fill('The delivery period included a temporary staffing gap.');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#growthArchetypes')).toContainText('The delivery period included a temporary staffing gap.');
 });
