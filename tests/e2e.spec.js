@@ -560,7 +560,7 @@ test('employee and candidate dashboards show role-appropriate information, not c
   await expect(page.locator('#mainContent')).not.toContainText('Someone Else');
   await page.locator('#roleSelector').selectOption('candidate');
   await expect(page.locator('#mainContent')).toContainText('Application Status');
-  await expect(page.locator('#mainContent')).toContainText('Interview scheduled');
+  await expect(page.locator('#mainContent')).toContainText('Interview coordination');
   await expect(page.locator('#mainContent')).not.toContainText('Active headcount');
   await expect(page.locator('#mainContent')).not.toContainText('Claimed amount');
   await expect(page.locator('#mainContent')).not.toContainText('Company expense total');
@@ -654,11 +654,11 @@ test('candidate support rejects vague or oversized subjects without losing input
   await expect(page.locator('#toast')).toContainText('at least 4 characters');
   await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
   await expect(subject).toHaveValue('  hi  ');
-  await subject.fill('x'.repeat(121));
+  await subject.fill('x'.repeat(501));
   await page.locator('#modalOk').click();
-  await expect(page.locator('#toast')).toContainText('120 characters or fewer');
+  await expect(page.locator('#toast')).toContainText('500 characters or fewer');
   await expect(page.locator('#modalBg')).not.toHaveClass(/hidden/);
-  await expect(subject).toHaveValue('x'.repeat(121));
+  await expect(subject).toHaveValue('x'.repeat(501));
   await page.locator('#modalCancel').click();
   await expect(page.locator('#modalBg')).toHaveClass(/hidden/);
 });
@@ -670,13 +670,13 @@ test('candidate support trims valid requests and records creation time', async (
   await page.locator('#modalContent [name="subject"]').fill('  Interview schedule clarification  ');
   await page.locator('#modalContent [name="priority"]').selectOption({ label: 'High' });
   await page.locator('#modalOk').click();
-  await expect(page.locator('#mainContent')).toContainText('Candidate: Interview schedule clarification');
+  await expect(page.locator('#mainContent')).toContainText('Candidate · Application status: Interview schedule clarification');
   await expect(page.locator('#mainContent')).toContainText('Open');
-  await expect(page.locator('#toast')).toContainText('Support request submitted');
+  await expect(page.locator('#toast')).toContainText('Support request saved in this browser demo. No message was sent.');
   await page.reload();
   const persistedTicket = await page.evaluate(() => {
     const saved = JSON.parse(localStorage.getItem('saarthi_people_os_demo_v3') || '{}');
-    return (saved.tickets || []).find(ticket => ticket.subject === 'Candidate: Interview schedule clarification');
+    return (saved.tickets || []).find(ticket => ticket.subject === 'Candidate · Application status: Interview schedule clarification');
   });
   expect(persistedTicket).toBeTruthy();
   expect(persistedTicket.status).toBe('Open');
