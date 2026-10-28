@@ -1185,3 +1185,24 @@ test('Saarthi does not invent policy answers when no source is available', async
   await expect(page.locator('#assistantAnswer')).toContainText('I could not identify a reliable matching policy source');
   await expect(page.locator('#assistantAnswer')).toContainText('effective date');
 });
+
+test('founder people budget flags overspend and low remaining headroom', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('saarthi_people_os_demo_v3', JSON.stringify({
+    peopleBudget: {
+      period: '2026-Q4',
+      currency: 'INR',
+      budget: 1000000,
+      existingAnnualCost: 1200000,
+      notes: 'Overspend regression fixture',
+      decisions: []
+    }
+  })));
+  await login(page, 'founder', 'Budget Guardrail QA');
+  await page.locator('#nav button[data-tab="people_budget"]').click();
+  await expect(page.locator('#mainContent')).toContainText('People budget exceeded');
+  await expect(page.locator('#mainContent [role="alert"]')).toContainText('₹200,000');
+  await page.locator('#peopleBudgetForm [name="budget"]').fill('1500000');
+  await page.locator('#peopleBudgetForm button[type="submit"]').click();
+  await expect(page.locator('#mainContent')).toContainText('Limited budget headroom');
+  await expect(page.locator('#mainContent [role="alert"]')).toHaveCount(0);
+});
