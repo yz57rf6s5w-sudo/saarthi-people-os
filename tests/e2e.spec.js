@@ -1259,6 +1259,22 @@ test('People Ops can start an appraisal, link OKRs, save evidence and record a r
   await expect(page.locator('#performanceReviewsTable')).toContainText('Submitted for discussion');
 });
 
+test('formal appraisal cycle creation is People Ops-led while other roles retain scoped access', async ({ page }) => {
+  await login(page, 'manager', 'Performance QA Manager');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await expect(page.locator('#mainContent')).not.toContainText('Start appraisal');
+  await expect(page.locator('#mainContent')).toContainText('Growth & contribution patterns');
+  await page.locator('#logoutBtn').click();
+  await login(page, 'employee', 'Performance QA Employee');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await expect(page.locator('#mainContent')).not.toContainText('Start appraisal');
+  await expect(page.locator('#mainContent')).toContainText('Share feedback');
+  await page.locator('#logoutBtn').click();
+  await login(page, 'hr', 'Performance QA People Ops');
+  await page.locator('#nav button[data-tab="performance"]').click();
+  await expect(page.getByRole('button', { name: /Start appraisal/ })).toBeVisible();
+});
+
 test('cancelling a new appraisal does not leave a blank draft behind', async ({ page }) => {
   await login(page, 'hr', 'Cancel Appraisal QA');
   await page.locator('#nav button[data-tab="performance"]').click();
