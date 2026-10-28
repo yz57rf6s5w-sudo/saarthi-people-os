@@ -54,3 +54,17 @@ Before real organisational use, Saarthi needs a trusted backend with server-enfo
 ## Product direction
 
 Keep the early-stage experience simple and affordable while designing toward reliable lifecycle workflows, clear ownership, accessible/mobile-friendly screens and secure integration points. Prefer well-maintained open-source components where they reduce cost without weakening security. Treat AI insights as decision support with human review, transparent evidence and explicit uncertainty—not automated employment decisions.
+
+## Secure AI recruitment brief — implementation scaffold
+
+A Supabase Edge Function is being prepared at `supabase/functions/ai-recruitment-brief/index.ts`. It is a backend scaffold, not yet a live feature. It requires a configured Supabase project, authenticated users, organization memberships, and server-side provider secrets before it can be used.
+
+### Required before enabling
+1. Create/configure a Supabase project and apply `supabase/schema.sql`.
+2. Provision organization membership through a trusted administrative process; public self-service founder bootstrap is intentionally not enabled.
+3. Deploy the `ai-recruitment-brief` Edge Function.
+4. Configure server-side secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `OPENAI_API_KEY`; optionally set `OPENAI_MODEL` and `ALLOWED_ORIGIN`. Never put provider secrets in browser code or commit them to Git.
+5. Connect the UI only after real authentication is implemented and test organization isolation, role authorization, rate limits, audit logging, input validation, provider failures and data retention.
+6. Use synthetic role requirements for testing. Do not submit candidate personal data or confidential company information until privacy, retention and security controls have been reviewed.
+
+The endpoint accepts only authenticated organization members with founder or HR/People Ops membership, bounds input sizes, requests a draft rather than a candidate decision, disables provider storage for the request, and writes an audit event. These controls still require independent testing and production hardening; they do not by themselves make the product production-ready.

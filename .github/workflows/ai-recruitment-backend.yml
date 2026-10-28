@@ -1,0 +1,32 @@
+name: AI recruitment backend checks
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/ai-recruitment-backend.yml"
+  push:
+    branches:
+      - main
+      - feat/secure-ai-recruitment-brief
+    paths:
+      - "supabase/**"
+      - ".github/workflows/ai-recruitment-backend.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-edge-function:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Function
+        run: deno check supabase/functions/ai-recruitment-brief/index.ts
+      - name: Run endpoint validation tests
+        run: deno test --no-check --allow-env supabase/functions/ai-recruitment-brief/tests/handler_test.ts
