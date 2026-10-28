@@ -720,7 +720,7 @@ function renderPerformance(el,role){
  const originalEdit=editReview;
  function editReview(id){
   if(id==='new'){
-   const x={id:'review-'+Date.now(),employee:role==='employee'?name:'',cycle:'2026 Mid-year',status:'Draft'};
+   const firstReport=state.employees.find(e=>String(e.manager||'').trim().toLowerCase()===own);const x={id:'review-'+Date.now(),employee:role==='manager'?String(firstReport?.name||''):name,cycle:'2026 Mid-year',status:'Draft'};
    reviews.unshift(x);editReview(x.id);return;
   }
   const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
