@@ -2,6 +2,10 @@
 -- Apply in a new Supabase project via SQL Editor. Review before production use.
 create extension if not exists pgcrypto;
 
+create schema if not exists private;
+revoke all on schema private from public, anon;
+grant usage on schema private to authenticated;
+
 create table if not exists public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(trim(name)) between 1 and 120),
