@@ -455,8 +455,13 @@ window.saarthiLogin=function(event){
     renderApp();notify('Welcome to the Saarthi demo');
   }catch(error){
     console.error('Saarthi demo login failed:',error);
-    loginScreen?.classList.remove('hidden');app?.classList.add('hidden');
-    notify('Workspace could not open: '+(error&&error.message?error.message:'unexpected error'));
+    // Keep the workspace visible if a dashboard/module renderer fails: hiding it masks the
+    // underlying error and makes every workflow appear to be a login failure.
+    if(app)app.classList.remove('hidden');
+    if(loginScreen)loginScreen.classList.add('hidden');
+    const main=$('mainContent');
+    if(main)main.innerHTML='<section class="card"><h2>Workspace opened with a module error</h2><p class="muted">The sign-in worked, but a screen failed to load. Please try another section or refresh.</p><p class="tiny">Diagnostic: '+String(error&&error.message?error.message:'unexpected error').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</p></section>';
+    notify('Workspace opened, but a module failed: '+(error&&error.message?error.message:'unexpected error'));
   }
   return false;
 };
