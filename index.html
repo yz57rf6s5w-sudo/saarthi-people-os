@@ -524,8 +524,8 @@ function renderApp(){
   $('greeting').textContent=`Hi, ${escapeHTML(state.displayName)}`;
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
-  const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧'],['saarthi_assistant','Saarthi Guide','✦']];
-  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';if((isGuide||managerExit||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
+  const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['performance','Performance & Feedback','📈'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧'],['saarthi_assistant','Saarthi Guide','✦']];
+  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';const performanceRole=['founder','hr','manager','employee'].includes(role)&&item[0]==='performance';if((isGuide||managerExit||performanceRole||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   const canImportEmployees=['founder','hr'].includes(role);
@@ -555,6 +555,7 @@ function renderApp(){
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='people_budget'&&role==='founder') renderPeopleBudget(el);
   else if(currentTab==='projects') renderProjects(el,role);
+  else if(currentTab==='performance') renderPerformance(el,role);
   else if(currentTab==='career') renderCareer(el,role);
   else if(currentTab==='requisitions') renderRequisitions(el,role);
   else if(currentTab==='admin_settings') renderAdminSettings(el);
@@ -660,6 +661,87 @@ function renderProjects(el,role){
     el.querySelectorAll('[data-add-kr]').forEach(btn=>btn.addEventListener('click',()=>{const p=projects.find(x=>x.id===Number(btn.dataset.addKr));if(!p)return;openForm('Add key result',[{name:'title',label:'Measurable key result',required:true},{name:'current',label:'Current value',type:'number',min:'0',required:true,value:0},{name:'target',label:'Target value',type:'number',min:'1',required:true},{name:'unit',label:'Unit (%, days, score)',required:true,value:'%'}],v=>{p.keyResults.push({id:Date.now(),...v,current:Number(v.current),target:Number(v.target)});saveState();renderApp();notify('Key result added')})}));
   }
 }
+function renderPerformance(el,role){
+ const name=String(state.displayName||'').trim(),own=name.toLowerCase();
+ state.performanceReviews=Array.isArray(state.performanceReviews)?state.performanceReviews:[];
+ state.continuousFeedback=Array.isArray(state.continuousFeedback)?state.continuousFeedback:[];
+ const reviews=state.performanceReviews,feedback=state.continuousFeedback;
+ const canCalibrate=['founder','hr'].includes(role),canReview=['founder','hr','manager'].includes(role);
+ const reports=role==='manager'?state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===own).map(e=>String(e.name||'').trim().toLowerCase()):[];
+ const isMine=x=>String(x.employee||'').trim().toLowerCase()===own;
+ const canSeeReview=x=>canCalibrate||(role==='manager'&&reports.includes(String(x.employee||'').trim().toLowerCase()))||isMine(x);
+ const visibleReviews=reviews.filter(canSeeReview);
+ const visibleFeedback=feedback.filter(x=>isMine(x)||(canCalibrate)||(role==='manager'&&reports.includes(String(x.employee||'').trim().toLowerCase())&&x.shareWithManager==='Yes'));
+ const objectives=Array.isArray(state.projects)?state.projects:[];
+ const projectOptions=objectives.map(p=>p.name).filter(Boolean);
+ const safe=escapeHTML;
+ const ratingText=r=>({1:'1 · Needs support',2:'2 · Developing',3:'3 · Effective',4:'4 · Strong',5:'5 · Exceptional'})[Number(r)]||'Not rated';
+ const average=x=>{const nums=[x.goalRating,x.qualityRating,x.collaborationRating,x.growthRating].map(Number).filter(n=>n>=1&&n<=5);return nums.length?Math.round(nums.reduce((a,b)=>a+b,0)/nums.length*10)/10:null};
+ el.innerHTML=pageHead('Performance & Continuous Feedback','Connect project outcomes and OKRs with ongoing coaching. Recommendations inform decisions; they never automatically determine pay or promotion.',(canReview?'<button class="primary" id="newPerformanceReview">+ Start appraisal</button>':'')+' <button class="neutral" id="newFeedback">+ Share feedback</button>')+
+ '<div class="metrics"><div class="card metric"><strong>'+visibleReviews.filter(x=>x.status==='Draft').length+'</strong><span>Draft appraisals</span></div><div class="card metric"><strong>'+visibleReviews.filter(x=>x.status==='Submitted for discussion').length+'</strong><span>Ready for discussion</span></div><div class="card metric"><strong>'+visibleFeedback.filter(x=>x.createdAt&&String(x.createdAt).slice(0,7)===localISODate().slice(0,7)).length+'</strong><span>Feedback this month</span></div></div>'+
+ '<section class="card" style="margin-top:14px"><h3>Appraisal & growth decisions</h3><p class="muted tiny">Review evidence from project/OKR outcomes, feedback and role expectations. Ratings are conversation starters, not a substitute for context, calibration or employee voice.</p><div class="table-wrap"><table id="performanceReviewsTable"><thead><tr><th>Employee</th><th>Cycle</th><th>Linked project / OKR</th><th>Overall</th><th>Suggested next step</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div></section>'+
+ '<section class="card" style="margin-top:14px"><h3>Continuous feedback</h3><p class="muted tiny">Keep feedback specific, timely and actionable. Share with the manager only when explicitly selected; sensitive concerns should go through People Ops.</p><div class="table-wrap"><table id="continuousFeedbackTable"><thead><tr><th>About</th><th>Date</th><th>Type</th><th>Feedback</th><th>Next step</th><th>Visibility</th></tr></thead><tbody></tbody></table></div></section>';
+ function draw(){
+  $('performanceReviewsTable').querySelector('tbody').innerHTML=visibleReviews.map(x=>'<tr><td>'+safe(x.employee||'—')+'</td><td>'+safe(x.cycle||'—')+'</td><td>'+safe(x.project||'Not linked')+'</td><td>'+safe(x.overallRating?ratingText(x.overallRating):'Not rated')+'</td><td>'+safe(x.recommendation||'Discussion needed')+'</td><td>'+safe(x.status||'Draft')+'</td><td><button class="neutral small" data-performance-edit="'+safe(x.id)+'">'+(isMine(x)&&!canReview?'View':'Review / edit')+'</button></td></tr>').join('')||'<tr><td colspan="7" class="muted">No appraisal records yet. Start with a clear cycle and evidence-based goals.</td></tr>';
+  $('continuousFeedbackTable').querySelector('tbody').innerHTML=visibleFeedback.slice().reverse().map(x=>'<tr><td>'+safe(x.employee||'—')+'</td><td>'+safe(x.createdAt||'—')+'</td><td>'+safe(x.kind||'Feedback')+'</td><td>'+safe(x.message||'')+'</td><td>'+safe(x.nextStep||'—')+'</td><td>'+safe(x.shareWithManager==='Yes'?'Shared with manager':'Private to employee / People Ops')+'</td></tr>').join('')||'<tr><td colspan="6" class="muted">No feedback shared yet.</td></tr>';
+  $('performanceReviewsTable').querySelectorAll('[data-performance-edit]').forEach(b=>b.onclick=()=>editReview(b.dataset.performanceEdit));
+ }
+ function editReview(id){
+  const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
+  if(!canReview&&!isMine(x)){notify('You do not have access to this appraisal');return}
+  openForm('Appraisal review · '+(x.employee||name),[
+   {name:'employee',label:'Employee',required:true,value:x.employee||name},
+   {name:'cycle',label:'Review cycle',required:true,value:x.cycle||'2026 Mid-year'},
+   {name:'project',label:'Linked project / OKR',type:'select',options:['Not linked',...projectOptions],value:x.project||'Not linked'},
+   {name:'goalRating',label:'Goal / OKR outcomes (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.goalRating||'Not rated'},
+   {name:'qualityRating',label:'Quality of work (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.qualityRating||'Not rated'},
+   {name:'collaborationRating',label:'Collaboration (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.collaborationRating||'Not rated'},
+   {name:'growthRating',label:'Growth and learning (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.growthRating||'Not rated'},
+   {name:'evidence',label:'Evidence, outcomes and context',type:'textarea',required:true,value:x.evidence||''},
+   {name:'employeeReflection',label:'Employee reflection / support needed',type:'textarea',value:x.employeeReflection||''},
+   {name:'recommendation',label:'Decision to discuss',type:'select',options:['Discussion needed','Continue in role with goals','Development plan / mentoring','Promotion consideration','Compensation review','Role change consideration','No change proposed'],value:x.recommendation||'Discussion needed'},
+   {name:'decisionRationale',label:'Rationale and equity / budget checks',type:'textarea',value:x.decisionRationale||''},
+   {name:'status',label:'Status',type:'select',options:['Draft','Submitted for discussion','Calibration / HR review','Discussed with employee','Closed'],value:x.status||'Draft'}
+  ],v=>{
+   const n={...x,...v,id:x.id||'review-'+Date.now(),overallRating:average(v),updatedAt:localISODate(),updatedBy:name};
+   ['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});
+   if(!x.id)reviews.unshift(n);else Object.assign(x,n);
+   state.performanceReviews=reviews;saveState();renderApp();notify('Appraisal saved. Any promotion or compensation decision remains subject to review and approval.');
+  });
+ }
+ $('newPerformanceReview')?.addEventListener('click',()=>editReview('new'));
+ $('newFeedback').addEventListener('click',()=>openForm('Share continuous feedback',[
+  {name:'employee',label:'Feedback about (employee name)',required:true,value:name},
+  {name:'kind',label:'Feedback type',type:'select',options:['Recognition','Coaching opportunity','Project / OKR feedback','Peer collaboration','Manager feedback','Request for support'],required:true},
+  {name:'message',label:'Specific observation and its impact',type:'textarea',required:true},
+  {name:'nextStep',label:'Suggested next step',type:'textarea'},
+  {name:'shareWithManager',label:'Visibility',type:'select',options:['Private to employee / People Ops','Yes'],value:'Private to employee / People Ops'}
+ ],v=>{const item={id:'feedback-'+Date.now(),...v,createdAt:localISODate(),createdBy:name};feedback.push(item);saveState();renderApp();notify('Feedback saved in this browser demo.');}));
+ const originalEdit=editReview;
+ function editReview(id){
+  if(id==='new'){
+   const x={id:'review-'+Date.now(),employee:role==='employee'?name:'',cycle:'2026 Mid-year',status:'Draft'};
+   reviews.unshift(x);editReview(x.id);return;
+  }
+  const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
+  openForm('Appraisal review · '+(x.employee||name),[
+   {name:'employee',label:'Employee',required:true,value:x.employee||name},
+   {name:'cycle',label:'Review cycle',required:true,value:x.cycle||'2026 Mid-year'},
+   {name:'project',label:'Linked project / OKR',type:'select',options:['Not linked',...projectOptions],value:x.project||'Not linked'},
+   {name:'goalRating',label:'Goal / OKR outcomes (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.goalRating||'Not rated'},
+   {name:'qualityRating',label:'Quality of work (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.qualityRating||'Not rated'},
+   {name:'collaborationRating',label:'Collaboration (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.collaborationRating||'Not rated'},
+   {name:'growthRating',label:'Growth and learning (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.growthRating||'Not rated'},
+   {name:'evidence',label:'Evidence, outcomes and context',type:'textarea',required:true,value:x.evidence||''},
+   {name:'employeeReflection',label:'Employee reflection / support needed',type:'textarea',value:x.employeeReflection||''},
+   {name:'recommendation',label:'Decision to discuss',type:'select',options:['Discussion needed','Continue in role with goals','Development plan / mentoring','Promotion consideration','Compensation review','Role change consideration','No change proposed'],value:x.recommendation||'Discussion needed'},
+   {name:'decisionRationale',label:'Rationale and equity / budget checks',type:'textarea',value:x.decisionRationale||''},
+   {name:'status',label:'Status',type:'select',options:['Draft','Submitted for discussion','Calibration / HR review','Discussed with employee','Closed'],value:x.status||'Draft'}
+  ],v=>{const n={...x,...v,overallRating:average(v),updatedAt:localISODate(),updatedBy:name};['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});Object.assign(x,n);saveState();renderApp();notify('Appraisal saved. Promotion and compensation recommendations require review and approval.')});
+ }
+ draw();
+}
+
 function renderAdminSettings(el){
   const moduleChoices=[['dashboard','Dashboard'],['career','Career & Learning'],['projects','Project & OKR Tracking'],['playbook','Founders’ Playbook'],['directory','Team Directory'],['policy_docs','Policy documents'],['exit','Exit & offboarding'],['profile','My profile'],['onboarding','Onboarding'],['leaves','Leave management'],['reimbursements','Expenses'],['rewards','Rewards & culture'],['helpdesk','Helpdesk']];
   const rolesToConfigure=['hr','manager','employee','candidate'];
