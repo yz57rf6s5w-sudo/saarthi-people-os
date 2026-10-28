@@ -1206,3 +1206,30 @@ test('founder people budget flags overspend and low remaining headroom', async (
   await expect(page.locator('#mainContent')).toContainText('Limited budget headroom');
   await expect(page.locator('#mainContent [role="alert"]')).toHaveCount(0);
 });
+
+test('employee can raise an exit request and HR can review it', async ({ page }) => {
+  await login(page, 'employee', 'Exit Request QA');
+  await page.locator('#nav button[data-tab="exit"]').click();
+  await page.getByRole('button', { name: /Raise exit request/ }).click();
+  await page.locator('#modalContent [name="requestType"]').selectOption({ label: 'Formal resignation' });
+  await page.locator('#modalContent [name="lastWorkingDay"]').fill('2026-12-15');
+  await page.locator('#modalContent [name="reasonCategory"]').selectOption({ label: 'Career opportunity' });
+  await page.locator('#modalContent [name="message"]').fill('Please advise on the next steps.');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Formal resignation');
+  await expect(page.locator('#mainContent')).toContainText('Submitted · pending HR review');
+  await expect(page.locator('#mainContent')).toContainText('2026-12-15');
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.locator('#nav button[data-tab="exit"]').click();
+  const request = page.locator('#exitRequestsTable tbody tr').filter({ hasText: 'Exit Request QA' });
+  await expect(request).toBeVisible();
+  await request.getByRole('button', { name: 'Review' }).click();
+  await page.locator('#modalContent [name="status"]').selectOption({ label: 'Conversation to be scheduled' });
+  await page.locator('#modalContent [name="followUp"]').fill('Arrange a private discussion.');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#exitRequestsTable')).toContainText('Conversation to be scheduled');
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.locator('#nav button[data-tab="exit"]').click();
+  await expect(page.locator('#exitRequestsTable')).toContainText('Conversation to be scheduled');
+  await expect(page.locator('#mainContent')).not.toContainText('Arrange a private discussion.');
+});
