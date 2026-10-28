@@ -43,6 +43,8 @@ create index if not exists onboarding_tasks_org_due_idx
 create index if not exists onboarding_tasks_owner_idx
   on public.onboarding_tasks (owner_user_id, due_date)
   where status <> 'Done';
+create index if not exists onboarding_tasks_created_by_idx
+  on public.onboarding_tasks (created_by);
 
 create table if not exists public.audit_events (
   id bigint generated always as identity primary key,
@@ -56,6 +58,10 @@ create table if not exists public.audit_events (
 );
 create index if not exists audit_events_org_created_idx
   on public.audit_events (organization_id, created_at desc);
+create index if not exists audit_events_actor_user_id_idx
+  on public.audit_events (actor_user_id);
+create index if not exists memberships_user_id_idx
+  on public.memberships (user_id);
 
 -- Security helpers avoid recursive RLS policy lookups on memberships.
 create or replace function private.is_org_member(target_org uuid)
