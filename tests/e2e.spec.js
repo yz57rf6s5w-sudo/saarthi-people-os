@@ -1201,7 +1201,7 @@ test('founder people budget flags overspend and low remaining headroom', async (
   await page.locator('#nav button[data-tab="people_budget"]').click();
   await expect(page.locator('#mainContent')).toContainText('People budget exceeded');
   await expect(page.locator('#mainContent [role="alert"]')).toContainText('₹200,000');
-  await page.locator('#peopleBudgetForm [name="budget"]').fill('1500000');
+  await page.locator('#peopleBudgetForm [name="budget"]').fill('1250000');
   await page.locator('#peopleBudgetForm button[type="submit"]').click();
   await expect(page.locator('#mainContent')).toContainText('Limited budget headroom');
   await expect(page.locator('#mainContent [role="alert"]')).toHaveCount(0);
