@@ -1367,3 +1367,21 @@ test('People Ops can create multiple geography-scoped onboarding templates', asy
   await page.locator('#onboardingWorkflowSelect').selectOption({ label: /India engineering onboarding/ });
   await expect(page.locator('#mainContent')).toContainText('Geography: India');
 });
+
+
+test('People Ops can add a geography-specific policy source and verification status', async ({ page }) => {
+  await login(page, 'hr', 'Policy Library QA');
+  await page.locator('#nav button[data-tab="onboarding"]').click();
+  await expect(page.locator('#mainContent')).toContainText('LOCAL POLICY LIBRARY');
+  await page.getByRole('button', { name: /Add policy or source/ }).click();
+  await page.locator('#modalContent [name="title"]').fill('India leave policy');
+  await page.locator('#modalContent [name="geography"]').fill('India');
+  await page.locator('#modalContent [name="category"]').fill('Leave and holidays');
+  await page.locator('#modalContent [name="sourceUrl"]').fill('https://labour.gov.in/');
+  await page.locator('#modalContent [name="summary"]').fill('Company-approved leave policy summary for India-based hires.');
+  await page.locator('#modalContent [name="status"]').selectOption({ label: 'Reviewed by company' });
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('India leave policy');
+  await expect(page.locator('#mainContent')).toContainText('Reviewed by company');
+  await expect(page.locator('#mainContent').getByRole('link', { name: /Open source/ })).toHaveAttribute('href', 'https://labour.gov.in/');
+});
