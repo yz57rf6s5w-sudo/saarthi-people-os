@@ -1305,3 +1305,15 @@ test('continuous feedback can be captured with explicit visibility', async ({ pa
   await page.locator('#modalOk').click();
   await expect(page.locator('#growthArchetypes')).toContainText('The delivery period included a temporary staffing gap.');
 });
+
+
+test('Saarthi guide avoids inventing policy when no matching source exists', async ({ page }) => {
+  await login(page, 'employee', 'Policy Guidance QA');
+  await page.locator('#nav button[data-tab="saarthi"]').click();
+  await page.locator('#assistantQuestion').fill('What is my legal entitlement for an unusual leave category?');
+  await page.getByRole('button', { name: /Find my next step/ }).click();
+  await expect(page.locator('#assistantAnswer')).toContainText('could not identify a reliable matching policy source');
+  await expect(page.locator('#assistantAnswer')).toContainText('I will not guess an entitlement or rule');
+  await page.getByRole('button', { name: /Open relevant area/ }).click();
+  await expect(page.locator('#mainContent')).toContainText(/Policy documents/i);
+});
