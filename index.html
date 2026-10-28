@@ -468,7 +468,7 @@ window.saarthiLogin=function(event){
 };
 
 const roles={
-  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['people_budget','People Budget','₹'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
+  founder:{badge:'FOUNDER / ADMIN',nav:[['dashboard','Executive Dashboard','▦'],['people_budget','People Budget','₹'],['ai_workforce','AI Workforce','✦'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['rewards','Rewards & Culture','🏆'],['leaves','Leave Approvals','📅'],['reimbursements','Expense Claims','₹'],['helpdesk','Support Helpdesk','🎧'],['admin_settings','Advanced Settings','⚙']]},
   hr:{badge:'PEOPLE OPS / HR',nav:[['dashboard','People Ops Hub','♙'],['career','Career & Learning','🌱'],['requisitions','Resource requisitions','＋'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['requisitions','Resource requisitions','＋'],['onboarding','Onboarding Engine','🚀'],['leaves','Leave Management','📅'],['reimbursements','Reimbursements','₹'],['helpdesk','Helpdesk Tickets','🎧'],['rewards','Rewards & Culture','🏆']]},
   manager:{badge:'TEAM MANAGER',nav:[['dashboard','Team Dashboard','▦'],['requisitions','Resource requisitions','＋'],['policy_docs','Policy documents','📄'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['leaves','Team Leave Requests','📅'],['reimbursements','Expense Approvals','₹'],['rewards','Give Shoutout','🏆'],['helpdesk','Helpdesk Tickets','🎧']]},
   employee:{badge:'EMPLOYEE SELF-SERVICE',nav:[['dashboard','My Workspace','⌂'],['attendance','My Attendance','◷'],['profile','My profile','♙'],['policy_docs','Policy documents','📄'],['career','My Career & Learning','🌱'],['projects','My Projects & OKRs','🎯'],['leaves','My Leaves','📅'],['reimbursements','My Expense Claims','₹'],['exit','Exit support','↗'],['rewards','Recognition Wall','🏆'],['helpdesk','HR Helpdesk','?'],['onboarding','My Onboarding','🚀']]},
@@ -554,6 +554,7 @@ function renderApp(){
   const el=$('mainContent');
   if(currentTab==='dashboard') renderDashboard(el,role);
   else if(currentTab==='people_budget'&&role==='founder') renderPeopleBudget(el);
+  else if(currentTab==='ai_workforce'&&role==='founder') renderAIWorkforce(el);
   else if(currentTab==='projects') renderProjects(el,role);
   else if(currentTab==='performance') renderPerformance(el,role);
   else if(currentTab==='career') renderCareer(el,role);
@@ -832,6 +833,47 @@ function wireSaarthiAi(el,role,signals){
   prompts.forEach(btn=>btn.addEventListener('click',()=>reply(btn.textContent)));
   el.querySelector('#saarthiAiForm')?.addEventListener('submit',event=>{event.preventDefault();const q=question.value.trim();if(!q){answer.textContent='Enter a question or choose a suggested prompt.';return}reply(q)});
 }
+function renderAIWorkforce(el){
+  state.aiWorkforce=state.aiWorkforce||{role:'Recruitment Associate',budget:15000,owner:'Founder',status:'Planning',tasks:['Organize and summarize applications','Draft candidate communications'],approvals:true};
+  const plan=state.aiWorkforce;
+  const roleOptions=['Recruitment Associate','Marketing Associate','Business Analyst','Customer Support Associate','Operations Coordinator'];
+  const taskLibrary={
+    'Recruitment Associate':['Organize and summarize applications','Draft candidate communications','Prepare interview briefs','Make final hiring decisions'],
+    'Marketing Associate':['Draft content and campaign calendars','Summarize campaign performance','Publish public-facing content','Approve campaign spend'],
+    'Business Analyst':['Summarize approved business data','Prepare variance reports','Flag unusual trends','Make material financial decisions'],
+    'Customer Support Associate':['Answer routine questions from approved knowledge','Categorize tickets and draft replies','Handle sensitive complaints without review','Issue refunds or contractual commitments'],
+    'Operations Coordinator':['Prepare recurring status summaries','Draft process documentation','Change access permissions','Commit the company to supplier terms']
+  };
+  const tasks=taskLibrary[plan.role]||taskLibrary['Recruitment Associate'];
+  const allowed=tasks.filter(t=>!/(final hiring decisions|publish public-facing|approve campaign spend|material financial decisions|sensitive complaints|issue refunds|change access permissions|supplier terms)/i.test(t));
+  const selected=Array.isArray(plan.tasks)?plan.tasks:[];
+  const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+  el.innerHTML=pageHead('AI Workforce','Keep work moving while a role is vacant. Plan a supervised AI workflow alongside your human hiring plan.')+
+    '<section class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#f7f8ff,#fff);border-color:#dfe5ff"><div class="eyebrow" style="color:var(--indigo)">SAARTHI AI WORKFORCE · EARLY CONCEPT</div><h3>Capacity on demand, with people in control</h3><p class="muted">Define a narrow set of tasks an AI workflow could support while hiring continues. This prototype records a local planning state only; it does not connect to an AI agent, company tools, or live work systems.</p></section>'+
+    '<div class="grid-cards" style="margin-bottom:14px"><section class="card"><div class="eyebrow">WORKFORCE PLAN</div><h3>1 · Choose the role</h3><label for="aiRole">Role to support</label><select id="aiRole" style="width:100%;margin:6px 0 12px">'+roleOptions.map(r=>'<option '+(r===plan.role?'selected':'')+'>'+r+'</option>').join('')+'</select><label for="aiBudget">Monthly AI workflow budget (₹)</label><input id="aiBudget" type="number" min="0" max="10000000" step="500" value="'+Number(plan.budget||0)+'" style="width:100%;margin-top:6px"><label for="aiOwner" style="display:block;margin-top:12px">Accountable owner</label><input id="aiOwner" maxlength="80" value="'+escapeHTML(plan.owner||'Founder')+'" style="width:100%;margin-top:6px"></section>'+
+    '<section class="card"><div class="eyebrow">TASK BOUNDARIES</div><h3>2 · Select suitable tasks</h3><p class="muted tiny">Start with drafts, summaries and preparation. Consequential or externally visible actions need explicit human review.</p><div id="aiTaskList">'+tasks.map(t=>'<label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0"><input type="checkbox" data-ai-task="'+escapeHTML(t)+'" '+(selected.includes(t)?'checked':'')+' '+(!allowed.includes(t)?'disabled':'')+'><span>'+escapeHTML(t)+(allowed.includes(t)?'':' <span class="muted tiny">· human-led / approval required</span>')+'</span></label>').join('')+'</div></section></div>'+
+    '<section class="card" style="margin-bottom:14px"><div class="eyebrow">GOVERNANCE</div><h3>3 · Keep a person accountable</h3><label style="display:flex;gap:9px;align-items:flex-start"><input id="aiApproval" type="checkbox" '+(plan.approvals?'checked':'')+'><span>Require human review before external messages, consequential decisions, financial actions or changes to employee records.</span></label><p class="tiny muted" style="margin-top:10px">AI capacity is reported separately from human headcount. Do not provide unnecessary personal or sensitive employee data to an AI workflow.</p><div class="actions" style="margin-top:14px"><button class="primary" id="saveAIPlan">Save AI workforce plan</button><button class="secondary" id="activateAIPlan" '+(plan.status==='Planning'?'':'')+'>Mark ready for controlled pilot</button></div><p id="aiPlanStatus" role="status" class="muted tiny" style="margin-top:10px">'+(plan.status==='Pilot planned'?'Pilot plan saved locally. No AI worker has been activated.':'Planning only · no AI worker is connected.')+'</p></section>'+
+    '<section class="card"><h3>What Saarthi should measure</h3><div class="grid-cards"><div><strong>Useful output</strong><p class="muted tiny">Tasks completed and quality checked</p></div><div><strong>Human review</strong><p class="muted tiny">Items waiting for approval or escalation</p></div><div><strong>Cost and value</strong><p class="muted tiny">Actual operating cost against outcomes</p></div><div><strong>Handover readiness</strong><p class="muted tiny">Documentation for the human joining the role</p></div></div></section>';
+  const save=()=>{
+    plan.role=$('aiRole').value;
+    plan.budget=Math.max(0,Math.min(10000000,Number($('aiBudget').value)||0));
+    plan.owner=$('aiOwner').value.trim().slice(0,80)||'Founder';
+    plan.tasks=Array.from(el.querySelectorAll('[data-ai-task]:checked')).map(x=>x.dataset.aiTask);
+    plan.approvals=$('aiApproval').checked;
+    plan.status='Planning';
+  };
+  $('aiRole').addEventListener('change',()=>{save();plan.tasks=[];renderAIWorkforce(el);});
+  $('saveAIPlan').addEventListener('click',()=>{save();plan.status='Planning';renderAIWorkforce(el);$('aiPlanStatus').textContent='AI workforce plan saved in this browser demo. No AI worker is connected.';});
+  $('activateAIPlan').addEventListener('click',()=>{
+    save();
+    if(!plan.approvals){$('aiPlanStatus').textContent='Add mandatory human-review safeguards before marking a pilot ready.';return;}
+    if(!plan.tasks.length){$('aiPlanStatus').textContent='Select at least one suitable task before marking a pilot ready.';return;}
+    plan.status='Pilot planned';
+    renderAIWorkforce(el);
+    $('aiPlanStatus').textContent='Pilot plan saved locally. No AI worker has been activated.';
+  });
+}
+
 function renderPeopleBudget(el){
   state.peopleBudget=state.peopleBudget||{period:'2026-Q4',currency:'INR',budget:0,existingAnnualCost:0,notes:'',decisions:[]};
   const b=state.peopleBudget;
