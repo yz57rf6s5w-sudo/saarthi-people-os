@@ -937,14 +937,45 @@ function renderPolicyDocuments(el){
  if(manage)$('addPolicyDoc').onclick=()=>edit(null);$('policySearch').addEventListener('input',draw);$('policyFilter').addEventListener('change',draw);draw();
 }
 function renderExitModule(el){
- const manage=['founder','hr'].includes(state.activeRole);state.exitCases=Array.isArray(state.exitCases)?state.exitCases:[];state.exitRequests=Array.isArray(state.exitRequests)?state.exitRequests:[];const cases=state.exitCases,own=String(state.displayName||'').trim().toLowerCase();
- el.innerHTML=pageHead(manage?'Exit & offboarding':'Exit support',manage?'Coordinate notice periods, handovers, access closure and final documentation.':'Request a confidential conversation with HR. This does not submit a resignation.')+(manage?'<button class="primary small" id="startExit">+ Start offboarding</button>':'<section class="card"><h3>Request an exit conversation</h3><p class="muted tiny">This request does not change employment status or submit a resignation.</p><button class="primary" id="exitRequest">Request confidential conversation</button></section>')+'<div class="card table-card" style="margin-top:14px"><div class="table-wrap"><table id="exitTable"><thead><tr><th>Employee</th><th>Last working day</th><th>Progress</th><th>Status</th>'+(manage?'<th>Action</th>':'')+'</tr></thead><tbody></tbody></table></div></div>';
- if(!manage)$('exitRequest').onclick=()=>{state.exitRequests.push({id:'exit-request-'+Date.now(),employee:state.displayName,createdAt:localISODate(),status:'Needs HR follow-up'});saveState();notify('Request saved in this browser demo. Contact HR directly for confidential support.');};
- function draw(){const rows=manage?cases:cases.filter(x=>String(x.employee||'').trim().toLowerCase()===own);$('exitTable').querySelector('tbody').innerHTML=rows.map(x=>{const tasks=x.checklist||[],done=tasks.filter(t=>t.done).length;return '<tr><td>'+escapeHTML(x.employee||'—')+'</td><td>'+escapeHTML(x.lastWorkingDay||'Not set')+'</td><td>'+done+'/'+tasks.length+' steps</td><td>'+escapeHTML(x.status||'In progress')+'</td>'+(manage?'<td><button class="neutral small" data-exit-edit="'+escapeHTML(x.id)+'">Manage</button></td>':'')+'</tr>'}).join('')||'<tr><td colspan="'+(manage?5:4)+'" class="muted">No offboarding cases yet.</td></tr>';if(manage)$('exitTable').querySelectorAll('[data-exit-edit]').forEach(b=>b.onclick=()=>editCase(b.dataset.exitEdit));}
+ const manage=['founder','hr'].includes(state.activeRole);
+ state.exitCases=Array.isArray(state.exitCases)?state.exitCases:[];
+ state.exitRequests=Array.isArray(state.exitRequests)?state.exitRequests:[];
+ const cases=state.exitCases,requests=state.exitRequests,own=String(state.displayName||'').trim().toLowerCase();
+ const esc=escapeHTML;
+ el.innerHTML=pageHead(manage?'Exit & offboarding':'Exit support',manage?'Review employee exit requests and coordinate handovers, access closure and final documentation.':'Raise an exit request or ask for a confidential conversation with People Ops. Your request is visible to authorised People Ops and founders in this demo.')+
+ (manage?'<button class="primary small" id="startExit">+ Start offboarding</button>':'<section class="card"><div class="card-head"><div><h3>Raise an exit request</h3><p class="muted tiny">Choose whether you are formally submitting a resignation or asking HR for a confidential conversation. A request in this demo is saved locally and does not send a notification.</p></div></div><button class="primary" id="exitRequest">+ Raise exit request</button></section>')+
+ (manage?'<section class="card" style="margin-top:14px"><h3>Employee exit requests</h3><p class="muted tiny">Review the employee’s stated intent and follow up privately. Do not treat a request for a conversation as a resignation.</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Employee</th><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Reason category</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div></section>':'<section class="card" style="margin-top:14px"><h3>My exit requests</h3><p class="muted tiny">Only your requests are shown here.</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Status</th></tr></thead><tbody></tbody></table></div></section>')+
+ '<section class="card" style="margin-top:14px"><h3>'+(manage?'Offboarding cases':'My offboarding')+'</h3><div class="table-wrap"><table id="exitTable"><thead><tr><th>Employee</th><th>Last working day</th><th>Progress</th><th>Status</th>'+(manage?'<th>Action</th>':'')+'</tr></thead><tbody></tbody></table></div></section>';
+ if(!manage)$('exitRequest').onclick=()=>openForm('Raise an exit request',[
+  {name:'requestType',label:'Request type',type:'select',options:['Formal resignation','Confidential exit discussion'],required:true},
+  {name:'lastWorkingDay',label:'Proposed last working day (if known)',type:'date'},
+  {name:'reasonCategory',label:'Reason category (optional)',type:'select',options:['Not specified','Career opportunity','Role or growth fit','Personal reasons','Relocation','Work environment','Compensation or benefits','Other'],value:'Not specified'},
+  {name:'message',label:'Message for People Ops (optional; avoid sensitive personal details)',type:'textarea'}
+ ],v=>{
+  const req={id:'exit-request-'+Date.now(),employee:state.displayName,requestType:v.requestType,lastWorkingDay:v.lastWorkingDay||'',reasonCategory:v.reasonCategory||'Not specified',message:String(v.message||'').trim(),createdAt:localISODate(),status:'Submitted · pending HR review'};
+  requests.push(req);saveState();renderApp();notify('Exit request saved in this browser demo. No real notification was sent.');
+ });
+ function drawRequests(){
+  const rows=manage?requests:requests.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
+  $('exitRequestsTable').querySelector('tbody').innerHTML=rows.map(x=>'<tr><td>'+esc(manage?(x.employee||'—'):x.requestType||'Exit request')+'</td>'+(manage?'<td>'+esc(x.requestType||'Exit request')+'</td>':'')+'<td>'+esc(x.createdAt||'—')+'</td><td>'+esc(x.lastWorkingDay||'Not specified')+'</td>'+(manage?'<td>'+esc(x.reasonCategory||'Not specified')+'</td>':'')+'<td>'+esc(x.status||'Submitted')+'</td>'+(manage?'<td><button class="neutral small" data-exit-request="'+esc(x.id)+'">Review</button></td>':'')+'</tr>').join('')||'<tr><td colspan="'+(manage?7:4)+'" class="muted">No exit requests yet.</td></tr>';
+  if(manage)$('exitRequestsTable').querySelectorAll('[data-exit-request]').forEach(b=>b.onclick=()=>reviewRequest(b.dataset.exitRequest));
+ }
+ function reviewRequest(id){
+  const x=requests.find(a=>String(a.id)===String(id));if(!x)return;
+  openForm('Review employee exit request',[
+   {name:'status',label:'Request status',type:'select',options:['Submitted · pending HR review','Conversation to be scheduled','Under review','Accepted · offboarding to be coordinated','Closed · no resignation submitted','Closed'],value:x.status||'Submitted · pending HR review'},
+   {name:'followUp',label:'Follow-up note (visible to authorised People Ops only)',type:'textarea',value:x.followUp||''}
+  ],v=>{Object.assign(x,v,{reviewedBy:state.displayName,reviewedAt:localISODate()});saveState();renderApp();notify('Exit request status updated.');});
+ }
+ function drawCases(){
+  const rows=manage?cases:cases.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
+  $('exitTable').querySelector('tbody').innerHTML=rows.map(x=>{const tasks=x.checklist||[],done=tasks.filter(t=>t.done).length;return '<tr><td>'+esc(x.employee||'—')+'</td><td>'+esc(x.lastWorkingDay||'Not set')+'</td><td>'+done+'/'+tasks.length+' steps</td><td>'+esc(x.status||'In progress')+'</td>'+(manage?'<td><button class="neutral small" data-exit-edit="'+esc(x.id)+'">Manage</button></td>':'')+'</tr>'}).join('')||'<tr><td colspan="'+(manage?5:4)+'" class="muted">No offboarding cases yet.</td></tr>';
+  if(manage)$('exitTable').querySelectorAll('[data-exit-edit]').forEach(b=>b.onclick=()=>editCase(b.dataset.exitEdit));
+ }
  function editCase(id){const x=cases.find(a=>String(a.id)===String(id));if(!x)return;openForm('Manage offboarding',[{name:'employee',label:'Employee name',required:true,value:x.employee||''},{name:'lastWorkingDay',label:'Last working day',type:'date',value:x.lastWorkingDay||''},{name:'status',label:'Status',type:'select',options:['In progress','Awaiting handover','Awaiting asset return','Final settlement','Complete'],value:x.status||'In progress'},{name:'handoverOwner',label:'Handover owner',value:x.handoverOwner||''},{name:'notes',label:'HR notes (avoid unnecessary sensitive detail)',type:'textarea',value:x.notes||''}],v=>{Object.assign(x,v);saveState();renderApp();notify('Offboarding case updated.');});}
- if(manage)$('startExit').onclick=()=>{const x={id:'exit-'+Date.now(),employee:'',lastWorkingDay:'',status:'In progress',checklist:[{label:'Handover agreed',done:false},{label:'Assets returned',done:false},{label:'Access closure confirmed',done:false},{label:'Final documents reviewed',done:false}]};cases.push(x);saveState();editCase(x.id);};draw();
+ if(manage)$('startExit').onclick=()=>{const x={id:'exit-'+Date.now(),employee:'',lastWorkingDay:'',status:'In progress',checklist:[{label:'Handover agreed',done:false},{label:'Assets returned',done:false},{label:'Access closure confirmed',done:false},{label:'Final documents reviewed',done:false}]};cases.push(x);saveState();editCase(x.id);};
+ drawRequests();drawCases();
 }
-
 function renderOnboarding(el){
   const canManage=['founder','hr'].includes(state.activeRole);
   const today=localISODate();
