@@ -1317,3 +1317,24 @@ test('Saarthi guide avoids inventing policy when no matching source exists', asy
   await page.getByRole('button', { name: /Open relevant area/ }).click();
   await expect(page.locator('#mainContent')).toContainText(/Policy documents/i);
 });
+
+
+test('People Ops can customize an onboarding workflow and apply its template steps', async ({ page }) => {
+  await login(page, 'hr', 'Workflow Builder QA');
+  await page.locator('#nav button[data-tab="onboarding"]').click();
+  await expect(page.locator('#mainContent')).toContainText('WORKFLOW TEMPLATE');
+  await page.getByRole('button', { name: /Customize workflow/ }).click();
+  await page.locator('#modalContent [name="name"]').fill('Engineering new joiner');
+  await page.locator('#modalContent [name="audience"]').fill('Engineering hires');
+  await page.locator('#modalContent [name="defaultOwner"]').fill('Engineering People Partner');
+  await page.locator('#modalContent [name="durationDays"]').fill('45');
+  await page.locator('#modalContent [name="stepsText"]').fill('Set up development environment\nReview architecture and security\nShip a mentored first change');
+  await page.locator('#modalOk').click();
+  await expect(page.locator('#mainContent')).toContainText('Engineering new joiner');
+  await expect(page.locator('#mainContent')).toContainText('45 days');
+  await page.getByRole('button', { name: /Add template steps to checklist/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Set up development environment');
+  await expect(page.locator('#mainContent')).toContainText('Review architecture and security');
+  await expect(page.locator('#mainContent')).toContainText('Ship a mentored first change');
+  await expect(page.locator('#mainContent')).toContainText('Engineering People Partner');
+});
