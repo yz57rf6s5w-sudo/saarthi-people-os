@@ -332,6 +332,8 @@ button:not(:disabled):active{transform:translateY(1px)}
       <div class="form-row"><label>Access code</label><input id="demoCode" required placeholder="demo123" value="demo123"></div>
       <button class="primary" type="submit" style="width:100%">Enter workspace</button>
     </form>
+    <button class="secondary" id="installAppBtn" type="button" style="width:100%;margin-top:10px">Install Saarthi</button>
+    <p class="tiny muted" id="installHelp" style="margin:8px 0 0;line-height:1.5">Add Saarthi to your device for quicker access. If no install prompt appears, open your browser menu and choose “Install app” or “Add to Home Screen”.</p>
     <p class="tiny muted" style="margin:12px 0 0">Code: demo123 · Data stays in this browser only.</p>
   </div>
 </div>
@@ -1746,6 +1748,38 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('error',function(event){
     console.error('Saarthi startup error:',event.message,event.filename,event.lineno);
   });
+})();
+</script>
+<script>
+(function(){
+  const button=document.getElementById('installAppBtn');
+  const help=document.getElementById('installHelp');
+  if(!button||!help)return;
+  let installPrompt=null;
+  const isInstalled=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const hideInstall=()=>{button.classList.add('hidden');help.textContent='Saarthi is installed on this device. You can open it from your home screen or app list.';};
+  if(isInstalled()){hideInstall();return;}
+  window.addEventListener('beforeinstallprompt',event=>{
+    event.preventDefault();
+    installPrompt=event;
+    button.textContent='Install Saarthi';
+    help.textContent='Install Saarthi on this device. Your browser will ask you to confirm.';
+  });
+  button.addEventListener('click',async()=>{
+    if(installPrompt){
+      installPrompt.prompt();
+      const choice=await installPrompt.userChoice;
+      installPrompt=null;
+      if(choice&&choice.outcome==='accepted'){help.textContent='Installation started. Follow your browser’s instructions to finish.';}
+      else{help.textContent='No problem. You can install later from your browser menu: “Install app” or “Add to Home Screen”.';}
+      return;
+    }
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    help.textContent=isIOS
+      ?'On iPhone or iPad: tap Share in Safari, then choose “Add to Home Screen”.'
+      :'In your browser menu, choose “Install app” or “Add to Home Screen”. In some browsers this option appears in the address bar.';
+  });
+  window.addEventListener('appinstalled',hideInstall);
 })();
 </script>
 </body>
