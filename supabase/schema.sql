@@ -54,7 +54,7 @@ create index if not exists audit_events_org_created_idx
   on public.audit_events (organization_id, created_at desc);
 
 -- Security helpers avoid recursive RLS policy lookups on memberships.
-create or replace function public.is_org_member(target_org uuid)
+create or replace function private.is_org_member(target_org uuid)
 returns boolean language sql stable security definer
 set search_path = '' as $$
   select exists (
@@ -63,7 +63,7 @@ set search_path = '' as $$
   );
 $$;
 
-create or replace function public.has_org_role(target_org uuid, allowed_roles text[])
+create or replace function private.has_org_role(target_org uuid, allowed_roles text[])
 returns boolean language sql stable security definer
 set search_path = '' as $$
   select exists (
@@ -73,10 +73,10 @@ set search_path = '' as $$
   );
 $$;
 
-revoke all on function public.is_org_member(uuid) from public;
-revoke all on function public.has_org_role(uuid, text[]) from public;
-grant execute on function public.is_org_member(uuid) to authenticated;
-grant execute on function public.has_org_role(uuid, text[]) to authenticated;
+revoke all on function private.is_org_member(uuid) from public, anon, authenticated;
+revoke all on function private.has_org_role(uuid, text[]) from public, anon, authenticated;
+grant execute on function private.is_org_member(uuid) to authenticated;
+grant execute on function private.has_org_role(uuid, text[]) to authenticated;
 
 alter table public.organizations enable row level security;
 alter table public.memberships enable row level security;
@@ -85,7 +85,7 @@ alter table public.audit_events enable row level security;
 
 drop policy if exists "members can read their organizations" on public.organizations;
 create policy "members can read their organizations" on public.organizations
-for select to authenticated using (public.is_org_member(id));
+for select to authenticated using (private.is_org_member(id));
 
 drop policy if exists "members can read org memberships" on public.memberships;
 create policy "members can read org memberships" on public.memberships
@@ -97,12 +97,12 @@ drop policy if exists "founders and HR manage memberships" on public.memberships
 drop policy if exists "founders manage memberships" on public.memberships;
 create policy "founders manage memberships" on public.memberships
 for all to authenticated
-using (public.has_org_role(organization_id, array['founder']))
+using (private.has_org_role(organization_id, array['founder']))
 with check (public.has_org_role(organization_id, array['founder']));
 
 -- Safe first-workspace bootstrap: the authenticated caller becomes the first
 -- founder of a new organization. No arbitrary user ID or role is accepted.
-create or replace function public.create_workspace(workspace_name text)
+create or replace function private.create_workspace(workspace_name text)
 returns uuid
 language plpgsql
 security definer
@@ -124,8 +124,8 @@ begin
   return new_org_id;
 end;
 $$;
-revoke all on function public.create_workspace(text) from public, anon;
-grant execute on function public.create_workspace(text) to authenticated;
+revoke all on function private.create_workspace(text) from public, anon, authenticated;
+grant execute on function private.create_workspace(text) to authenticated;
 
 drop policy if exists "members read onboarding tasks" on public.onboarding_tasks;
 create policy "members read onboarding tasks" on public.onboarding_tasks
