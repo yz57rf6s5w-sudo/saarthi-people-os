@@ -33,3 +33,19 @@ Deno.test("returns a safe unavailable response when not configured", async () =>
   }));
   assertEquals(response.status, 503);
 });
+Deno.test("allows a same-origin preflight without requiring provider secrets", async () => {
+  const response = await handleRecruitmentBriefRequest(new Request("https://example.invalid", {
+    method: "OPTIONS",
+    headers: { Origin: "https://yz57rf6s5w-sudo.github.io" },
+  }));
+  assertEquals(response.status, 204);
+  assertEquals(response.headers.get("Access-Control-Allow-Methods"), "POST, OPTIONS");
+});
+
+Deno.test("rejects an oversized request before authentication", async () => {
+  const response = await handleRecruitmentBriefRequest(new Request("https://example.invalid", {
+    method: "POST",
+    headers: { "Content-Length": "9000", Origin: "https://yz57f6s5w-sudo.github.io" },
+  }));
+  assertEquals(response.status, 413);
+});
