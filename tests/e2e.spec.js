@@ -1254,7 +1254,7 @@ test('performance appraisal links OKRs, saves evidence and records a recommendat
   await page.locator('#modalContent [name="status"]').selectOption({ label: 'Submitted for discussion' });
   await page.locator('#modalOk').click();
   await expect(page.locator('#performanceReviewsTable')).toContainText('Asha Performance QA');
-  await expect(page.locator('#performanceReviewsTable')).toContainText('3.8');
+  await expect(page.locator('#performanceReviewsTable')).toContainText('4 · Strong');
   await expect(page.locator('#performanceReviewsTable')).toContainText('Promotion consideration');
   await expect(page.locator('#performanceReviewsTable')).toContainText('Submitted for discussion');
 });

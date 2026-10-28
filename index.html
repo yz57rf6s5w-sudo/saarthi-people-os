@@ -688,9 +688,10 @@ function renderPerformance(el,role){
  }
  function editReview(id){
   const x=reviews.find(a=>String(a.id)===String(id));if(!x||!canSeeReview(x))return;
-  if(!canReview&&!isMine(x)){notify('You do not have access to this appraisal');return}
+  if(!canReview){notify('Your appraisal is view-only. Contact your manager or People Ops to request a correction.');return}
+  if(role==='manager'&&!reports.includes(String(x.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}
   openForm('Appraisal review · '+(x.employee||name),[
-   {name:'employee',label:'Employee',required:true,value:x.employee||name},
+   {name:'employee',label:'Employee',required:true,type:role==='manager'?'select':undefined,options:role==='manager'?state.employees.filter(e=>reports.includes(String(e.name||'').trim().toLowerCase())).map(e=>e.name):undefined,value:x.employee||name},
    {name:'cycle',label:'Review cycle',required:true,value:x.cycle||'2026 Mid-year'},
    {name:'project',label:'Linked project / OKR',type:'select',options:['Not linked',...projectOptions],value:x.project||'Not linked'},
    {name:'goalRating',label:'Goal / OKR outcomes (1–5)',type:'select',options:['Not rated','1','2','3','4','5'],value:x.goalRating||'Not rated'},
@@ -711,12 +712,12 @@ function renderPerformance(el,role){
  }
  $('newPerformanceReview')?.addEventListener('click',()=>editReview('new'));
  $('newFeedback').addEventListener('click',()=>openForm('Share continuous feedback',[
-  {name:'employee',label:'Feedback about (employee name)',required:true,value:name},
+  {name:'employee',label:'Feedback about',required:true,type:['employee','manager'].includes(role)?'select':undefined,options:role==='employee'?[name]:role==='manager'?state.employees.filter(e=>reports.includes(String(e.name||'').trim().toLowerCase())).map(e=>e.name):undefined,value:role==='manager'?(state.employees.find(e=>reports.includes(String(e.name||'').trim().toLowerCase()))?.name||''):name},
   {name:'kind',label:'Feedback type',type:'select',options:['Recognition','Coaching opportunity','Project / OKR feedback','Peer collaboration','Manager feedback','Request for support'],required:true},
   {name:'message',label:'Specific observation and its impact',type:'textarea',required:true},
   {name:'nextStep',label:'Suggested next step',type:'textarea'},
   {name:'shareWithManager',label:'Visibility',type:'select',options:['Private to employee / People Ops','Yes'],value:'Private to employee / People Ops'}
- ],v=>{const item={id:'feedback-'+Date.now(),...v,createdAt:localISODate(),createdBy:name};feedback.push(item);saveState();renderApp();notify('Feedback saved in this browser demo.');}));
+ ],v=>{if(role==='employee'&&String(v.employee||'').trim().toLowerCase()!==own){notify('You can only submit feedback about yourself');return}if(role==='manager'&&!reports.includes(String(v.employee||'').trim().toLowerCase())){notify('Managers can only submit feedback about their direct reports');return}const item={id:'feedback-'+Date.now(),...v,createdAt:localISODate(),createdBy:name};feedback.push(item);saveState();renderApp();notify('Feedback saved in this browser demo.');}));
  const originalEdit=editReview;
  function editReview(id){
   if(id==='new'){
@@ -737,7 +738,7 @@ function renderPerformance(el,role){
    {name:'recommendation',label:'Decision to discuss',type:'select',options:['Discussion needed','Continue in role with goals','Development plan / mentoring','Promotion consideration','Compensation review','Role change consideration','No change proposed'],value:x.recommendation||'Discussion needed'},
    {name:'decisionRationale',label:'Rationale and equity / budget checks',type:'textarea',value:x.decisionRationale||''},
    {name:'status',label:'Status',type:'select',options:['Draft','Submitted for discussion','Calibration / HR review','Discussed with employee','Closed'],value:x.status||'Draft'}
-  ],v=>{const n={...x,...v,overallRating:average(v),updatedAt:localISODate(),updatedBy:name};['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});Object.assign(x,n);saveState();renderApp();notify('Appraisal saved. Promotion and compensation recommendations require review and approval.')});
+  ],v=>{if(role==='manager'&&!reports.includes(String(v.employee||'').trim().toLowerCase())){notify('Managers can only review their direct reports');return}const n={...x,...v,overallRating:average(v),updatedAt:localISODate(),updatedBy:name};['goalRating','qualityRating','collaborationRating','growthRating'].forEach(k=>{n[k]=v[k]==='Not rated'?'':v[k]});Object.assign(x,n);saveState();renderApp();notify('Appraisal saved. Promotion and compensation recommendations require review and approval.')});
  }
  draw();
 }
