@@ -1218,7 +1218,7 @@ function renderOnboarding(el){
     {name:'summary',label:'Company-approved summary / relevant requirements',type:'textarea',required:true,value:''},
     {name:'status',label:'Verification status',type:'select',options:['Needs verification','Reviewed by company','Approved for use'],required:true,value:'Needs verification'},
     {name:'verifiedDate',label:'Date checked (optional)',type:'date',value:''}
-  ],v=>{const url=String(v.sourceUrl||'').trim();if(url&&!/^https?:\\/\\//i.test(url)){notify('Use a valid http or https source URL.');return false}state.onboardingPolicies.push({id:'policy-'+Date.now(),title:String(v.title).trim(),geography:String(v.geography).trim(),category:String(v.category).trim(),sourceUrl:url,summary:String(v.summary).trim(),status:v.status,verifiedDate:v.verifiedDate||''});saveState();renderApp();notify('Policy source saved. Verify it before relying on it.')}));
+  ],v=>{const url=String(v.sourceUrl||'').trim();if(url&&!(url.startsWith('http://')||url.startsWith('https://'))){notify('Use a valid http or https source URL.');return false}state.onboardingPolicies.push({id:'policy-'+Date.now(),title:String(v.title).trim(),geography:String(v.geography).trim(),category:String(v.category).trim(),sourceUrl:url,summary:String(v.summary).trim(),status:v.status,verifiedDate:v.verifiedDate||''});saveState();renderApp();notify('Policy source saved. Verify it before relying on it.')}));
   $('newOnboardingWorkflow')?.addEventListener('click',()=>editWorkflow(null));
   $('customizeOnboardingWorkflow')?.addEventListener('click',()=>editWorkflow(workflow));
   $('onboardingWorkflowSelect')?.addEventListener('change',e=>{state.selectedOnboardingWorkflowId=e.target.value;saveState();renderApp()});
