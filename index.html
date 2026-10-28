@@ -1484,19 +1484,35 @@ function renderHelpdesk(el,role){
 }
 
 function renderCandidate(el){
-  el.innerHTML=pageHead('Application Status','Illustrative candidate portal.')+
-  `<div class="metrics"><div class="card metric"><strong>Interview scheduled</strong><span>Demo application status</span></div><div class="card metric"><strong>People Ops</strong><span>Support contact</span></div></div>
-  <div class="card"><h3>What happens next?</h3><p class="muted">Your recruiter will share the next steps and interview details. This is sample data only and is not connected to a real applicant tracking system.</p><button class="primary" id="candidateSupport">Contact candidate support</button></div>`;
-  $('candidateSupport').addEventListener('click',()=>openForm('Contact candidate support',[
-    {name:'subject',label:'What do you need help with?',type:'text',required:true},
-    {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
-  ],v=>{
-    const subject=String(v.subject||'').trim();
-    if(subject.length<4){notify('Describe your question in at least 4 characters.');return false}
-    if(subject.length>120){notify('Keep your question to 120 characters or fewer.');return false}
-    state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate: '+subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});
-    saveState();currentTab='helpdesk';renderApp();notify('Support request submitted')
-  }));
+  const stages=[
+    {title:'Application received',detail:'Your application has been received.',state:'Complete'},
+    {title:'Interview coordination',detail:'If an interview is needed, recruiting will confirm the format, date and participants.',state:'Next step'},
+    {title:'Outcome shared',detail:'Recruiting will share an update when one is available.',state:'Upcoming'}
+  ];
+  el.innerHTML=pageHead('Application Status','A clear, supportive place to prepare and ask questions.')+
+  '<section class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#f7f8ff,#fff);border-color:#dfe5ff"><div style="display:flex;gap:12px;align-items:flex-start"><div aria-hidden="true" style="display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#eef2ff;color:#5145e5;font-size:22px">✦</div><div><h3 style="margin:0 0 4px">Your next chapter starts here</h3><p class="muted" style="margin:0">You deserve a process that is clear, respectful and accessible. This is an illustrative demo journey, not a live application status feed.</p></div></div></section>'+
+  '<div class="metrics"><div class="card metric"><strong>Application journey</strong><span>Sample stages · not live status</span></div><div class="card metric"><strong>Recruiting support</strong><span>Ask a question or request an adjustment</span></div></div>'+
+  '<section class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px">Your application timeline</h3><p class="muted tiny">Example only. Your recruiter remains the source of truth for dates, stage changes and decisions.</p><div style="display:grid;gap:0;margin-top:12px">'+stages.map((s,i)=>'<div style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;position:relative;padding-bottom:'+(i===stages.length-1?'0':'18px')+'"><div aria-hidden="true" style="display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:'+(i===0?'#dcfce7':'#eef2ff')+';color:'+(i===0?'#166534':'#4338ca')+';font-weight:800">'+(i===0?'✓':String(i+1))+'</div><div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><strong>'+s.title+'</strong><span class="pill '+(i===0?'approved':'open')+'">'+s.state+'</span></div><p class="muted tiny" style="margin:3px 0 0">'+s.detail+'</p></div></div>').join('')+'</div></section>'+
+  '<div class="grid-cards" style="margin-bottom:14px">'+
+  '<section class="card"><h3 style="margin-top:0">Prepare with confidence</h3><p class="muted tiny">A few practical reminders for any interview.</p><ul style="padding-left:18px;margin-bottom:0"><li>Review the role description and note questions about the work.</li><li>Bring examples of your contribution and what you learned.</li><li>It is okay to ask about the format, timing or next steps.</li></ul></section>'+
+  '<section class="card"><h3 style="margin-top:0">Access and adjustments</h3><p class="muted">Need a different interview format, accessibility adjustment, extra context or a scheduling conversation? You can ask recruiting privately. You do not need to share more personal detail than is necessary.</p><button class="secondary" id="candidateAdjustment">Request an adjustment</button></section></div>'+
+  '<section class="card"><h3 style="margin:0 0 5px">Questions or updates?</h3><p class="muted">Ask recruiting about interview logistics, the role, timing or your application. This demo saves a local sample ticket only; it does not send a message or update a real application.</p><button class="primary" id="candidateSupport">Contact candidate support</button></section>';
+  function createSupportForm(adjustment=false){
+    openForm(adjustment?'Request an interview adjustment':'Contact candidate support',[
+      {name:'subject',label:adjustment?'What adjustment or format would help?':'What do you need help with?',type:'textarea',required:true},
+      {name:'topic',label:'Topic',type:'select',options:adjustment?['Interview format','Accessibility adjustment','Scheduling','Other']:['Application status','Interview logistics','Role details','Scheduling','Accessibility or adjustment','Other'],required:true},
+      {name:'priority',label:'Priority',type:'select',options:['Low','Medium','High'],required:true}
+    ],v=>{
+      const subject=String(v.subject||'').trim();
+      if(subject.length<4){notify('Please add a little more detail (at least 4 characters).');return false}
+      if(subject.length>500){notify('Keep your message to 500 characters or fewer.');return false}
+      state.tickets=Array.isArray(state.tickets)?state.tickets:[];
+      state.tickets.unshift({id:Date.now(),user:state.displayName,subject:'Candidate · '+v.topic+': '+subject,priority:v.priority,status:'Open',createdAt:new Date().toISOString()});
+      saveState();currentTab='helpdesk';renderApp();notify('Support request saved in this browser demo. No message was sent.');
+    });
+  }
+  $('candidateSupport').addEventListener('click',()=>createSupportForm(false));
+  $('candidateAdjustment').addEventListener('click',()=>createSupportForm(true));
 }
 
 function localISODate(offsetDays=0){
