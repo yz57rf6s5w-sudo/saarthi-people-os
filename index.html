@@ -525,7 +525,7 @@ function renderApp(){
   $('roleSelector').innerHTML=Object.keys(roles).map(k=>`<option value="${k}" ${k===role?'selected':''}>${roles[k].badge}</option>`).join('');
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
   const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧'],['saarthi_assistant','Saarthi Guide','✦']];
-  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';if((isGuide||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
+  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';if((isGuide||managerExit||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   const canImportEmployees=['founder','hr'].includes(role);
@@ -937,28 +937,69 @@ function renderPolicyDocuments(el){
  if(manage)$('addPolicyDoc').onclick=()=>edit(null);$('policySearch').addEventListener('input',draw);$('policyFilter').addEventListener('change',draw);draw();
 }
 function renderExitModule(el){
- const manage=['founder','hr'].includes(state.activeRole);
+ const role=state.activeRole;
+ const manage=['founder','hr'].includes(role),manager=role==='manager';
  state.exitCases=Array.isArray(state.exitCases)?state.exitCases:[];
  state.exitRequests=Array.isArray(state.exitRequests)?state.exitRequests:[];
  const cases=state.exitCases,requests=state.exitRequests,own=String(state.displayName||'').trim().toLowerCase();
  const esc=escapeHTML;
- el.innerHTML=pageHead(manage?'Exit & offboarding':'Exit support',manage?'Review employee exit requests and coordinate handovers, access closure and final documentation.':'Raise an exit request or ask for a confidential conversation with People Ops. Your request is visible to authorised People Ops and founders in this demo.')+
- (manage?'<button class="primary small" id="startExit">+ Start offboarding</button>':'<section class="card"><div class="card-head"><div><h3>Raise an exit request</h3><p class="muted tiny">Choose whether you are formally submitting a resignation or asking HR for a confidential conversation. A request in this demo is saved locally and does not send a notification.</p></div></div><button class="primary" id="exitRequest">+ Raise exit request</button></section>')+
- (manage?'<section class="card" style="margin-top:14px"><h3>Employee exit requests</h3><p class="muted tiny">Review the employee’s stated intent and follow up privately. Do not treat a request for a conversation as a resignation.</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Employee</th><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Reason category</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div></section>':'<section class="card" style="margin-top:14px"><h3>My exit requests</h3><p class="muted tiny">Only your requests are shown here.</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Status</th></tr></thead><tbody></tbody></table></div></section>')+
- '<section class="card" style="margin-top:14px"><h3>'+(manage?'Offboarding cases':'My offboarding')+'</h3><div class="table-wrap"><table id="exitTable"><thead><tr><th>Employee</th><th>Last working day</th><th>Progress</th><th>Status</th>'+(manage?'<th>Action</th>':'')+'</tr></thead><tbody></tbody></table></div></section>';
- if(!manage)$('exitRequest').onclick=()=>openForm('Raise an exit request',[
+ const directReports=Array.isArray(state.employees)?state.employees.filter(e=>String(e.manager||'').trim().toLowerCase()===own).map(e=>String(e.name||e.employee||'').trim().toLowerCase()):[];
+ const canSeeRequest=x=>manage||(manager&&directReports.includes(String(x.employee||'').trim().toLowerCase()));
+ const heading=manage?'Exit & offboarding':manager?'Team exit insights':'Exit support';
+ const intro=manage?'Review employee exit requests and coordinate handovers, access closure and final documentation.':manager?'Understand potential team impact and explore respectful retention options for direct reports. Confidential employee messages remain with People Ops.':'Raise an exit request or ask for a confidential conversation with People Ops. Your request is visible to authorised People Ops and founders in this demo.';
+ el.innerHTML=pageHead(heading,intro)+
+ (manage?'<button class="primary small" id="startExit">+ Start offboarding</button>':manager?'':'<section class="card"><div class="card-head"><div><h3>Raise an exit request</h3><p class="muted tiny">Choose whether you are formally submitting a resignation or asking HR for a confidential conversation. A request in this demo is saved locally and does not send a notification.</p></div></div><button class="primary" id="exitRequest">+ Raise exit request</button></section>')+
+ ((manage||manager)?'<section class="card" style="margin-top:14px"><h3>Employee exit requests</h3><p class="muted tiny">'+(manager?'Direct reports only. Impact is a planning prompt, not a prediction or a reason to pressure someone to stay. Confidential messages are not shown.':'Review the employee’s stated intent and follow up privately. Do not treat a request for a conversation as a resignation.')+'</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Employee</th><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Reason category</th><th>Criticality / impact</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div></section>':'<section class="card" style="margin-top:14px"><h3>My exit requests</h3><p class="muted tiny">Only your requests are shown here.</p><div class="table-wrap"><table id="exitRequestsTable"><thead><tr><th>Request type</th><th>Raised</th><th>Proposed last day</th><th>Status</th></tr></thead><tbody></tbody></table></div></section>')+
+ '<section class="card" style="margin-top:14px"><h3>'+(manage?'Offboarding cases':manager?'Team offboarding':'My offboarding')+'</h3><div class="table-wrap"><table id="exitTable"><thead><tr><th>Employee</th><th>Last working day</th><th>Progress</th><th>Status</th>'+(manage?'<th>Action</th>':'')+'</tr></thead><tbody></tbody></table></div></section>';
+ if(!manage&&!manager)$('exitRequest').onclick=()=>openForm('Raise an exit request',[
   {name:'requestType',label:'Request type',type:'select',options:['Formal resignation','Confidential exit discussion'],required:true},
   {name:'lastWorkingDay',label:'Proposed last working day (if known)',type:'date'},
-  {name:'reasonCategory',label:'Reason category (optional)',type:'select',options:['Not specified','Career opportunity','Role or growth fit','Personal reasons','Relocation','Work environment','Compensation or benefits','Other'],value:'Not specified'},
+  {name:'reasonCategory',label:'Reason category (optional)',type:'select',options:['Not specified','Career opportunity','Role or growth fit','Personal reasons','Relocation','Work environment','Compensation or benefits','Workload or burnout','Other'],value:'Not specified'},
   {name:'message',label:'Message for People Ops (optional; avoid sensitive personal details)',type:'textarea'}
  ],v=>{
   const req={id:'exit-request-'+Date.now(),employee:state.displayName,requestType:v.requestType,lastWorkingDay:v.lastWorkingDay||'',reasonCategory:v.reasonCategory||'Not specified',message:String(v.message||'').trim(),createdAt:localISODate(),status:'Submitted · pending HR review'};
   requests.push(req);saveState();renderApp();notify('Exit request saved in this browser demo. No real notification was sent.');
  });
+ function impactFor(x){
+  const emp=(Array.isArray(state.employees)?state.employees:[]).find(e=>String(e.name||e.employee||'').trim().toLowerCase()===String(x.employee||'').trim().toLowerCase())||{};
+  const title=String(emp.title||emp.roleTitle||emp.position||emp.role||'').toLowerCase();
+  const reason=String(x.reasonCategory||'').toLowerCase();
+  const critical=/lead|manager|architect|specialist|owner|head|principal|admin/.test(title);
+  const severity=critical?'Higher continuity risk':'Impact needs manager assessment';
+  const why=critical?'Role title suggests specialist or leadership coverage may be needed. Confirm dependencies and backup coverage.':'Use a short handover review to identify customer, delivery, knowledge and team dependencies.';
+  const suggestions={
+   'career opportunity':'Explore growth goals, a meaningful next role, expanded scope or a development plan with clear milestones.',
+   'role or growth fit':'Ask what feels misaligned; discuss role redesign, scope clarity, mentoring or an internal move if available.',
+   'compensation or benefits':'Offer a fair-pay and internal-equity review; discuss only options that fit approved budget and policy.',
+   'work environment':'Offer a private listening conversation and an impartial review of concerns; agree on concrete actions and check-ins.',
+   'workload or burnout':'Review capacity, priorities and recurring overtime; redistribute work and agree on a realistic recovery plan.',
+   'relocation':'Explore location or schedule flexibility where role, policy and team needs permit.',
+   'personal reasons':'Ask whether any work adjustment would help, without requesting private details or making assumptions.',
+   'other':'Ask an open question about the main driver before proposing solutions.',
+   'not specified':'Start by listening and understanding the employee’s priorities before suggesting a retention option.'
+  };
+  const advice=suggestions[reason]||suggestions['not specified'];
+  return {severity,why,advice,critical};
+ }
  function drawRequests(){
-  const rows=manage?requests:requests.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
-  $('exitRequestsTable').querySelector('tbody').innerHTML=rows.map(x=>'<tr><td>'+esc(manage?(x.employee||'—'):x.requestType||'Exit request')+'</td>'+(manage?'<td>'+esc(x.requestType||'Exit request')+'</td>':'')+'<td>'+esc(x.createdAt||'—')+'</td><td>'+esc(x.lastWorkingDay||'Not specified')+'</td>'+(manage?'<td>'+esc(x.reasonCategory||'Not specified')+'</td>':'')+'<td>'+esc(x.status||'Submitted')+'</td>'+(manage?'<td><button class="neutral small" data-exit-request="'+esc(x.id)+'">Review</button></td>':'')+'</tr>').join('')||'<tr><td colspan="'+(manage?7:4)+'" class="muted">No exit requests yet.</td></tr>';
+  const rows=manage?requests:manager?requests.filter(x=>canSeeRequest(x)):requests.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
+  $('exitRequestsTable').querySelector('tbody').innerHTML=rows.map(x=>{
+   const impact=impactFor(x);
+   return '<tr><td>'+esc(manage||manager?(x.employee||'—'):x.requestType||'Exit request')+'</td>'+(manage||manager?'<td>'+esc(x.requestType||'Exit request')+'</td>':'')+'<td>'+esc(x.createdAt||'—')+'</td><td>'+esc(x.lastWorkingDay||'Not specified')+'</td>'+(manage||manager?'<td>'+esc(x.reasonCategory||'Not specified')+'</td><td><strong>'+esc(impact.severity)+'</strong><div class="muted tiny">'+esc(impact.why)+'</div><div class="tiny" style="margin-top:5px"><strong>Retention idea:</strong> '+esc(impact.advice)+'</div></td>':'')+'<td>'+esc(x.status||'Submitted')+'</td>'+(manage?'<td><button class="neutral small" data-exit-request="'+esc(x.id)+'">Review</button></td>':manager?'<td><button class="neutral small" data-retention-plan="'+esc(x.id)+'">Explore retention</button></td>':'')+'</tr>';
+  }).join('')||'<tr><td colspan="'+(manage||manager?8:4)+'" class="muted">'+(manager?'No exit requests from your direct reports yet.':'No exit requests yet.')+'</td></tr>';
   if(manage)$('exitRequestsTable').querySelectorAll('[data-exit-request]').forEach(b=>b.onclick=()=>reviewRequest(b.dataset.exitRequest));
+  if(manager)$('exitRequestsTable').querySelectorAll('[data-retention-plan]').forEach(b=>b.onclick=()=>retentionPlan(b.dataset.retentionPlan));
+ }
+ function retentionPlan(id){
+  const x=requests.find(a=>String(a.id)===String(id));if(!x||!canSeeRequest(x))return;
+  const impact=impactFor(x);
+  openForm('Retention conversation plan',[
+   {name:'retentionIntent',label:'Approach',type:'select',options:['Explore retention respectfully','Support transition / handover','Respect employee decision; no retention push'],value:x.retentionIntent||'Explore retention respectfully'},
+   {name:'retentionAction',label:'Agreed next step',type:'textarea',value:x.retentionAction||impact.advice},
+   {name:'retentionOwner',label:'Action owner',value:x.retentionOwner||state.displayName},
+   {name:'retentionFollowUpDate',label:'Follow-up date',type:'date',value:x.retentionFollowUpDate||''},
+   {name:'retentionCost',label:'Estimated recurring cost, if relevant (optional)',type:'text',value:x.retentionCost||''}
+  ],v=>{Object.assign(x,v,{retentionUpdatedBy:state.displayName,retentionUpdatedAt:localISODate()});saveState();renderApp();notify('Retention plan saved in this browser demo.');});
  }
  function reviewRequest(id){
   const x=requests.find(a=>String(a.id)===String(id));if(!x)return;
@@ -968,7 +1009,7 @@ function renderExitModule(el){
   ],v=>{Object.assign(x,v,{reviewedBy:state.displayName,reviewedAt:localISODate()});saveState();renderApp();notify('Exit request status updated.');});
  }
  function drawCases(){
-  const rows=manage?cases:cases.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
+  const rows=manage?cases:manager?cases.filter(x=>directReports.includes(String(x.employee||'').trim().toLowerCase())):cases.filter(x=>String(x.employee||'').trim().toLowerCase()===own);
   $('exitTable').querySelector('tbody').innerHTML=rows.map(x=>{const tasks=x.checklist||[],done=tasks.filter(t=>t.done).length;return '<tr><td>'+esc(x.employee||'—')+'</td><td>'+esc(x.lastWorkingDay||'Not set')+'</td><td>'+done+'/'+tasks.length+' steps</td><td>'+esc(x.status||'In progress')+'</td>'+(manage?'<td><button class="neutral small" data-exit-edit="'+esc(x.id)+'">Manage</button></td>':'')+'</tr>'}).join('')||'<tr><td colspan="'+(manage?5:4)+'" class="muted">No offboarding cases yet.</td></tr>';
   if(manage)$('exitTable').querySelectorAll('[data-exit-edit]').forEach(b=>b.onclick=()=>editCase(b.dataset.exitEdit));
  }

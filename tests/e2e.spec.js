@@ -1017,16 +1017,18 @@ test('employee profile can be edited and retained in the browser demo', async ({
   await expect(page.locator('#employeeProfileForm [name="workEmail"]')).toHaveValue('profile.qa@example.test');
 });
 
-test('policy documents show clear draft status and exit support avoids automatic resignation', async ({ page }) => {
+test('policy documents show clear draft status and exit support distinguishes resignation from discussion', async ({ page }) => {
   await login(page, 'employee', 'Policy QA Employee');
   await page.locator('#nav button[data-tab="policy_docs"]').click();
   await expect(page.locator('#mainContent')).toContainText('Policy documents');
   await expect(page.locator('#mainContent')).toContainText('No published policies are available yet');
   await expect(page.locator('#mainContent')).not.toContainText('Leave and time-off policy');
   await page.locator('#nav button[data-tab="exit"]').click();
-  await expect(page.locator('#mainContent')).toContainText('This does not submit a resignation');
-  await page.getByRole('button', { name: 'Request confidential conversation' }).click();
-  await expect(page.locator('#toast')).toContainText('Request saved');
+  await expect(page.locator('#mainContent')).toContainText('formally submitting a resignation');
+  await expect(page.locator('#mainContent')).toContainText('confidential conversation');
+  await page.getByRole('button', { name: /Raise exit request/ }).click();
+  await expect(page.locator('#modalContent')).toContainText('Formal resignation');
+  await expect(page.locator('#modalContent')).toContainText('Confidential exit discussion');
 });
 
 test('HR can start and manage an offboarding case and policy documents', async ({ page }) => {
