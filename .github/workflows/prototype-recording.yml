@@ -13,7 +13,7 @@ permissions:
 jobs:
   record:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out prototype
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
-      - name: Record actual browser walkthrough
+      - name: Record narrated-by-captions browser walkthrough
         run: |
           mkdir -p videos
           node <<'NODE'
@@ -42,68 +42,118 @@ jobs:
               recordVideo: { dir: 'videos', size: { width: 1440, height: 900 } }
             });
             const page = await context.newPage();
-            page.setDefaultTimeout(7000);
+            page.setDefaultTimeout(9000);
+
+            const captions = {
+              intro: ['SAARTHI PEOPLE OS', 'A guided tour of a connected people-operations workspace for growing teams. This is a concept prototype using synthetic demo data.'],
+              founder: ['FOUNDER / CEO', 'Explore the founder perspective: workforce visibility, people priorities and the operational decisions involved in building a team.'],
+              hr: ['PEOPLE OPS', 'The People Ops view focuses on coordinating people processes, supporting employees and keeping workflows moving.'],
+              manager: ['TEAM MANAGER', 'The manager perspective helps connect day-to-day team needs with requests, workload and people coordination.'],
+              employee: ['EMPLOYEE EXPERIENCE', 'The employee view brings self-service workflows and everyday people support into one workspace.'],
+              candidate: ['CANDIDATE EXPERIENCE', 'The candidate view represents the hiring-facing journey. Available screens and workflow depth vary across this concept demo.'],
+              ask: ['ASK SAARTHI', 'Ask Saarthi is presented here as an assistant interface concept. This recording does not imply live AI or company-record integration.'],
+              outro: ['THANK YOU FOR EXPLORING SAARTHI', 'A People OS concept designed to guide, assist and connect people decisions. Some capabilities shown are demonstrative, not production services.']
+            };
+
+            async function caption(key, detail = '') {
+              const c = captions[key] || [key.toUpperCase(), detail || 'Explore this part of the Saarthi prototype.'];
+              await page.evaluate(({ title, body }) => {
+                let el = document.getElementById('saarthi-recording-caption');
+                if (!el) {
+                  el = document.createElement('div');
+                  el.id = 'saarthi-recording-caption';
+                  Object.assign(el.style, {
+                    position: 'fixed', left: '42px', right: '42px', bottom: '24px',
+                    zIndex: '2147483647', padding: '18px 24px',
+                    borderRadius: '16px', background: 'rgba(17,24,39,.94)',
+                    color: '#fff', boxShadow: '0 12px 36px rgba(15,23,42,.28)',
+                    fontFamily: 'Inter, system-ui, sans-serif', pointerEvents: 'none',
+                    border: '1px solid rgba(255,255,255,.18)'
+                  });
+                  el.innerHTML = '<div id="saarthi-caption-title" style="font-size:12px;font-weight:800;letter-spacing:.14em;color:#c4b5fd;margin-bottom:6px"></div><div id="saarthi-caption-body" style="font-size:17px;line-height:1.45;font-weight:500"></div>';
+                  document.body.appendChild(el);
+                }
+                document.getElementById('saarthi-caption-title').textContent = title;
+                document.getElementById('saarthi-caption-body').textContent = body;
+              }, { title: c[0], body: detail || c[1] });
+            }
+
+            async function wait(ms) { await page.waitForTimeout(ms); }
 
             await page.goto('https://yz57rf6s5w-sudo.github.io/saarthi-people-os/', { waitUntil: 'networkidle', timeout: 60000 });
-            await page.waitForTimeout(3500);
+            await wait(1800);
+            await caption('intro');
+            await wait(4500);
 
-            // Enter only synthetic demo data in the public prototype.
+            // Use only synthetic demo data; never enter real employee or candidate data.
             await page.locator('#loginName').fill('Saarthi Demo');
             await page.locator('#demoCode').fill('demo123');
             await page.locator('#loginRole').selectOption('founder');
             await page.getByRole('button', { name: /enter workspace/i }).click();
-            await page.waitForTimeout(5000);
+            await wait(2800);
 
-            // Walk each role and its visible navigation. Wait between screens so
-            // the resulting video is readable, not just a rapid automated sweep.
-            const roles = ['founder', 'hr', 'manager', 'employee', 'candidate'];
-            for (const role of roles) {
+            const roleInfo = {
+              founder: 'founder',
+              hr: 'hr',
+              manager: 'manager',
+              employee: 'employee',
+              candidate: 'candidate'
+            };
+
+            for (const role of Object.keys(roleInfo)) {
               const roleSelector = page.locator('#roleSelector');
               if (await roleSelector.count()) {
                 try {
                   await roleSelector.selectOption(role);
-                  await page.waitForTimeout(3000);
+                  await wait(1600);
                 } catch (e) {
                   console.log('Could not switch to role:', role, String(e));
                   continue;
                 }
               }
 
+              await caption(roleInfo[role]);
+              await wait(2600);
+
               const nav = page.locator('#nav button');
               const count = await nav.count();
               console.log('Role', role, 'navigation items:', count);
+
               for (let i = 0; i < count; i++) {
                 const item = nav.nth(i);
                 try {
                   const label = (await item.innerText()).trim().replace(/\\s+/g, ' ');
                   await item.click();
+                  await caption(roleInfo[role], `\u201c${label}\u201d is part of the ${role === 'hr' ? 'People Ops' : role === 'manager' ? 'manager' : role} workspace. This screen is shown as it currently exists in the prototype.`);
                   console.log('Captured screen:', role, '-', label);
-                  await page.waitForTimeout(3200);
+                  await wait(2300);
                 } catch (e) {
                   console.log('Skipped navigation item:', role, i, String(e));
                 }
               }
 
-              // Include the Ask Saarthi interface if available.
               if (role === 'founder') {
                 try {
                   await page.locator('#aiOpen').click();
-                  await page.waitForTimeout(4500);
+                  await caption('ask');
+                  await wait(4000);
                   await page.keyboard.press('Escape');
-                  await page.waitForTimeout(1000);
+                  await wait(700);
                 } catch (e) {
                   console.log('Ask Saarthi panel not opened:', String(e));
                 }
               }
             }
 
-            await page.waitForTimeout(1500);
+            await caption('outro');
+            await wait(4500);
+
             const video = page.video();
             await context.close();
-            await browser.close();
             const path = await video.path();
             const fs = require('fs');
             fs.copyFileSync(path, 'videos/saarthi-prototype-walkthrough.webm');
+            await browser.close();
             console.log('Video saved to videos/saarthi-prototype-walkthrough.webm');
           })().catch(err => { console.error(err); process.exit(1); });
           NODE
