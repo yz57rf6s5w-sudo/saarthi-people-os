@@ -212,11 +212,10 @@ jobs:
                 try {
                   const label = (await item.innerText()).trim().replace(/\\s+/g, ' ');
                   await item.click();
-                  await overlay(roleTitle, 'Exploring: ' + label, 'This is the current prototype screen. Some workflows may be illustrative or have limited functionality.');
-                  await pause(2200);
+                  // Keep the real product screen visible: do not cover it with a full-screen caption.
                   await hideOverlay();
-                  await pause(700);
-                  console.log('Captured screen:', role, '-', label);
+                  await pause(3600);
+                  console.log('Captured functional screen:', role, '-', label);
                 } catch (e) {
                   console.log('Skipped navigation item:', role, i, String(e));
                 }
