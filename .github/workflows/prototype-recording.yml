@@ -171,7 +171,24 @@ jobs:
               candidate: ['CANDIDATE EXPERIENCE', 'The candidate view represents the hiring-facing journey. Available screens and workflow depth vary across this concept demo.']
             };
 
+            async function closeAskSaarthiIfOpen() {
+              // Escape is not reliable for every modal implementation; try the visible close control too.
+              try { await page.keyboard.press('Escape'); } catch (e) {}
+              await pause(300);
+              try {
+                const closeButtons = page.getByRole('button', { name: /close/i });
+                const n = await closeButtons.count();
+                for (let i = n - 1; i >= 0; i--) {
+                  if (await closeButtons.nth(i).isVisible().catch(() => false)) {
+                    await closeButtons.nth(i).click({ timeout: 1200 }).catch(() => {});
+                    await pause(250);
+                  }
+                }
+              } catch (e) {}
+            }
+
             for (const role of Object.keys(roleInfo)) {
+              await closeAskSaarthiIfOpen();
               const roleSelector = page.locator('#roleSelector');
               if (await roleSelector.count()) {
                 try {
@@ -212,7 +229,7 @@ jobs:
                   await page.locator('#aiOpen').click();
                   await overlay('ASK SAARTHI', 'A conversational assistant interface concept.', 'This recording does not imply live AI or company-record integration.');
                   await pause(3500);
-                  await page.keyboard.press('Escape');
+                  await closeAskSaarthiIfOpen();
                   await pause(700);
                 } catch (e) {
                   console.log('Ask Saarthi panel not opened:', String(e));
