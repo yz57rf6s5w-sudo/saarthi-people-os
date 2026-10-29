@@ -47,13 +47,73 @@ jobs:
             const slides = [
               {
                 title: 'SAARTHI PEOPLE OS',
-                body: 'One guided workspace for the people journey.',
-                detail: 'Silent product walkthrough · captions only · synthetic demo data'
+                body: 'People operations, guided from one connected workspace.',
+                detail: 'Instead of chasing scattered requests, each person gets a role-specific view of the tasks, information and next steps relevant to them.'
               },
               {
-                title: 'GUIDE. ASSIST. EMPOWER.',
-                body: 'Role-specific workflows, useful context, and clearer next steps.',
-                detail: 'Explore the founder, People Ops, manager, employee and candidate views.'
+                title: 'THE PROBLEM: PEOPLE WORK IS FRAGMENTED',
+                body: 'Budgets sit apart from hiring. Requests sit in chats. Teams lack a shared view.',
+                detail: 'When people processes are disconnected, founders lose visibility, People Ops spends time following up, managers miss team context, and employees are unsure where to go. Saarthi is designed to bring these journeys closer together.'
+              },
+              {
+                title: 'THE SAARTHI APPROACH',
+                body: 'Find the next step. See the context. Move the work forward.',
+                detail: 'Saarthi is intended to act like a north star for people operations: guide each role to relevant workflows, make responsibilities clearer, and support human decisions with useful information—not replace human judgement.'
+              },
+              {
+                title: 'ONE PRODUCT. FIVE ROLE-BASED JOURNEYS.',
+                body: 'Founder · People Ops · Manager · Employee · Candidate',
+                detail: 'The interface changes with the role. Founders focus on workforce and cost decisions; People Ops coordinates processes; managers review requests with team context; employees use self-service; candidates follow the hiring-facing journey.'
+              },
+              {
+                title: 'FOUNDER: PLAN THE PEOPLE SIDE OF THE BUSINESS',
+                body: 'Connect workforce needs, people expense and hiring priorities.',
+                detail: 'The founder view is intended to make headcount and people-cost planning easier to review, helping founders think about which roles are needed, what they may cost, and how people requirements support business plans.'
+              },
+              {
+                title: 'PEOPLE OPS: KEEP THE JOURNEY MOVING',
+                body: 'Coordinate employee processes without losing the bigger picture.',
+                detail: 'People Ops needs a working view of employee records, onboarding and people workflows so the team can see what needs attention, reduce repetitive follow-ups and support employees consistently. The screens shown reflect the current prototype.'
+              },
+              {
+                title: 'MANAGER: DECIDE WITH TEAM CONTEXT',
+                body: 'Review leave alongside availability and workload.',
+                detail: 'A leave request affects more than one person. The manager experience aims to make leave history, who is available and current workload visible during review, so approvals can consider team coverage as well as the individual request.'
+              },
+              {
+                title: 'EMPLOYEE: SELF-SERVICE WITH A CLEAR NEXT STEP',
+                body: 'Know where to go, what to submit and what happens next.',
+                detail: 'Employees should not need to chase the right person for every routine task. A role-specific workspace brings relevant requests, claims, leave and people information closer to the employee, based on the features available in the prototype.'
+              },
+              {
+                title: 'CANDIDATE: A CLEARER HIRING-FACING JOURNEY',
+                body: 'Keep candidate-facing steps distinct from employee operations.',
+                detail: 'The candidate role represents the hiring-facing experience. This walkthrough shows the current demo screens only; it does not imply a live applicant tracking system or connected recruitment service.'
+              },
+              {
+                title: 'AI WORKFORCE: PLAN CAPACITY BEYOND HEADCOUNT',
+                body: 'Consider AI-assisted work alongside your human team.',
+                detail: 'The AI Workforce concept treats AI capacity as a planned resource, not a human employee. Explore the idea of assigning a bounded role or task, estimating monthly budget, and naming a human owner who remains accountable.'
+              },
+              {
+                title: 'AI WORKFORCE: CLEAR TASKS. HUMAN ACCOUNTABILITY.',
+                body: 'Use AI for bounded support tasks; keep consequential decisions human-led.',
+                detail: 'Potential support tasks include drafting, summarising or preparing a first-pass brief. The person responsible should review outputs, validate facts and approve consequential actions. The demo does not activate a live AI worker or connected AI service.'
+              },
+              {
+                title: 'ASK SAARTHI: HELP WITHIN THE WORKFLOW',
+                body: 'A conversational assistant concept for finding guidance.',
+                detail: 'The assistant interface represents the idea of getting help without leaving the people journey. This prototype view does not imply live AI responses, access to company records or automated actions.'
+              },
+              {
+                title: 'PLUG-AND-PLAY DIRECTION',
+                body: 'Set up the organisation, add people, assign roles and configure workflows.',
+                detail: 'The intended path is to configure the workspace, bring in people using supported options, set roles and approval owners, and introduce workflows step by step. Actual integrations, migration needs and production readiness must be validated for each deployment.'
+              },
+              {
+                title: 'BUILT TO GUIDE, NOT ADD MORE PROCESS',
+                body: 'Relevant context for each role. Clearer actions. People stay in control.',
+                detail: 'Saarthi’s differentiator is the ambition to combine role-aware workflows with practical decision context and guided assistance. Treat the current video as a product concept walkthrough: some capabilities are demonstrative and are not yet production services.'
               }
             ];
 
@@ -97,7 +157,7 @@ jobs:
 
             for (const s of slides) {
               await overlay(s.title, s.body, s.detail);
-              await pause(2600);
+              await pause(4200);
             }
 
             await hideOverlay();
@@ -140,8 +200,8 @@ jobs:
                 await roleSelector.selectOption('founder');
                 await pause(900);
               }
-              await overlay('AI WORKFORCE', 'Plan AI-assisted capacity alongside your human team.', 'Founder view · role, monthly budget, ownership and bounded tasks.');
-              await pause(2200);
+              await overlay('AI WORKFORCE: PLAN CAPACITY BEYOND HEADCOUNT', 'Consider AI-assisted work alongside your human team.', 'Plan a bounded role or task, estimate monthly budget, and assign a human owner who remains accountable.');
+              await pause(3000);
               await hideOverlay();
 
               const aiNavLabels = ['AI WORKFORCE', 'AI WORKERS', 'WORKFORCE PLANNING', 'PEOPLE BUDGET'];
@@ -153,8 +213,8 @@ jobs:
                 if (aiNavLabels.some(term => label.toUpperCase().includes(term))) {
                   await item.click();
                   await pause(500);
-                  await overlay('AI WORKFORCE · FEATURE VIEW', 'Explore AI capacity as a planned workforce resource.', 'Review the available prototype controls for role, budget, accountable owner and bounded tasks. No AI worker is activated by this demo.');
-                  await pause(3200);
+                  await overlay('AI WORKFORCE · FEATURE VIEW', 'What work could AI assist with—and who owns the outcome?', 'Use the available prototype controls to explore role, budget, ownership and bounded tasks. Human review remains essential; this demo does not activate a live AI worker.');
+                  await pause(4200);
                   await hideOverlay();
                   await pause(500);
                   aiFeatureOpened = true;
@@ -167,8 +227,8 @@ jobs:
                 const aiOpen = page.locator('#aiOpen');
                 if (await aiOpen.count() && await aiOpen.isVisible()) {
                   await aiOpen.click();
-                  await overlay('ASK SAARTHI', 'AI assistance within the people workflow.', 'Demonstrates the assistant interface only; no live AI service or company-record integration is implied.');
-                  await pause(2600);
+                  await overlay('ASK SAARTHI: GUIDANCE IN CONTEXT', 'Get help finding the next step without leaving the people journey.', 'This is an assistant-interface concept only. It does not imply live AI responses, company-record access or automated actions.');
+                  await pause(3500);
                   await closeAskSaarthiIfOpen();
                 }
               } catch (e) {
