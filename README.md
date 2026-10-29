@@ -9,6 +9,10 @@ A lightweight, plug-and-play People Operations prototype for early-stage teams. 
 
 Use the demo code `demo123` and select a role on the sign-in screen. Enter a display name for the session. The prototype seeds example data to help explore dashboards and workflows.
 
+## Release status
+
+See [current verification results, known limitations and production-readiness gates](docs/RELEASE_STATUS.md) before evaluating Saarthi for a pilot.
+
 ## What you can explore
 
 - **Onboarding:** owners, due dates, prerequisite dependencies, blocker chains and root-blocker attribution.
