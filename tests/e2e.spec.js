@@ -1137,6 +1137,7 @@ test('founder can configure people budget and add a project value decision', asy
   await page.locator('#modalContent [name="option"]').selectOption({ label: 'Hire employee' });
   await page.locator('#modalContent [name="cost"]').fill('1200000');
   await page.locator('#modalContent [name="value"]').fill('2000000');
+  await page.locator('#modalContent [name="owner"]').fill('Founder');
   await page.locator('#modalContent [name="assumptions"]').fill('Value estimate based on planned delivery capacity; validate with finance.');
   await page.locator('#modalOk').click();
   await expect(page.locator('#mainContent')).toContainText('Customer analytics launch');
