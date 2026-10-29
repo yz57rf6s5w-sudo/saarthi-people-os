@@ -1474,3 +1474,24 @@ test('founder can prepare a recruitment brief with human-review guardrails', asy
   await page.locator('#buildHiringBrief').click();
   await expect(page.locator('#hiringBriefOutput')).toContainText('Add the role, hiring goal, context and reviewer');
 });
+
+
+test('founder can create and edit the company charter', async ({ page }) => {
+  await login(page, 'founder', 'Charter QA');
+  await expect(page.locator('#mainContent')).toContainText('Company charter & culture');
+  await page.getByRole('button', { name: /Shape your company charter/ }).click();
+  await page.locator('#charterDescription').fill('We help small businesses simplify everyday operations.');
+  await page.locator('#charterVision').fill('Small businesses can grow without operational chaos.');
+  await page.locator('#charterMission').fill('Build simple tools that remove repetitive work.');
+  await page.locator('#charterPurpose').fill('Give founders more time to serve their customers.');
+  await page.locator('#charterValues').fill('Customer empathy\nOwnership\nLearn openly');
+  await page.locator('#charterCurationNotes').fill('Review these values with People Ops and the team.');
+  await page.getByRole('button', { name: 'Save working draft' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Small businesses can grow without operational chaos.');
+  await expect(page.locator('#mainContent')).toContainText('Customer empathy');
+  await page.getByRole('button', { name: /Review company charter/ }).click();
+  await expect(page.locator('#charterMission')).toHaveValue('Build simple tools that remove repetitive work.');
+  await page.locator('#charterMission').fill('Build tools that give teams time back.');
+  await page.getByRole('button', { name: 'Save working draft' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Build tools that give teams time back.');
+});
