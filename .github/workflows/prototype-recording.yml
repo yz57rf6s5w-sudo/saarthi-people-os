@@ -1,4 +1,4 @@
-name: Record Saarthi prototype walkthrough
+name: Record silent feature-led Saarthi walkthrough
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
-      - name: Record explanatory Saarthi product walkthrough
+      - name: Record silent feature-led product walkthrough with captions
         run: |
           mkdir -p videos
           node <<'NODE'
@@ -47,68 +47,13 @@ jobs:
             const slides = [
               {
                 title: 'SAARTHI PEOPLE OS',
-                body: 'A guided tour of a connected people-operations workspace for growing teams.',
-                detail: 'This video explores the public Saarthi concept prototype. Screens and workflow depth reflect the current demo, not a production service.'
+                body: 'One guided workspace for the people journey.',
+                detail: 'Silent product walkthrough · captions only · synthetic demo data'
               },
               {
-                title: 'THE JOURNEY: WHERE PEOPLE GET STUCK',
-                body: 'A founder cannot see the full picture. People Ops is chasing updates. Managers are guessing at capacity. Employees are unsure what to do next.',
-                detail: 'The work is important, but the path through it can feel fragmented: requests sit in chats, policies live elsewhere, hiring and budgets drift apart, and people repeat the same questions. The result is friction, uncertainty and decisions made without enough context.'
-              },
-              {
-                title: 'THE NORTH STAR',
-                body: 'Saarthi helps people find the next right step.',
-                detail: 'Think of Saarthi as a north star for the people journey: not taking over human judgement, but making the way forward clearer. It brings relevant context closer to the task, guides each person toward an appropriate next action, and helps teams move from confusion to confidence.'
-              },
-              {
-                title: 'ONE JOURNEY, DIFFERENT PEOPLE',
-                body: 'The same organisation. A clearer path for every role.',
-                detail: 'Founders need visibility and responsible planning. People Ops needs coordinated workflows. Managers need context on requests, leave, availability and workload. Employees need an easy route to answers and actions. Candidates need a clear hiring-facing experience. Saarthi’s role-aware approach aims to meet each person where they are.'
-              },
-              {
-                title: 'WHO SAARTHI IS FOR',
-                body: 'Early-stage founders, People Ops teams, managers, employees and candidates.',
-                detail: 'The concept is designed for growing organisations that need approachable people operations without unnecessary complexity. Exact fit and workflow coverage will depend on the organisation and future product scope.'
-              },
-              {
-                title: 'OUR USP: GUIDANCE, NOT JUST RECORD-KEEPING',
-                body: 'Bring people workflows and decision context into one guided experience.',
-                detail: 'Saarthi aims to connect the needs of founders, People Ops, managers and employees; make next steps easier to understand; surface relevant context such as people-expense planning, leave, team availability and workload; and keep people accountable for consequential decisions. This is the intended differentiator, not a claim that every capability is already live.'
-              },
-              {
-                title: 'PLUG-AND-PLAY BY DESIGN',
-                body: 'Start with a simple workspace, not a long implementation project.',
-                detail: 'Saarthi’s product direction is to make people workflows approachable out of the box, with guided setup and role-based experiences. The intended goal is to minimise technical effort and avoid a costly, lengthy implementation programme for growing teams.'
-              },
-              {
-                title: 'GETTING STARTED: BRING YOUR TEAM IN',
-                body: 'Set up the workspace, add people, assign roles, and begin together.',
-                detail: 'The intended journey is to create the organisation workspace, add employees individually or through a supported bulk import, connect people to the right roles and managers, then introduce relevant workflows. The public prototype includes a CSV import entry point; this recording does not imply that every onboarding step is production-ready.'
-              },
-              {
-                title: 'HOW IMPLEMENTATION SHOULD WORK',
-                body: 'Configure your workspace, choose your workflows, and get started.',
-                detail: 'The intended onboarding journey is: set up the organisation and roles; configure people policies and approval owners; bring in data using supported import options; review permissions; then introduce workflows gradually. Integrations or bespoke requirements may still need work, and security checks should come before real employee data is used.'
-              },
-              {
-                title: 'NO IMPLEMENTATION COST — THE PROMISE AND THE BOUNDARY',
-                body: 'The ambition: no mandatory implementation fee.',
-                detail: 'Saarthi aims for a plug-and-play experience without a paid implementation project. This is a product and commercial goal, not a verified claim that all future deployments or integrations will cost nothing. Subscription, usage, data migration, third-party services or custom integration costs would need to be disclosed separately.'
-              },
-              {
-                title: 'AI WORKFORCE',
-                body: 'Plan AI-assisted capacity alongside your human workforce.',
-                detail: 'The early concept lets a founder explore a role, a monthly budget, accountable ownership and bounded tasks such as drafting or summarising. It separates AI capacity from human headcount and keeps a person responsible.'
-              },
-              {
-                title: 'AI WORKFORCE: GUARDRAILS',
-                body: 'Start with support tasks. Keep consequential actions human-led.',
-                detail: 'The prototype marks sensitive or high-impact actions for human review and includes a recruitment-brief preparation concept. This is a local planning demo: no AI worker is activated, and the hiring brief uses a template rather than a connected generative AI service.'
-              },
-              {
-                title: 'PRODUCT PHILOSOPHY',
-                body: 'Guide. Assist. Empower people to decide.',
-                detail: 'Keep the experience intuitive and human-centred. Make information role-relevant. Prefer clarity over process overhead. Treat AI as decision support, explain uncertainty, and keep human review for employment decisions. Build secure, permission-aware foundations before handling real company data.'
+                title: 'GUIDE. ASSIST. EMPOWER.',
+                body: 'Role-specific workflows, useful context, and clearer next steps.',
+                detail: 'Explore the founder, People Ops, manager, employee and candidate views.'
               }
             ];
 
@@ -119,13 +64,15 @@ jobs:
                   el = document.createElement('div');
                   el.id = 'saarthi-recording-overlay';
                   Object.assign(el.style, {
-                    position: 'fixed', inset: '0', zIndex: '2147483647',
+                    position: 'fixed', left: '42px', right: '42px', bottom: '34px', zIndex: '2147483647',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                    padding: '80px 110px', background: 'linear-gradient(135deg, rgba(17,24,39,.98), rgba(41,36,90,.97))',
+                    padding: '22px 30px', borderRadius: '18px',
+                    background: 'linear-gradient(110deg, rgba(15,23,42,.96), rgba(49,46,129,.93))',
+                    border: '1px solid rgba(196,181,253,.35)', boxShadow: '0 18px 50px rgba(0,0,0,.28)',
                     color: '#fff', fontFamily: 'Inter, system-ui, sans-serif',
                     pointerEvents: 'none', boxSizing: 'border-box'
                   });
-                  el.innerHTML = '<div style="max-width:1120px"><div id="saarthi-overline" style="font-size:14px;font-weight:800;letter-spacing:.18em;color:#c4b5fd;margin-bottom:22px">SAARTHI PEOPLE OS</div><div id="saarthi-slide-title" style="font-size:46px;line-height:1.12;letter-spacing:-.04em;font-weight:850;margin-bottom:24px"></div><div id="saarthi-slide-body" style="font-size:27px;line-height:1.4;font-weight:550;max-width:1000px;margin-bottom:22px"></div><div id="saarthi-slide-detail" style="font-size:18px;line-height:1.65;color:#dbe3f5;max-width:1000px"></div><div style="margin-top:48px;font-size:12px;letter-spacing:.12em;color:#a5b4fc">A PEOPLE OS CONCEPT · SYNTHETIC DEMO DATA</div></div>';
+                  el.innerHTML = '<div style="max-width:1120px"><div id="saarthi-overline" style="font-size:12px;font-weight:800;letter-spacing:.16em;color:#c4b5fd;margin-bottom:8px">SAARTHI PEOPLE OS</div><div id="saarthi-slide-title" style="font-size:28px;line-height:1.15;letter-spacing:-.025em;font-weight:850;margin-bottom:8px"></div><div id="saarthi-slide-body" style="font-size:19px;line-height:1.35;font-weight:600;max-width:1200px;margin-bottom:6px"></div><div id="saarthi-slide-detail" style="font-size:14px;line-height:1.45;color:#dbe3f5;max-width:1200px"></div><div style="margin-top:10px;font-size:10px;letter-spacing:.12em;color:#a5b4fc">A PEOPLE OS CONCEPT · SYNTHETIC DEMO DATA</div></div>';
                   document.body.appendChild(el);
                 }
                 document.getElementById('saarthi-overline').textContent = 'SAARTHI PEOPLE OS';
@@ -146,11 +93,11 @@ jobs:
             async function pause(ms) { await page.waitForTimeout(ms); }
 
             await page.goto('https://yz57rf6s5w-sudo.github.io/saarthi-people-os/', { waitUntil: 'networkidle', timeout: 60000 });
-            await pause(1500);
+            await pause(900);
 
             for (const s of slides) {
               await overlay(s.title, s.body, s.detail);
-              await pause(5200);
+              await pause(2600);
             }
 
             await hideOverlay();
@@ -161,14 +108,14 @@ jobs:
             await page.locator('#demoCode').fill('demo123');
             await page.locator('#loginRole').selectOption('founder');
             await page.getByRole('button', { name: /enter workspace/i }).click();
-            await pause(2200);
+            await pause(1400);
 
             const roleInfo = {
-              founder: ['FOUNDER / CEO', 'Explore the founder perspective: workforce visibility, people priorities and the operational decisions involved in building a team.'],
-              hr: ['PEOPLE OPS', 'The People Ops view focuses on coordinating people processes, supporting employees and keeping workflows moving.'],
-              manager: ['TEAM MANAGER', 'The manager perspective connects team needs with requests, workload and people coordination.'],
-              employee: ['EMPLOYEE EXPERIENCE', 'The employee view brings self-service workflows and everyday people support into one workspace.'],
-              candidate: ['CANDIDATE EXPERIENCE', 'The candidate view represents the hiring-facing journey. Available screens and workflow depth vary across this concept demo.']
+              founder: ['FOUNDER / CEO', 'People-cost planning, workforce requirements and company-level visibility.'],
+              hr: ['PEOPLE OPS', 'Coordinate onboarding, employee processes and day-to-day people operations.'],
+              manager: ['TEAM MANAGER', 'Review requests with leave, availability and workload context.'],
+              employee: ['EMPLOYEE EXPERIENCE', 'Access personal workflows and everyday people self-service.'],
+              candidate: ['CANDIDATE EXPERIENCE', 'Explore the hiring-facing experience and candidate workflow.']
             };
 
             async function closeAskSaarthiIfOpen() {
@@ -199,8 +146,8 @@ jobs:
               }
 
               const [roleTitle, roleDescription] = roleInfo[role];
-              await overlay(roleTitle, roleDescription, 'The following screens are shown as they currently exist in the public prototype.');
-              await pause(2300);
+              await overlay(roleTitle, roleDescription, 'Feature walkthrough · current public prototype · synthetic demo data');
+              await pause(1700);
               await hideOverlay();
 
               const nav = page.locator('#nav button');
@@ -212,9 +159,17 @@ jobs:
                 try {
                   const label = (await item.innerText()).trim().replace(/\\s+/g, ' ');
                   await item.click();
-                  // Keep the real product screen visible: do not cover it with a full-screen caption.
+                  const featureTip = {
+                    founder: 'See the founder-facing view for people priorities and workforce decisions.',
+                    hr: 'See the People Ops view for coordinating people processes and employee support.',
+                    manager: 'Review the team view with requests, leave, availability and workload context.',
+                    employee: 'See the employee-facing self-service experience and personal actions.',
+                    candidate: 'See the candidate-facing workflow available in this concept prototype.'
+                  }[role];
+                  await overlay(label.toUpperCase(), featureTip, 'Feature shown in the current prototype · interactions and data may be demonstrative.');
+                  await pause(3000);
                   await hideOverlay();
-                  await pause(3600);
+                  await pause(700);
                   console.log('Captured functional screen:', role, '-', label);
                 } catch (e) {
                   console.log('Skipped navigation item:', role, i, String(e));
@@ -225,7 +180,7 @@ jobs:
                 try {
                   await page.locator('#aiOpen').click();
                   await overlay('ASK SAARTHI', 'A conversational assistant interface concept.', 'This recording does not imply live AI or company-record integration.');
-                  await pause(3500);
+                  await pause(2800);
                   await closeAskSaarthiIfOpen();
                   await pause(700);
                 } catch (e) {
@@ -235,9 +190,9 @@ jobs:
             }
 
             await overlay('PRODUCT PHILOSOPHY', 'Guide. Assist. Empower people to decide.', 'Saarthi aims to make people operations intuitive and connected, keep decisions human-led, and build trust through clarity, role-appropriate access and secure foundations.');
-            await pause(5000);
+            await pause(2200);
             await overlay('THANK YOU FOR EXPLORING SAARTHI', 'A People OS concept for growing teams.', 'Guidance over complexity. Context over scattered processes. Human judgement supported by useful tools. Some capabilities shown are demonstrative, not production services.');
-            await pause(4500);
+            await pause(2200);
 
             const video = page.video();
             await context.close();
