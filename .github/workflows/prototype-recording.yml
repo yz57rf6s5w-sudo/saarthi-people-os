@@ -51,14 +51,24 @@ jobs:
                 detail: 'This video explores the public Saarthi concept prototype. Screens and workflow depth reflect the current demo, not a production service.'
               },
               {
-                title: 'THE PROBLEM WE WANT TO SOLVE',
-                body: 'People processes often become scattered across spreadsheets, chats, forms and disconnected tools.',
-                detail: 'As teams grow, founders and People Ops can struggle to connect hiring needs, budgets and employee workflows; managers may lack a clear view of availability and workload; employees may not know where to go for help. Saarthi explores a more connected, guided experience.'
+                title: 'THE JOURNEY: WHERE PEOPLE GET STUCK',
+                body: 'A founder cannot see the full picture. People Ops is chasing updates. Managers are guessing at capacity. Employees are unsure what to do next.',
+                detail: 'The work is important, but the path through it can feel fragmented: requests sit in chats, policies live elsewhere, hiring and budgets drift apart, and people repeat the same questions. The result is friction, uncertainty and decisions made without enough context.'
+              },
+              {
+                title: 'THE NORTH STAR',
+                body: 'Saarthi helps people find the next right step.',
+                detail: 'Think of Saarthi as a north star for the people journey: not taking over human judgement, but making the way forward clearer. It brings relevant context closer to the task, guides each person toward an appropriate next action, and helps teams move from confusion to confidence.'
+              },
+              {
+                title: 'ONE JOURNEY, DIFFERENT PEOPLE',
+                body: 'The same organisation. A clearer path for every role.',
+                detail: 'Founders need visibility and responsible planning. People Ops needs coordinated workflows. Managers need context on requests, leave, availability and workload. Employees need an easy route to answers and actions. Candidates need a clear hiring-facing experience. Saarthi’s role-aware approach aims to meet each person where they are.'
               },
               {
                 title: 'WHO SAARTHI IS FOR',
-                body: 'Early-stage founders, People Ops teams, managers and employees.',
-                detail: 'The concept is designed for growing organisations that need approachable people operations without unnecessary complexity. Candidates are also represented in the hiring-facing journey. Exact fit and workflow coverage will depend on the organisation and future product scope.'
+                body: 'Early-stage founders, People Ops teams, managers, employees and candidates.',
+                detail: 'The concept is designed for growing organisations that need approachable people operations without unnecessary complexity. Exact fit and workflow coverage will depend on the organisation and future product scope.'
               },
               {
                 title: 'OUR USP: GUIDANCE, NOT JUST RECORD-KEEPING',
@@ -69,6 +79,11 @@ jobs:
                 title: 'PLUG-AND-PLAY BY DESIGN',
                 body: 'Start with a simple workspace, not a long implementation project.',
                 detail: 'Saarthi’s product direction is to make people workflows approachable out of the box, with guided setup and role-based experiences. The intended goal is to minimise technical effort and avoid a costly, lengthy implementation programme for growing teams.'
+              },
+              {
+                title: 'GETTING STARTED: BRING YOUR TEAM IN',
+                body: 'Set up the workspace, add people, assign roles, and begin together.',
+                detail: 'The intended journey is to create the organisation workspace, add employees individually or through a supported bulk import, connect people to the right roles and managers, then introduce relevant workflows. The public prototype includes a CSV import entry point; this recording does not imply that every onboarding step is production-ready.'
               },
               {
                 title: 'HOW IMPLEMENTATION SHOULD WORK',
