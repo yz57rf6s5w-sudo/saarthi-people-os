@@ -66,6 +66,21 @@ jobs:
                 detail: 'Saarthi aims to connect the needs of founders, People Ops, managers and employees; make next steps easier to understand; surface relevant context such as people-expense planning, leave, team availability and workload; and keep people accountable for consequential decisions. This is the intended differentiator, not a claim that every capability is already live.'
               },
               {
+                title: 'PLUG-AND-PLAY BY DESIGN',
+                body: 'Start with a simple workspace, not a long implementation project.',
+                detail: 'Saarthi’s product direction is to make people workflows approachable out of the box, with guided setup and role-based experiences. The intended goal is to minimise technical effort and avoid a costly, lengthy implementation programme for growing teams.'
+              },
+              {
+                title: 'HOW IMPLEMENTATION SHOULD WORK',
+                body: 'Configure your workspace, choose your workflows, and get started.',
+                detail: 'The intended onboarding journey is: set up the organisation and roles; configure people policies and approval owners; bring in data using supported import options; review permissions; then introduce workflows gradually. Integrations or bespoke requirements may still need work, and security checks should come before real employee data is used.'
+              },
+              {
+                title: 'NO IMPLEMENTATION COST — THE PROMISE AND THE BOUNDARY',
+                body: 'The ambition: no mandatory implementation fee.',
+                detail: 'Saarthi aims for a plug-and-play experience without a paid implementation project. This is a product and commercial goal, not a verified claim that all future deployments or integrations will cost nothing. Subscription, usage, data migration, third-party services or custom integration costs would need to be disclosed separately.'
+              },
+              {
                 title: 'AI WORKFORCE',
                 body: 'Plan AI-assisted capacity alongside your human workforce.',
                 detail: 'The early concept lets a founder explore a role, a monthly budget, accountable ownership and bounded tasks such as drafting or summarising. It separates AI capacity from human headcount and keeps a person responsible.'
