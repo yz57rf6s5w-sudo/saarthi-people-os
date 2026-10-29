@@ -79,3 +79,22 @@ test('employee sees only their own helpdesk tickets and cannot resolve them', as
   await expect(page.getByText('E2E private ticket')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Resolve' })).toHaveCount(0);
 });
+
+test('founder budget decisions require a named accountable owner', async ({ page }) => {
+  await login(page, 'E2E Founder', 'founder');
+  await page.getByRole('button', { name: /People Budget/ }).click();
+  await expect(page.getByRole('heading', { name: 'People Budget' })).toBeVisible();
+  await page.getByRole('button', { name: /Add decision/ }).click();
+  await expect(page.locator('[name="owner"]')).toBeVisible();
+  await expect(page.locator('[name="owner"]')).toHaveAttribute('required', '');
+});
+
+test('employee and candidate views do not expose founder people budget or company headcount', async ({ page }) => {
+  await login(page, 'E2E Employee', 'employee');
+  await expect(page.locator('#sidebarSummary')).toBeEmpty();
+  await expect(page.locator('#nav')).not.toContainText('People Budget');
+  await page.locator('#roleSelector').selectOption('candidate');
+  await expect(page.locator('#sidebarSummary')).toBeEmpty();
+  await expect(page.locator('#nav')).not.toContainText('People Budget');
+  await expect(page.locator('#nav')).not.toContainText('AI Workforce');
+});
