@@ -891,7 +891,7 @@ test('manager sees team leave history and availability before approving leave', 
     ],
     leaves: [
       { id: 941, employee: 'Asha Team QA', type: 'Casual Leave', days: 2, date: '2026-10-28', reason: 'Personal work', status: 'Approved', approver: 'hr' },
-      { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 3, date: '2026-10-27', reason: 'Medical appointment', status: 'Pending', approver: '' },
+      { id: 942, employee: 'Ravi Team QA', type: 'Sick Leave', days: 3, date: '2026-10-28', reason: 'Medical appointment', status: 'Pending', approver: '' },
       { id: 943, employee: 'Mina Team QA', type: 'Earned Leave', days: 3, date: '2026-09-10', reason: 'Planned break', status: 'Approved', approver: 'hr' },
       { id: 945, employee: 'Asha Team QA', type: 'Earned Leave', days: 4, date: '2026-12-30', reason: 'Year-end break', status: 'Approved', approver: 'hr' },
       { id: 944, employee: 'Other Team QA', type: 'Casual Leave', days: 1, date: '2026-10-28', reason: 'Out of team', status: 'Pending', approver: '' }
@@ -905,7 +905,7 @@ test('manager sees team leave history and availability before approving leave', 
   await login(page, 'manager', 'Manager Leave QA');
   await page.getByRole('button', { name: /Leave/ }).click();
   await expect(page.locator('#teamLeaveInsights')).toBeVisible();
-  await expect(page.locator('#teamImpactDate')).toHaveValue('2026-10-27'); // defaults to the first pending request's start date
+  await expect(page.locator('#teamImpactDate')).toHaveValue('2026-10-28'); // defaults to the first pending request's start date
   await expect(page.locator('#teamLeaveInsights')).toContainText('Leave taken by each team member');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('Open work items');
   await expect(page.locator('#teamLeaveInsightBody')).toContainText('Work context (not a performance rating)');
