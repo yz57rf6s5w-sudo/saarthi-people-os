@@ -132,6 +132,60 @@ jobs:
               await pause(250);
             }
 
+            // Dedicated AI Workforce feature tour: show real founder screens and label the intended workflow.
+            await closeAskSaarthiIfOpen();
+            try {
+              const roleSelector = page.locator('#roleSelector');
+              if (await roleSelector.count()) {
+                await roleSelector.selectOption('founder');
+                await pause(900);
+              }
+              await overlay('AI WORKFORCE', 'Plan AI-assisted capacity alongside your human team.', 'Founder view · role, monthly budget, ownership and bounded tasks.');
+              await pause(2200);
+              await hideOverlay();
+
+              const aiNavLabels = ['AI WORKFORCE', 'AI WORKERS', 'WORKFORCE PLANNING', 'PEOPLE BUDGET'];
+              const navButtons = page.locator('#nav button');
+              let aiFeatureOpened = false;
+              for (let i = 0; i < await navButtons.count(); i++) {
+                const item = navButtons.nth(i);
+                const label = (await item.innerText().catch(() => '')).trim().replace(/\\s+/g, ' ');
+                if (aiNavLabels.some(term => label.toUpperCase().includes(term))) {
+                  await item.click();
+                  await pause(500);
+                  await overlay('AI WORKFORCE · FEATURE VIEW', 'Explore AI capacity as a planned workforce resource.', 'Review the available prototype controls for role, budget, accountable owner and bounded tasks. No AI worker is activated by this demo.');
+                  await pause(3200);
+                  await hideOverlay();
+                  await pause(500);
+                  aiFeatureOpened = true;
+                  console.log('Captured AI Workforce navigation feature:', label);
+                }
+              }
+
+              // Open the Ask Saarthi assistant from the founder view as an adjacent AI-assistance capability.
+              try {
+                const aiOpen = page.locator('#aiOpen');
+                if (await aiOpen.count() && await aiOpen.isVisible()) {
+                  await aiOpen.click();
+                  await overlay('ASK SAARTHI', 'AI assistance within the people workflow.', 'Demonstrates the assistant interface only; no live AI service or company-record integration is implied.');
+                  await pause(2600);
+                  await closeAskSaarthiIfOpen();
+                }
+              } catch (e) {
+                console.log('Ask Saarthi feature capture skipped:', String(e));
+              }
+              if (!aiFeatureOpened) {
+                await overlay('AI WORKFORCE · CONCEPT', 'Plan AI-assisted capacity with clear ownership and human oversight.', 'The current prototype may not expose a dedicated AI Workforce navigation screen. This caption identifies the intended feature without presenting it as a live integration.');
+                await pause(2600);
+                await hideOverlay();
+              }
+            } catch (e) {
+              console.log('AI Workforce tour fallback:', String(e));
+              await overlay('AI WORKFORCE', 'AI-assisted capacity, clear ownership, bounded tasks and human oversight.', 'Feature concept · shown separately from existing human headcount.');
+              await pause(2400);
+              await hideOverlay();
+            }
+
             for (const role of Object.keys(roleInfo)) {
               await closeAskSaarthiIfOpen();
               const roleSelector = page.locator('#roleSelector');
