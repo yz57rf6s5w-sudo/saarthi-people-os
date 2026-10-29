@@ -172,19 +172,17 @@ jobs:
             };
 
             async function closeAskSaarthiIfOpen() {
-              // Escape is not reliable for every modal implementation; try the visible close control too.
-              try { await page.keyboard.press('Escape'); } catch (e) {}
-              await pause(300);
+              // The prototype's Ask Saarthi panel has a specific Close button.
+              // Close it explicitly before role changes or navigation.
               try {
-                const closeButtons = page.getByRole('button', { name: /close/i });
-                const n = await closeButtons.count();
-                for (let i = n - 1; i >= 0; i--) {
-                  if (await closeButtons.nth(i).isVisible().catch(() => false)) {
-                    await closeButtons.nth(i).click({ timeout: 1200 }).catch(() => {});
-                    await pause(250);
-                  }
+                const close = page.locator('#aiClose');
+                if (await close.count() && await close.isVisible().catch(() => false)) {
+                  await close.click({ timeout: 1500 });
+                  await pause(350);
                 }
               } catch (e) {}
+              try { await page.keyboard.press('Escape'); } catch (e) {}
+              await pause(250);
             }
 
             for (const role of Object.keys(roleInfo)) {
