@@ -66,6 +66,16 @@ jobs:
                 detail: 'Saarthi aims to connect the needs of founders, People Ops, managers and employees; make next steps easier to understand; surface relevant context such as people-expense planning, leave, team availability and workload; and keep people accountable for consequential decisions. This is the intended differentiator, not a claim that every capability is already live.'
               },
               {
+                title: 'AI WORKFORCE',
+                body: 'Plan AI-assisted capacity alongside your human workforce.',
+                detail: 'The early concept lets a founder explore a role, a monthly budget, accountable ownership and bounded tasks such as drafting or summarising. It separates AI capacity from human headcount and keeps a person responsible.'
+              },
+              {
+                title: 'AI WORKFORCE: GUARDRAILS',
+                body: 'Start with support tasks. Keep consequential actions human-led.',
+                detail: 'The prototype marks sensitive or high-impact actions for human review and includes a recruitment-brief preparation concept. This is a local planning demo: no AI worker is activated, and the hiring brief uses a template rather than a connected generative AI service.'
+              },
+              {
                 title: 'PRODUCT PHILOSOPHY',
                 body: 'Guide. Assist. Empower people to decide.',
                 detail: 'Keep the experience intuitive and human-centred. Make information role-relevant. Prefer clarity over process overhead. Treat AI as decision support, explain uncertainty, and keep human review for employment decisions. Build secure, permission-aware foundations before handling real company data.'
