@@ -310,6 +310,13 @@ button:not(:disabled):active{transform:translateY(1px)}
  .module-heading-actions button{width:100%}
 }
 
+/* Founder company charter */
+.founder-charter{margin:0 0 20px;padding:22px;background:linear-gradient(135deg,#fff,#f7f7ff);border:1px solid #e3e5fb}
+.charter-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}.charter-top h3{margin:5px 0;font-size:19px}.charter-top p{margin:0;max-width:700px;color:var(--muted);font-size:13px;line-height:1.7}
+.charter-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}.charter-field{padding:13px;border:1px solid #e8eaf5;border-radius:12px;background:#fff;min-width:0}.charter-field b{display:block;font-size:12px;margin-bottom:5px;color:#37316f}.charter-field p{margin:0;color:#657089;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.charter-insight{padding:14px 16px;border-radius:13px;background:#f0efff;border:1px solid #e2dfff;color:#37316f}.charter-insight strong{display:block;font-size:12px;margin-bottom:4px}.charter-insight p{margin:0;font-size:12px;line-height:1.65}
+.charter-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.charter-form-grid .full{grid-column:1/-1}.charter-form-grid textarea{min-height:82px;resize:vertical}
+@media(max-width:700px){.charter-fields{grid-template-columns:1fr}.charter-form-grid{grid-template-columns:1fr}.charter-form-grid .full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -510,6 +517,37 @@ function openWorkspaceSetup(){
   });
 }
 
+function founderCharterInsight(c){
+  c=c||{}; const vals=Array.isArray(c.values)?c.values:[]; const prompts=[];
+  if(!c.description)prompts.push('Describe your customer, the problem you solve and what makes your approach different.');
+  if(!c.vision)prompts.push('Describe the future you want the company to help create.');
+  if(!c.mission)prompts.push('Connect that ambition to what you do for customers today.');
+  if(!c.purpose)prompts.push('Explain why this work matters beyond revenue or growth.');
+  if(!vals.length)prompts.push('Co-create 3–5 values with People Ops, each with behaviours to encourage and avoid.');
+  else prompts.push('Make “'+vals[0]+'” observable: what would a teammate actually see someone do?');
+  if(!c.curationNotes)prompts.push('Invite HR / People Ops to challenge the draft with real examples from the team.');
+  if(!c.description&&!c.vision&&!c.mission&&!c.purpose&&!vals.length)return 'Start in plain language. Saarthi can help explore the capabilities, behaviours and values that support your ambition. These are guided prototype reflections, not live AI analysis yet.';
+  return 'A useful working draft. '+prompts.slice(0,2).join(' ');
+}
+function openFounderCharter(){
+  const c=(state.companySettings||{}).charter||{};
+  $('modalContent').innerHTML = '<div class="page-head"><div><span class="founder-kicker">FOUNDER + PEOPLE OPS</span><h2 class="section-title">Shape your company charter</h2><p class="muted tiny">A working draft, not a corporate-writing exercise. Plain language is perfect.</p></div><button type="button" class="neutral small" id="charterClose">Close</button></div>' +
+  '<form id="founderCharterForm"><div class="charter-form-grid">' +
+  '<div class="form-row full"><label for="charterDescription">Describe your company</label><textarea id="charterDescription" maxlength="1800" placeholder="Who do you serve? What problem do you solve? What makes your approach different?">'+escapeHTML(c.description||'')+'</textarea></div>' +
+  '<div class="form-row"><label for="charterVision">Vision — the future you want to create</label><textarea id="charterVision" maxlength="700" placeholder="What should be different because your company exists?">'+escapeHTML(c.vision||'')+'</textarea></div>' +
+  '<div class="form-row"><label for="charterMission">Mission — what you do to get there</label><textarea id="charterMission" maxlength="700" placeholder="Who do you help, and how?">'+escapeHTML(c.mission||'')+'</textarea></div>' +
+  '<div class="form-row full"><label for="charterPurpose">Purpose — why this work matters</label><textarea id="charterPurpose" maxlength="700" placeholder="Beyond targets, why is this worth doing?">'+escapeHTML(c.purpose||'')+'</textarea></div>' +
+  '<div class="form-row full"><label for="charterValues">Business values (one per line)</label><textarea id="charterValues" maxlength="1000" placeholder="Customer empathy&#10;Ownership&#10;Learn openly">'+escapeHTML(Array.isArray(c.values)?c.values.join('\n'):'')+'</textarea><p class="tiny muted">Start with your own words. Turn each value into behaviours, trade-offs and examples.</p></div>' +
+  '<div class="form-row full"><label for="charterCurationNotes">Founder + HR / People Ops curation notes</label><textarea id="charterCurationNotes" maxlength="1000" placeholder="What should we debate, validate with the team, or make more specific?">'+escapeHTML(c.curationNotes||'')+'</textarea></div></div>' +
+  '<div class="charter-insight" style="margin:8px 0 16px"><strong>How Saarthi helps</strong><p>This prototype provides guided prompts. Live AI analysis and secure shared review require a backend integration.</p></div>' +
+  '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="neutral" id="charterCancel">Cancel</button><button type="submit" class="primary">Save working draft</button></div></form>';
+  $('modalBg').classList.remove('hidden'); const close=()=> $('modalBg').classList.add('hidden');
+  $('charterClose').addEventListener('click',close); $('charterCancel').addEventListener('click',close);
+  $('founderCharterForm').addEventListener('submit',e=>{e.preventDefault(); state.companySettings=state.companySettings||{};
+    state.companySettings.charter={description:$('charterDescription').value.trim(),vision:$('charterVision').value.trim(),mission:$('charterMission').value.trim(),purpose:$('charterPurpose').value.trim(),values:$('charterValues').value.split(/\n|,/).map(v=>v.trim()).filter(Boolean).slice(0,12),curationNotes:$('charterCurationNotes').value.trim(),status:'Working draft',updatedAt:new Date().toISOString()};
+    saveState();close();renderApp();notify('Company charter draft saved in this browser.');
+  });
+}
 function markSetupStep(step){
   state.companySettings=state.companySettings||{};
   state.companySettings.setupProgress=state.companySettings.setupProgress||{};
@@ -983,6 +1021,15 @@ function renderDashboard(el,role){
       </div>
       <div class="founder-hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">S</div><div class="orbit-chip chip-one">People</div><div class="orbit-chip chip-two">Culture</div><div class="orbit-chip chip-three">Growth</div></div>
     </section>
+    <section class="card founder-charter">
+      <div class="charter-top"><div><span class="founder-kicker">START WITH YOUR WHY</span><h3>Company charter & culture</h3><p>Tell Saarthi what you are building, why it matters, and how you want people to work together. Use this as the starting point for people-strategy recommendations.</p></div>
+        <button class="primary" data-founder-action="charter">${state.companySettings?.charter?.vision ? "Review company charter" : "Shape your company charter"} →</button></div>
+      <div class="charter-fields">
+        <div class="charter-field"><b>Vision</b><p>${escapeHTML(state.companySettings?.charter?.vision || "The future you want to create — still to be defined.")}</p></div>
+        <div class="charter-field"><b>Mission & purpose</b><p>${escapeHTML([state.companySettings?.charter?.mission,state.companySettings?.charter?.purpose].filter(Boolean).join(" · ") || "What you do and why it matters — add your perspective.")}</p></div>
+        <div class="charter-field"><b>Values we live by</b><p>${escapeHTML((state.companySettings?.charter?.values || []).join(" · ") || "Values become meaningful when they guide everyday decisions.")}</p></div>
+      </div><div class="charter-insight"><strong>✦ Saarthi’s reflection</strong><p>${escapeHTML(founderCharterInsight(state.companySettings?.charter || {}))}</p></div>
+    </section>
     <section class="founder-start-grid">
       <div class="card founder-setup-card"><div class="founder-section-heading"><div><span class="founder-kicker">GET STARTED</span><h3>Make Saarthi yours</h3></div><span class="setup-count">${setupCount} of 3</span></div>
         <div class="progress"><span style="width:${setupPercent}%"></span></div>
@@ -1008,6 +1055,7 @@ function renderDashboard(el,role){
     el.querySelectorAll('[data-founder-action]').forEach(button=>button.addEventListener('click',()=>{
       const action=button.dataset.founderAction;
       if(action==='setup'){openWorkspaceSetup();return;}
+      if(action==='charter'){openFounderCharter();return;}
       if(action==='import'){$('importEmployeesBtn').click();return;}
       const tab={directory:'directory',leaves:'leaves',helpdesk:'helpdesk',reimbursements:'reimbursements',playbook:'playbook'}[action];
       if(tab){currentTab=tab;renderApp();}
