@@ -1705,3 +1705,18 @@ test('workflow forms explain each field to employees without exposing internal r
   await expect(form).toContainText('Required field');
   await expect(form).not.toContainText('internal hiring strategy');
 });
+
+
+test("desktop navigation pane can scroll independently when its content exceeds viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/");
+  await page.evaluate(() => {
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar) sidebar.style.minHeight = "1100px";
+  });
+  const sidebar = page.locator(".sidebar");
+  await expect(sidebar).toBeVisible();
+  const metrics = await sidebar.evaluate(el => ({ client: el.clientHeight, scroll: el.scrollHeight, overflow: getComputedStyle(el).overflowY }));
+  expect(metrics.scroll).toBeGreaterThan(metrics.client);
+  expect(["auto", "scroll"]).toContain(metrics.overflow);
+});

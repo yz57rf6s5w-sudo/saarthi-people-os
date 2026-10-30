@@ -360,6 +360,21 @@ button:not(:disabled):active{transform:translateY(1px)}
 
 /* Toasts are informational; never let them block form controls beneath them. */
 .toast{pointer-events:none}
+/* Keep the desktop navigation independently scrollable when the menu exceeds the viewport. */
+@media (min-width: 901px) {
+  .sidebar {
+    position: sticky;
+    top: 82px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+  .sidebar::-webkit-scrollbar { width: 7px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+}
+
 </style>
 </head>
 <body>
