@@ -1593,6 +1593,7 @@ test('Founder can publish a guided form, employee submits, and HR approves mappe
   await page.locator('#roleSelector').selectOption('hr');
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
+  page.once('dialog', dialog => dialog.accept('Verified emergency contact with employee.'));
   await page.getByRole('button', { name: 'Approve & update profile' }).click();
   await expect(page.locator('#mainContent')).toContainText('HR verified');
   await expect(page.locator('#mainContent')).toContainText('+91 98765 43210');
