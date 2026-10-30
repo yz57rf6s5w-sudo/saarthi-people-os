@@ -361,18 +361,34 @@ button:not(:disabled):active{transform:translateY(1px)}
 /* Toasts are informational; never let them block form controls beneath them. */
 .toast{pointer-events:none}
 /* Keep the desktop navigation independently scrollable when the menu exceeds the viewport. */
+/* Keep long role-specific navigation usable on every viewport. */
+.sidebar {
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+.sidebar::-webkit-scrollbar { width: 7px; }
+.sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
 @media (min-width: 901px) {
   .sidebar {
     position: sticky;
     top: 82px;
-    max-height: calc(100vh - 100px);
+    height: calc(100vh - 100px);
+    max-height: calc(100dvh - 100px);
     overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
+    align-self: start;
   }
-  .sidebar::-webkit-scrollbar { width: 7px; }
-  .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-  .sidebar::-webkit-scrollbar-track { background: transparent; }
+}
+@media (max-width: 900px) {
+  .sidebar {
+    top: 60px;
+    bottom: 0;
+    max-height: calc(100vh - 60px);
+    max-height: calc(100dvh - 60px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
 }
 
 </style>
