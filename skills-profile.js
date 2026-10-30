@@ -32,6 +32,6 @@ function bind(d,p,mgr){
  if(mgr)document.querySelectorAll('[data-review]').forEach(b=>b.addEventListener('click',()=>{const s=profile(d,b.dataset.person).skills[+b.dataset.index];if(!s)return;const note=prompt('Add a short, work-related reason or feedback for this review:');if(note===null)return;if(!note.trim()){alert('Please add a reason so the employee can understand the review.');return;}s.managerStatus=b.dataset.review;s.managerLevel=b.dataset.review==='Validated'?s.level:null;s.managerNote=note.trim();s.reviewedAt=stamp();s.reviewedBy=who();save(d);render()}));
 }
 function addNav(){const nav=q('#nav');if(!nav||!['employee','manager'].includes(role()))return;if(!nav.querySelector('[data-tab="skills-profile"]')){const b=document.createElement('button');b.type='button';b.dataset.tab='skills-profile';b.textContent='✦ Skills & Growth';b.addEventListener('click',()=>{nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');render();if(innerWidth<900)q('#sidebar')?.classList.remove('open')});nav.appendChild(b)}}
-const observer=new MutationObserver(()=>{addNav();render()});observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+const observer=new MutationObserver(()=>addNav());observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 q('#roleSelector')?.addEventListener('change',()=>setTimeout(addNav,0));
 })();
