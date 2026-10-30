@@ -1579,15 +1579,15 @@ test('Founder can publish a guided form, employee submits, and HR approves mappe
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await page.locator('#wfCreate [name="title"]').fill('Emergency contact update');
   await page.locator('#wfCreate [name="purpose"]').fill('Keep the right person informed in an emergency.');
-  await page.locator('#wfCreate [name="field"]').fill('Emergency contact number');
-  await page.locator('#wfCreate [name="mapping"]').selectOption('contact.emergencyContact');
+  await page.locator('#wfCreate [name="fieldLabel"]').fill('Emergency contact number');
+  await page.locator('#wfCreate [name="fieldMapping"]').selectOption('contact.emergencyContact');
   await page.getByRole('button', { name: 'Save draft form' }).click();
   await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
   await page.getByRole('button', { name: 'Publish form' }).click();
   await expect(page.locator('#mainContent')).toContainText('Published');
   await page.locator('#roleSelector').selectOption('employee');
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
-  await page.locator('.wf-submit input[name="answer"]').fill('+91 98765 43210');
+  await page.locator('.wf-submit input[name="answer0"]').fill('+91 98765 43210');
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.locator('#mainContent')).toContainText('Pending');
   await page.locator('#roleSelector').selectOption('hr');
@@ -1633,8 +1633,8 @@ test('Founder can build a multi-field form and authorised HR can edit governed p
   await expect(page.locator('#mainContent')).toContainText('HR verified');
   await expect(page.locator('#mainContent').getByRole('button', { name: 'Edit / update' })).toHaveCount(2);
 
-  page.once('dialog', dialog => dialog.accept('Pune'));
-  page.once('dialog', dialog => dialog.accept('Employee confirmed relocation.'));
+  const editPrompts = ['Pune', 'Employee confirmed relocation.'];
+  page.on('dialog', dialog => dialog.accept(editPrompts.shift()));
   await page.locator('#mainContent').getByRole('button', { name: 'Edit / update' }).first().click();
   await expect(page.locator('#mainContent')).toContainText('Pune');
   await expect(page.locator('#mainContent')).toContainText('Recent profile change history');
