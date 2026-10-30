@@ -1495,3 +1495,33 @@ test('founder can create and edit the company charter', async ({ page }) => {
   await page.getByRole('button', { name: 'Save working draft' }).click();
   await expect(page.locator('#mainContent')).toContainText('Build tools that give teams time back.');
 });
+
+test('founder can draft an organisation unit and a restricted project', async ({ page }) => {
+  await login(page, 'founder', 'Founder Studio QA');
+  await page.getByRole('button', { name: /Org & confidential projects/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Organisation designer');
+  await page.locator('#orgUnitName').fill('Customer Success');
+  await page.locator('#orgUnitType').selectOption('Department');
+  await page.locator('#orgUnitLead').fill('Head of Customer Success');
+  await page.locator('#orgUnitPurpose').fill('Own customer onboarding and retention.');
+  await page.getByRole('button', { name: /Add to org draft/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Customer Success');
+
+  await page.locator('#confProjectName').fill('Project Northstar');
+  await page.locator('#confProjectPurpose').fill('Explore a strategic initiative.');
+  await page.locator('#confProjectOwner').fill('Founder Studio QA');
+  const contributor = page.locator('[data-conf-person]').first();
+  if (await contributor.count()) await contributor.check();
+  await page.getByRole('button', { name: /Create restricted project/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Project Northstar');
+  await expect(page.locator('#mainContent')).toContainText('visual prototype');
+});
+
+test('founder companion presents trusted-partner guardrails and organisation prompts', async ({ page }) => {
+  await login(page, 'founder', 'Companion QA');
+  await page.getByRole('button', { name: /Saarthi Guide/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('trusted partner');
+  await expect(page.locator('#mainContent')).toContainText('Design the organisation');
+  await expect(page.locator('#mainContent')).toContainText('Create a confidential project');
+  await expect(page.locator('#mainContent')).toContainText('flag uncertainty');
+});
