@@ -1541,7 +1541,7 @@ test('employee owns skills profile and manager validates with a reason without e
   await page.getByRole('button', { name: /Skills & Growth/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Product analytics');
   page.on('dialog', dialog => dialog.accept('Validated against the delivered reporting project.'));
-  await page.getByRole('button', { name: 'Validate' }).click();
+  await page.getByRole('button', { name: 'Validate', exact: true }).click();
   await expect(page.locator('#mainContent')).toContainText('Validated');
   await page.locator('#roleSelector').selectOption('employee');
   await page.getByRole('button', { name: /Skills & Growth/ }).click();
