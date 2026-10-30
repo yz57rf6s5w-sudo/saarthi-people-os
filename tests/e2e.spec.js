@@ -1549,3 +1549,25 @@ test('employee owns skills profile and manager validates with a reason without e
   await expect(page.locator('#mainContent')).toContainText('Validated');
   await expect(page.locator('#mainContent')).toContainText('Validated against the delivered reporting project.');
 });
+
+
+test('editing a reviewed skill invalidates stale validation and preserves review history', async ({ page }) => {
+  await login(page, 'employee', 'Skills Lifecycle QA');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  await page.locator('#skForm [name="name"]').fill('Data storytelling');
+  await page.locator('#skForm [name="level"]').selectOption('Proficient');
+  await page.getByRole('button', { name: 'Save skill' }).click();
+  await page.locator('#roleSelector').selectOption('manager');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  page.on('dialog', dialog => dialog.accept('Validated with project evidence.'));
+  await page.getByRole('button', { name: 'Validate', exact: true }).click();
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  await page.getByRole('button', { name: 'Edit self-assessment' }).click();
+  await page.locator('#skForm [name="context"]').fill('Added a new delivery example.');
+  await page.getByRole('button', { name: 'Update self-assessment' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Awaiting validation');
+  await expect(page.locator('#mainContent')).toContainText('Validated —');
+  await page.getByRole('button', { name: 'Request reassessment' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Reassessment requested');
+});
