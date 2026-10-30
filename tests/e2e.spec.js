@@ -1709,7 +1709,6 @@ test('workflow forms explain each field to employees without exposing internal r
 
 test("desktop navigation pane can scroll independently when its content exceeds viewport", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto("/");
   await login(page, "employee", "Navigation Scroll QA");
   const sidebar = page.locator("#sidebar");
   await expect(sidebar).toBeVisible();
