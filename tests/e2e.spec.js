@@ -1525,3 +1525,27 @@ test('founder companion presents trusted-partner guardrails and organisation pro
   await expect(page.locator('#mainContent')).toContainText('Create a confidential project');
   await expect(page.locator('#mainContent')).toContainText('flag uncertainty');
 });
+
+
+test('employee owns skills profile and manager validates with a reason without erasing self-assessment', async ({ page }) => {
+  await login(page, 'employee', 'Skills Profile QA');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  await page.locator('#skForm [name="name"]').fill('Product analytics');
+  await page.locator('#skForm [name="level"]').selectOption('Proficient');
+  await page.locator('#skForm [name="context"]').fill('Built weekly product adoption reporting.');
+  await page.locator('#skForm [name="evidenceType"]').selectOption('Project outcome');
+  await page.locator('#skForm [name="evidence"]').fill('Demo project outcome reference');
+  await page.getByRole('button', { name: 'Save skill' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Self-assessed: Proficient');
+  await page.locator('#roleSelector').selectOption('manager');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Product analytics');
+  page.on('dialog', dialog => dialog.accept('Validated against the delivered reporting project.'));
+  await page.getByRole('button', { name: 'Validate', exact: true }).click();
+  await expect(page.locator('#mainContent')).toContainText('Validated');
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Skills & Growth/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Self-assessed: Proficient');
+  await expect(page.locator('#mainContent')).toContainText('Validated');
+  await expect(page.locator('#mainContent')).toContainText('Validated against the delivered reporting project.');
+});
