@@ -1643,3 +1643,26 @@ test('Founder can build a multi-field form and authorised HR can edit governed p
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await expect(page.locator('#mainContent').getByRole('button', { name: 'Edit / update' })).toHaveCount(0);
 });
+
+
+test('Required yes/no workflow fields require an explicit Yes or No answer', async ({ page }) => {
+  await login(page, 'founder', 'Yes No Validation QA');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await page.locator('#wfCreate [name="title"]').fill('Policy acknowledgement');
+  await page.locator('#wfCreate [name="purpose"]').fill('Record an explicit acknowledgement decision.');
+  await page.locator('#wfCreate [name="fieldLabel"]').fill('I have read the policy');
+  await page.locator('#wfCreate [name="fieldType"]').selectOption('checkbox');
+  await page.getByRole('button', { name: 'Save draft form' }).click();
+  await page.getByRole('button', { name: 'Publish form' }).click();
+
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  const submission = page.locator('.wf-submit').filter({ hasText: 'Policy acknowledgement' });
+  const yesNo = submission.locator('input[type="radio"][name="answer0"]');
+  await expect(yesNo).toHaveCount(2);
+  await expect(yesNo.first()).toHaveAttribute('required', '');
+  await expect(submission.getByRole('button', { name: 'Submit for review' })).toBeVisible();
+  await yesNo.nth(1).check();
+  await submission.getByRole('button', { name: 'Submit for review' }).click();
+  await expect(page.locator('#mainContent')).toContainText('I have read the policy: No');
+});
