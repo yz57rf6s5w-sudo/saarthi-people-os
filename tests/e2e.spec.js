@@ -1572,3 +1572,29 @@ test('editing a reviewed skill invalidates stale validation and preserves review
   await page.getByRole('button', { name: 'Request reassessment' }).click();
   await expect(page.locator('#mainContent')).toContainText('Reassessment requested');
 });
+
+
+test('Founder can publish a guided form, employee submits, and HR approves mapped profile data', async ({ page }) => {
+  await login(page, 'founder', 'Founder Forms QA');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await page.locator('#wfCreate [name="title"]').fill('Emergency contact update');
+  await page.locator('#wfCreate [name="purpose"]').fill('Keep the right person informed in an emergency.');
+  await page.locator('#wfCreate [name="field"]').fill('Emergency contact number');
+  await page.locator('#wfCreate [name="mapping"]').selectOption('contact.emergencyContact');
+  await page.getByRole('button', { name: 'Save draft form' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
+  await page.getByRole('button', { name: 'Publish form' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Published');
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await page.locator('.wf-submit input[name="answer"]').fill('+91 98765 43210');
+  await page.getByRole('button', { name: 'Submit for review' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Pending');
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
+  page.once('dialog', dialog => dialog.accept('Verified emergency contact with employee.'));
+  await page.getByRole('button', { name: 'Approve & update profile' }).click();
+  await expect(page.locator('#mainContent')).toContainText('HR verified');
+  await expect(page.locator('#mainContent')).toContainText('+91 98765 43210');
+});

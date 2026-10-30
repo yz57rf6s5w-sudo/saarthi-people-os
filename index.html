@@ -571,7 +571,8 @@ function renderApp(){
   const roleNav=r.nav.filter(([id])=>id==='admin_settings'||(state.accessConfig?.[role]?.[id]!==false));
   const extraModules=[['attendance','Attendance','◷'],['career','Career & Learning','🌱'],['projects','Project & OKR Tracking','🎯'],['performance','Performance & Feedback','📈'],['playbook','Founders’ Playbook','📘'],['directory','Team Directory','👥'],['policy_docs','Policy documents','📄'],['exit','Exit & offboarding','↗'],['profile','My profile','♙'],['onboarding','Onboarding','🚀'],['leaves','Leave management','📅'],['reimbursements','Expenses','₹'],['rewards','Rewards & culture','🏆'],['helpdesk','Helpdesk','🎧'],['saarthi_assistant','Saarthi Guide','✦']];
   if(role==='founder')extraModules.unshift(['founder_studio','Org & confidential projects','◈']);
-  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';const performanceRole=['founder','hr','manager','employee'].includes(role)&&item[0]==='performance';const founderStudio=role==='founder'&&item[0]==='founder_studio';if((isGuide||managerExit||performanceRole||founderStudio||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
+  if(['founder','hr','employee'].includes(role))extraModules.unshift(['workflow_forms','Workflow Forms','▤']);
+  if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';const performanceRole=['founder','hr','manager','employee'].includes(role)&&item[0]==='performance';const founderStudio=role==='founder'&&item[0]==='founder_studio';const workflowForms=['founder','hr','employee'].includes(role)&&item[0]==='workflow_forms';if((isGuide||managerExit||performanceRole||founderStudio||workflowForms||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
   $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
   const canImportEmployees=['founder','hr'].includes(role);
@@ -618,6 +619,7 @@ function renderApp(){
   else if(currentTab==='rewards') renderRewards(el,role);
   else if(currentTab==='helpdesk') renderHelpdesk(el,role);
   else if(currentTab==='founder_studio'&&role==='founder') renderFounderStudio(el);
+  else if(currentTab==='workflow_forms'&&['founder','hr','employee','manager','candidate'].includes(role)) window.saarthiFormsRender?.(el,role);
   else if(currentTab==='saarthi_assistant') renderSaarthiAssistant(el,role);
   else if(currentTab==='candidate_portal') renderCandidate(el);
   // Never leave a signed-in user on an empty workspace if a renderer returns without content.
@@ -1833,5 +1835,6 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 })();
 </script>
 <script src="./skills-profile.js"></script>
+<script src="./workflow-forms.js"></script>
 </body>
 </html>
