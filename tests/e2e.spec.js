@@ -1579,15 +1579,15 @@ test('Founder can publish a guided form, employee submits, and HR approves mappe
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await page.locator('#wfCreate [name="title"]').fill('Emergency contact update');
   await page.locator('#wfCreate [name="purpose"]').fill('Keep the right person informed in an emergency.');
-  await page.locator('#wfCreate [name="field"]').fill('Emergency contact number');
-  await page.locator('#wfCreate [name="mapping"]').selectOption('contact.emergencyContact');
+  await page.locator('#wfCreate [name="fieldLabel"]').fill('Emergency contact number');
+  await page.locator('#wfCreate [name="fieldMapping"]').selectOption('contact.emergencyContact');
   await page.getByRole('button', { name: 'Save draft form' }).click();
   await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
   await page.getByRole('button', { name: 'Publish form' }).click();
   await expect(page.locator('#mainContent')).toContainText('Published');
   await page.locator('#roleSelector').selectOption('employee');
   await page.getByRole('button', { name: /Workflow Forms/ }).click();
-  await page.locator('.wf-submit input[name="answer"]').fill('+91 98765 43210');
+  await page.locator('.wf-submit input[name="answer0"]').fill('+91 98765 43210');
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.locator('#mainContent')).toContainText('Pending');
   await page.locator('#roleSelector').selectOption('hr');
@@ -1597,4 +1597,49 @@ test('Founder can publish a guided form, employee submits, and HR approves mappe
   await page.getByRole('button', { name: 'Approve & update profile' }).click();
   await expect(page.locator('#mainContent')).toContainText('HR verified');
   await expect(page.locator('#mainContent')).toContainText('+91 98765 43210');
+});
+
+
+test('Founder can build a multi-field form and authorised HR can edit governed profile data with history', async ({ page }) => {
+  await login(page, 'founder', 'Multi Field Forms QA');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await page.locator('#wfCreate [name="title"]').fill('Employee details refresh');
+  await page.locator('#wfCreate [name="purpose"]').fill('Keep employee records accurate and current.');
+  await page.locator('#wfCreate [name="fieldLabel"]').fill('Work location');
+  await page.locator('#wfCreate [name="fieldMapping"]').selectOption('employment.location');
+  await page.getByRole('button', { name: '+ Add another field' }).click();
+  const second = page.locator('#wfFields .wf-builder-field').nth(1);
+  await second.locator('[name="fieldLabel"]').fill('Development goal');
+  await second.locator('[name="fieldType"]').selectOption('long');
+  await second.locator('[name="fieldMapping"]').selectOption('development.goal');
+  await page.getByRole('button', { name: 'Save draft form' }).click();
+  await expect(page.locator('#mainContent')).toContainText('2 fields');
+  await page.getByRole('button', { name: 'Publish form' }).click();
+
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  const submission = page.locator('.wf-submit').filter({ hasText: 'Employee details refresh' });
+  await submission.locator('[name="answer0"]').fill('Bengaluru');
+  await submission.locator('[name="answer1"]').fill('Build stronger customer discovery skills');
+  await submission.getByRole('button', { name: 'Submit for review' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Pending');
+
+  await page.locator('#roleSelector').selectOption('hr');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  page.once('dialog', dialog => dialog.accept('Verified both updates with the employee.'));
+  await page.getByRole('button', { name: 'Approve & update profile' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Bengaluru');
+  await expect(page.locator('#mainContent')).toContainText('Build stronger customer discovery skills');
+  await expect(page.locator('#mainContent')).toContainText('HR verified');
+  await expect(page.locator('#mainContent').getByRole('button', { name: 'Edit / update' })).toHaveCount(2);
+
+  const editPrompts = ['Pune', 'Employee confirmed relocation.'];
+  page.on('dialog', dialog => dialog.accept(editPrompts.shift()));
+  await page.locator('#mainContent').getByRole('button', { name: 'Edit / update' }).first().click();
+  await expect(page.locator('#mainContent')).toContainText('Pune');
+  await expect(page.locator('#mainContent')).toContainText('Recent profile change history');
+
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await expect(page.locator('#mainContent').getByRole('button', { name: 'Edit / update' })).toHaveCount(0);
 });
