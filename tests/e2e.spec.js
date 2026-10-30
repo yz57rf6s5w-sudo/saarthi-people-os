@@ -1710,13 +1710,13 @@ test('workflow forms explain each field to employees without exposing internal r
 test("desktop navigation pane can scroll independently when its content exceeds viewport", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
-  await page.evaluate(() => {
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) sidebar.style.minHeight = "1100px";
-  });
-  const sidebar = page.locator(".sidebar");
+  await login(page, "employee", "Navigation Scroll QA");
+  const sidebar = page.locator("#sidebar");
   await expect(sidebar).toBeVisible();
+  await sidebar.evaluate(el => { el.style.maxHeight = "180px"; });
   const metrics = await sidebar.evaluate(el => ({ client: el.clientHeight, scroll: el.scrollHeight, overflow: getComputedStyle(el).overflowY }));
   expect(metrics.scroll).toBeGreaterThan(metrics.client);
   expect(["auto", "scroll"]).toContain(metrics.overflow);
+  await sidebar.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  expect(await sidebar.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
 });
