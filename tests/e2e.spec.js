@@ -1576,7 +1576,7 @@ test('editing a reviewed skill invalidates stale validation and preserves review
 
 test('Founder can publish a guided form, employee submits, and HR approves mapped profile data', async ({ page }) => {
   await login(page, 'founder', 'Founder Forms QA');
-  await page.getByRole('button', { name: /Workflow Form Builder/ }).click();
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await page.locator('#wfCreate [name="title"]').fill('Emergency contact update');
   await page.locator('#wfCreate [name="purpose"]').fill('Keep the right person informed in an emergency.');
   await page.locator('#wfCreate [name="field"]').fill('Emergency contact number');
@@ -1591,7 +1591,7 @@ test('Founder can publish a guided form, employee submits, and HR approves mappe
   await page.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.locator('#mainContent')).toContainText('Pending');
   await page.locator('#roleSelector').selectOption('hr');
-  await page.getByRole('button', { name: /Workflow Form Builder/ }).click();
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
   await expect(page.locator('#mainContent')).toContainText('Emergency contact update');
   await page.getByRole('button', { name: 'Approve & update profile' }).click();
   await expect(page.locator('#mainContent')).toContainText('HR verified');
