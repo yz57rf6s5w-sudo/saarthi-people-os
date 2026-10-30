@@ -358,6 +358,8 @@ button:not(:disabled):active{transform:translateY(1px)}
 .profile-footer button{padding:10px 18px}
 @media(max-width:600px){.profile-identity{padding:16px;gap:11px}.profile-avatar{width:46px;height:46px;flex-basis:46px}.profile-identity h3{font-size:16px}.profile-section{padding:16px}.profile-fields{grid-template-columns:1fr;gap:11px}.profile-footer{align-items:stretch;flex-direction:column}.profile-footer button{width:100%}}
 
+/* Toasts are informational; never let them block form controls beneath them. */
+.toast{pointer-events:none}
 </style>
 </head>
 <body>
