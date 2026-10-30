@@ -1565,7 +1565,8 @@ test('editing a reviewed skill invalidates stale validation and preserves review
   await page.getByRole('button', { name: /Skills & Growth/ }).click();
   await page.getByRole('button', { name: 'Edit self-assessment' }).click();
   await page.locator('#skForm [name="context"]').fill('Added a new delivery example.');
-  await page.getByRole('button', { name: 'Update self-assessment' }).click();
+  await expect(page.locator('#skForm button[type="submit"]')).toHaveText('Update self-assessment');
+  await page.locator('#skForm button[type="submit"]').click();
   await expect(page.locator('#mainContent')).toContainText('Awaiting validation');
   await expect(page.locator('#mainContent')).toContainText('Validated —');
   await page.getByRole('button', { name: 'Request reassessment' }).click();
