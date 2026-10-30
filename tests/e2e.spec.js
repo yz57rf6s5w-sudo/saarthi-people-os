@@ -1004,15 +1004,15 @@ test('Saarthi Copilot preview offers role-aware guidance without external AI cal
 
 test('employee profile can be edited and retained in the browser demo', async ({ page }) => {
   await login(page, 'employee', 'Profile QA Employee');
-  await page.locator('#nav button[data-tab="profile"]').click();
-  await expect(page.locator('#mainContent')).toContainText('My profile');
+  await page.getByRole('button', { name: /My profile/ }).click();
+  await expect(page.locator('.employee-profile')).toBeVisible();
   await page.locator('#employeeProfileForm [name="phone"]').fill('555-0101');
   await page.locator('#employeeProfileForm [name="workEmail"]').fill('profile.qa@example.test');
-  await page.getByRole('button', { name: 'Save profile' }).click();
-  await expect(page.locator('#toast')).toContainText('Profile saved');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.locator('#toast')).toContainText('Profile saved in this browser demo.');
   await page.reload();
   await login(page, 'employee', 'Profile QA Employee');
-  await page.locator('#nav button[data-tab="profile"]').click();
+  await page.getByRole('button', { name: /My profile/ }).click();
   await expect(page.locator('#employeeProfileForm [name="phone"]')).toHaveValue('555-0101');
   await expect(page.locator('#employeeProfileForm [name="workEmail"]')).toHaveValue('profile.qa@example.test');
 });
