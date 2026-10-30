@@ -1666,3 +1666,19 @@ test('Required yes/no workflow fields require an explicit Yes or No answer', asy
   await submission.getByRole('button', { name: 'Submit for review' }).click();
   await expect(page.locator('#mainContent')).toContainText('I have read the policy: No');
 });
+
+
+test('employee profile uses a clean summary and optional detail sections', async ({ page }) => {
+  await login(page, 'employee', 'Profile QA');
+  await page.getByRole('button', { name: /My profile/ }).click();
+  await expect(page.locator('.employee-profile')).toBeVisible();
+  await expect(page.locator('.profile-identity')).toContainText('Profile QA');
+  await expect(page.locator('.profile-section')).toHaveCount(2);
+  await expect(page.locator('.profile-optional')).toHaveCount(2);
+  await expect(page.locator('.profile-optional').first()).not.toHaveAttribute('open', '');
+  await page.locator('.profile-optional').first().locator('summary').click();
+  await expect(page.locator('.profile-optional').first()).toHaveAttribute('open', '');
+  await page.locator('#employeeProfileForm [name="phone"]').fill('+91 98765 43210');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.locator('#mainContent')).toContainText('Profile saved in this browser demo.');
+});

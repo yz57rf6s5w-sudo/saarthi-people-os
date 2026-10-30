@@ -324,6 +324,40 @@ button:not(:disabled):active{transform:translateY(1px)}
 @media(max-width:760px){.studio-grid{grid-template-columns:1fr}.studio-people{grid-template-columns:1fr}.founder-studio-hero h2{font-size:22px}}
 
 
+
+/* Employee profile: quiet hierarchy, fewer visible fields, optional details on demand */
+.employee-profile{max-width:900px;margin:0 auto;display:grid;gap:14px}
+.profile-identity{display:flex;align-items:center;gap:15px;padding:20px 22px;background:linear-gradient(115deg,#fff,#f7f8ff);border:1px solid #e7eaf4;border-radius:18px;box-shadow:var(--shadow-sm)}
+.profile-avatar{width:54px;height:54px;flex:0 0 54px;border-radius:17px;display:grid;place-items:center;background:linear-gradient(140deg,#e7eaff,#eee8ff);color:#5145c8;font-size:18px;font-weight:800;letter-spacing:-.04em}
+.profile-identity-copy{min-width:0;flex:1}
+.profile-overline{font-size:9px;font-weight:850;letter-spacing:.14em;color:#7c83a0}
+.profile-identity h3{font-size:19px;letter-spacing:-.035em;margin:3px 0;color:#182338}
+.profile-identity p{font-size:12px;color:#68758a;margin:0}
+.profile-form{display:grid;gap:12px}
+.profile-section{background:#fff;border:1px solid #e6eaf2;border-radius:16px;padding:18px 20px}
+.profile-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}
+.profile-section-heading h4{font-size:14px;margin:0 0 3px;color:#202b42}
+.profile-section-heading p{font-size:11px;color:#7a8598;margin:0}
+.profile-section-heading>span{font-size:10px;font-weight:800;color:#929bb0;background:#f4f5fa;border-radius:8px;padding:5px 8px}
+.profile-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px}
+.profile-fields label{display:grid;gap:6px;min-width:0;font-size:11px;font-weight:700;color:#536078}
+.profile-fields input{width:100%;min-width:0;padding:10px 11px;border:1px solid #e0e5ef;border-radius:9px;background:#fbfcfe;color:#26334b;font-size:13px}
+.profile-fields input:disabled{background:#f4f6fa;color:#7b8496}
+.profile-fields input:focus{background:#fff;border-color:#9296f4;outline:0;box-shadow:0 0 0 3px #6366f11a}
+.profile-optional{background:#fff;border:1px solid #e6eaf2;border-radius:14px;padding:0 17px}
+.profile-optional summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;cursor:pointer}
+.profile-optional summary::-webkit-details-marker{display:none}
+.profile-optional summary span:first-child{display:grid;gap:3px}
+.profile-optional summary b{font-size:12px;color:#334057}
+.profile-optional summary small{font-size:10px;color:#8490a3}
+.profile-chevron{color:#6664c9;font-size:18px}
+.profile-optional[open] .profile-chevron{transform:rotate(45deg)}
+.profile-optional .profile-fields{padding:2px 0 17px}
+.profile-footer{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:3px 2px}
+.profile-footer p{font-size:10px;color:#8791a3;margin:0;max-width:440px}
+.profile-footer button{padding:10px 18px}
+@media(max-width:600px){.profile-identity{padding:16px;gap:11px}.profile-avatar{width:46px;height:46px;flex-basis:46px}.profile-identity h3{font-size:16px}.profile-section{padding:16px}.profile-fields{grid-template-columns:1fr;gap:11px}.profile-footer{align-items:stretch;flex-direction:column}.profile-footer button{width:100%}}
+
 </style>
 </head>
 <body>
@@ -1155,12 +1189,40 @@ function renderDirectory(el){
 }
 
 function renderEmployeeProfile(el){
- const name=String(state.displayName||'').trim();let emp=state.employees.find(e=>String(e.name||'').trim().toLowerCase()===name.toLowerCase());
+ const name=String(state.displayName||'').trim();
+ let emp=state.employees.find(e=>String(e.name||'').trim().toLowerCase()===name.toLowerCase());
  if(!emp){emp={id:'profile-'+Date.now(),name:name,role:'Employee',location:'',join:'',manager:'',status:'Active'};state.employees.push(emp);saveState();}
  emp.profile=emp.profile||{};const p=emp.profile;
- el.innerHTML=pageHead('My profile','Keep your work details up to date. Optional personal details are your choice.')+'<section class="card" style="max-width:860px"><h3>'+escapeHTML(emp.name||name)+'</h3><p class="muted tiny">'+escapeHTML(emp.role||'Employee')+' · '+escapeHTML(emp.manager||'Manager not set')+'</p><form id="employeeProfileForm"><div class="form-grid">'+
- '<label>Phone number<input name="phone" value="'+escapeHTML(p.phone||'')+'"></label><label>Personal email<input name="personalEmail" type="email" value="'+escapeHTML(p.personalEmail||'')+'"></label><label>Work email<input name="workEmail" type="email" value="'+escapeHTML(p.workEmail||'')+'"></label><label>Work location<input name="location" value="'+escapeHTML(emp.location||'')+'"></label><label>Joining date<input name="join" type="date" value="'+escapeHTML(emp.join||'')+'"></label><label>Pronouns (optional)<input name="pronouns" value="'+escapeHTML(p.pronouns||'')+'"></label><label>Emergency contact name<input name="emergencyContact" value="'+escapeHTML(p.emergencyContact||'')+'"></label><label>Emergency contact phone<input name="emergencyPhone" value="'+escapeHTML(p.emergencyPhone||'')+'"></label><label>Address (optional)<input name="address" value="'+escapeHTML(p.address||'')+'"></label></div><p class="muted tiny">Saved in this browser demo only. Production profile data needs secure storage and role-based access.</p><button class="primary" type="submit">Save profile</button></form></section>';
- $('employeeProfileForm').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.currentTarget);emp.profile={phone:String(fd.get('phone')||'').trim(),personalEmail:String(fd.get('personalEmail')||'').trim(),workEmail:String(fd.get('workEmail')||'').trim(),pronouns:String(fd.get('pronouns')||'').trim(),emergencyContact:String(fd.get('emergencyContact')||'').trim(),emergencyPhone:String(fd.get('emergencyPhone')||'').trim(),address:String(fd.get('address')||'').trim()};emp.location=String(fd.get('location')||'').trim();emp.join=String(fd.get('join')||'');saveState();renderApp();notify('Profile saved in this browser demo.');});
+ const initials=String(emp.name||name).split(/\\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'ME';
+ el.innerHTML=pageHead('My profile','Your work information, in one clear place.')+
+ '<div class="employee-profile">'+
+ '<section class="profile-identity"><div class="profile-avatar" aria-hidden="true">'+escapeHTML(initials)+'</div><div class="profile-identity-copy"><div class="profile-overline">YOUR WORK PROFILE</div><h3>'+escapeHTML(emp.name||name)+'</h3><p>'+escapeHTML(emp.role||'Employee')+' <span aria-hidden="true">·</span> '+escapeHTML(emp.manager||'Manager not set')+'</p></div><span class="pill approved">Active</span></section>'+
+ '<form id="employeeProfileForm" class="profile-form">'+
+ '<section class="profile-section"><div class="profile-section-heading"><div><h4>Contact details</h4><p>How your team can reach you.</p></div><span>01</span></div><div class="profile-fields">'+
+ '<label>Work email<input name="workEmail" type="email" value="'+escapeHTML(p.workEmail||'')+'" placeholder="name@company.com"></label>'+
+ '<label>Phone number<input name="phone" type="tel" value="'+escapeHTML(p.phone||'')+'" placeholder="+91"></label>'+
+ '<label>Work location<input name="location" value="'+escapeHTML(emp.location||'')+'" placeholder="City / remote"></label>'+
+ '</div></section>'+
+ '<section class="profile-section"><div class="profile-section-heading"><div><h4>Employment details</h4><p>Your role and joining information.</p></div><span>02</span></div><div class="profile-fields">'+
+ '<label>Joining date<input name="join" type="date" value="'+escapeHTML(emp.join||'')+'"></label>'+
+ '<label>Reporting manager<input value="'+escapeHTML(emp.manager||'')+'" disabled aria-label="Reporting manager"></label>'+
+ '</div></section>'+
+ '<details class="profile-optional"><summary><span><b>Personal details</b><small>Optional · Only add what you are comfortable sharing</small></span><span class="profile-chevron" aria-hidden="true">＋</span></summary><div class="profile-fields">'+
+ '<label>Personal email<input name="personalEmail" type="email" value="'+escapeHTML(p.personalEmail||'')+'" placeholder="Personal email"></label>'+
+ '<label>Pronouns<input name="pronouns" value="'+escapeHTML(p.pronouns||'')+'" placeholder="Optional"></label>'+
+ '<label>Address<input name="address" value="'+escapeHTML(p.address||'')+'" placeholder="Optional"></label>'+
+ '</div></details>'+
+ '<details class="profile-optional"><summary><span><b>Emergency contact</b><small>Optional · For urgent workplace situations</small></span><span class="profile-chevron" aria-hidden="true">＋</span></summary><div class="profile-fields">'+
+ '<label>Contact name<input name="emergencyContact" value="'+escapeHTML(p.emergencyContact||'')+'"></label>'+
+ '<label>Contact phone<input name="emergencyPhone" type="tel" value="'+escapeHTML(p.emergencyPhone||'')+'"></label>'+
+ '</div></details>'+
+ '<div class="profile-footer"><p>Only share details needed for work. In this demo, changes stay in this browser.</p><button class="primary" type="submit">Save changes</button></div>'+
+ '</form></div>';
+ $('employeeProfileForm').addEventListener('submit',e=>{
+  e.preventDefault();const fd=new FormData(e.currentTarget);
+  emp.profile={phone:String(fd.get('phone')||'').trim(),personalEmail:String(fd.get('personalEmail')||'').trim(),workEmail:String(fd.get('workEmail')||'').trim(),pronouns:String(fd.get('pronouns')||'').trim(),emergencyContact:String(fd.get('emergencyContact')||'').trim(),emergencyPhone:String(fd.get('emergencyPhone')||'').trim(),address:String(fd.get('address')||'').trim()};
+  emp.location=String(fd.get('location')||'').trim();emp.join=String(fd.get('join')||'');saveState();renderApp();notify('Profile saved in this browser demo.');
+ });
 }
 function renderPolicyDocuments(el){
  const manage=['founder','hr'].includes(state.activeRole);state.policyDocuments=Array.isArray(state.policyDocuments)?state.policyDocuments:[{id:'policy-leave',title:'Leave and time-off policy',category:'Leave',effectiveDate:'',status:'Draft',summary:'Add approved leave types, eligibility, notice periods, approval steps and escalation contact.'},{id:'policy-expense',title:'Expense and reimbursement policy',category:'Expenses',effectiveDate:'',status:'Draft',summary:'Define eligible expenses, limits, receipt requirements, timelines and approver responsibilities.'},{id:'policy-conduct',title:'Code of conduct',category:'Workplace',effectiveDate:'',status:'Draft',summary:'Add approved conduct standards, reporting channels and confidentiality expectations.'}];
