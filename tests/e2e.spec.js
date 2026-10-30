@@ -1680,5 +1680,5 @@ test('employee profile uses a clean summary and optional detail sections', async
   await expect(page.locator('.profile-optional').first()).toHaveAttribute('open', '');
   await page.locator('#employeeProfileForm [name="phone"]').fill('+91 98765 43210');
   await page.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.locator('#mainContent')).toContainText('Profile saved in this browser demo.');
+  await expect(page.locator('#toast')).toContainText('Profile saved in this browser demo.');
 });
