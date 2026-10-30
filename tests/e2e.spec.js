@@ -1682,3 +1682,26 @@ test('employee profile uses a clean summary and optional detail sections', async
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.locator('#toast')).toContainText('Profile saved in this browser demo.');
 });
+
+
+test('workflow forms explain each field to employees without exposing internal rationale', async ({ page }) => {
+  await login(page, 'founder', 'Contextual Guidance QA');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  await page.locator('#wfCreate [name="title"]').fill('Emergency contact update');
+  await page.locator('#wfCreate [name="purpose"]').fill('Keep a trusted contact available if an urgent situation arises.');
+  await page.locator('#wfCreate [name="fieldLabel"]').fill('Emergency contact number');
+  await page.locator('#wfCreate [name="fieldPurpose"]').fill('Share a phone number for someone you trust who we may contact in an emergency.');
+  await page.locator('#wfCreate [name="fieldHow"]').fill('Include the country code, for example +91.');
+  await page.locator('#wfCreate [name="fieldExample"]').fill('+91 98XXXXXX10');
+  await page.getByRole('button', { name: 'Save draft form' }).click();
+  await page.getByRole('button', { name: 'Publish form' }).click();
+
+  await page.locator('#roleSelector').selectOption('employee');
+  await page.getByRole('button', { name: /Workflow Forms/ }).click();
+  const form = page.locator('.wf-submit').filter({ hasText: 'Emergency contact update' });
+  await expect(form).toContainText('Why we ask: Share a phone number for someone you trust');
+  await expect(form).toContainText('How to answer: Include the country code');
+  await expect(form).toContainText('Example: +91 98XXXXXX10');
+  await expect(form).toContainText('Required field');
+  await expect(form).not.toContainText('internal hiring strategy');
+});
