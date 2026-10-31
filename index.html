@@ -1575,7 +1575,7 @@ function renderOnboarding(el){
     const list=$('onboardingPeopleList');if(!list)return;
     list.innerHTML=state.onboardingPeople.length?state.onboardingPeople.map(person=>{
       const started=person.status==='Onboarding';
-      return '<div class="onboard-step" style="gap:12px;align-items:center"><div style="flex:1;min-width:0"><strong>'+escapeHTML(person.name)+'</strong><div class="tiny muted">'+escapeHTML(person.roleTitle)+' · '+escapeHTML(person.email)+'</div><div class="tiny muted">Start: '+escapeHTML(person.startDate)+' · '+escapeHTML(person.workMode)+'</div></div><span class="pill '+(started?'approved':'pending')+'">'+(started?'Onboarding':'Ready to start')+'</span><div class="actions"><button type="button" class="secondary small" data-person-edit="'+escapeHTML(person.id)+'">Edit</button>'+(started?'<button type="button" class="neutral small" data-person-view="'+escapeHTML(person.id)+'">View tasks</button>':'<button type="button" class="primary small" data-person-start="'+escapeHTML(person.id)+'">Start onboarding</button>')+'</div></div>';
+      return '<div class="onboard-step" style="gap:12px;align-items:center"><div style="flex:1;min-width:0"><strong>'+escapeHTML(person.name)+'</strong><div class="tiny muted">'+escapeHTML(person.roleTitle)+' · '+escapeHTML(person.email)+'</div><div class="tiny muted">'+escapeHTML(person.employeeType||'Employee')+' · '+escapeHTML(person.seniority||'Seniority not set')+' · '+escapeHTML(person.team||'Team not set')+'</div><div class="tiny muted">Start: '+escapeHTML(person.startDate)+' · '+escapeHTML(person.workMode)+(person.workflowId?' · Flow: '+escapeHTML((state.onboardingWorkflows.find(w=>String(w.id)===String(person.workflowId))||{}).name||'Selected'):'')+'</div></div><span class="pill '+(started?'approved':'pending')+'">'+(started?'Onboarding':'Ready to start')+'</span><div class="actions"><button type="button" class="secondary small" data-person-edit="'+escapeHTML(person.id)+'">Edit</button>'+(started?'<button type="button" class="neutral small" data-person-view="'+escapeHTML(person.id)+'">View tasks</button>':'<button type="button" class="primary small" data-person-start="'+escapeHTML(person.id)+'">Start onboarding</button>')+'</div></div>';
     }).join(''):'<p class="muted tiny" style="margin:12px 0">No candidates added yet. Add someone whose offer has been accepted to begin preboarding.</p>';
     list.querySelectorAll('[data-person-start]').forEach(button=>button.addEventListener('click',()=>{
       const person=state.onboardingPeople.find(p=>String(p.id)===String(button.dataset.personStart));if(!person)return;
@@ -1630,7 +1630,12 @@ function renderOnboarding(el){
   aiCard.className='card';
   aiCard.style.marginBottom='16px';
   aiCard.innerHTML='<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><span class="module-kicker">AI WORKFORCE · GEMINI</span><h3 style="margin:4px 0">Draft an onboarding checklist</h3><p class="muted tiny" style="margin:0">Creates a reviewable draft through Saarthi’s authenticated AI gateway. Nothing is saved until you choose to add it.</p></div><span class="pill open">Human review required</span></div><div class="form-grid" style="margin-top:14px"><label>Role title<input id="aiOnboardRole" maxlength="120" placeholder="e.g. Customer Success Manager" required></label><label>Start date<input id="aiOnboardDate" type="date" required value="'+new Date().toISOString().slice(0,10)+'"></label><label>Work mode<select id="aiOnboardMode"><option>Hybrid</option><option>Remote</option><option>On-site</option></select></label><button class="primary" type="button" id="aiOnboardGenerate">Generate draft</button></div><div id="aiOnboardResult" aria-live="polite" style="margin-top:12px"></div>';
-  el.prepend(aiCard);
+  const aiDetails=document.createElement('details');
+  aiDetails.className='card';aiDetails.style.marginTop='16px';
+  const aiSummary=document.createElement('summary');
+  aiSummary.textContent='Optional: AI-assisted onboarding draft';
+  aiSummary.style.cssText='cursor:pointer;font-weight:700;padding:4px';
+  aiDetails.appendChild(aiSummary);aiDetails.appendChild(aiCard);el.appendChild(aiDetails);
   $('aiOnboardGenerate')?.addEventListener('click',async()=>{
     const button=$('aiOnboardGenerate'),out=$('aiOnboardResult');
     const roleTitle=$('aiOnboardRole').value.trim(),startDate=$('aiOnboardDate').value,workMode=$('aiOnboardMode').value;
