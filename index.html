@@ -710,7 +710,7 @@ function renderApp(){
   const canImportEmployees=['founder','hr'].includes(role);
   $('importEmployeesBtn').classList.toggle('hidden',!canImportEmployees);
   $('importEmployeesFile').classList.add('hidden');
-  $('workspaceSetupBtn').classList.toggle('hidden',role==='candidate');
+  $('workspaceSetupBtn').classList.toggle('hidden',!['founder','hr'].includes(role));
   $('exportDataBtn').classList.toggle('hidden',!['founder','hr'].includes(role));
   $('importDataBtn').classList.toggle('hidden',role!=='founder');
   $('resetDemoBtn').classList.toggle('hidden',role!=='founder');
