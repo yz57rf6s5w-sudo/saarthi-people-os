@@ -63,7 +63,7 @@ jobs:
                 animations: 'disabled'
               });
               if (role === 'founder') {
-                const workforceLink = page.getByText('AI Workforce', { exact: true }).first();
+                const workforceLink = page.getByText(/AI Workforce/i).first();
                 if (await workforceLink.count()) {
                   await workforceLink.click();
                   await page.waitForTimeout(1200);
