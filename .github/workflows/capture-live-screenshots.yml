@@ -62,6 +62,18 @@ jobs:
                 fullPage: true,
                 animations: 'disabled'
               });
+              if (role === 'founder') {
+                const workforceLink = page.getByText('AI Workforce', { exact: true }).first();
+                if (await workforceLink.count()) {
+                  await workforceLink.click();
+                  await page.waitForTimeout(1200);
+                  await page.screenshot({
+                    path: 'artifacts/founder-ai-workforce.png',
+                    fullPage: true,
+                    animations: 'disabled'
+                  });
+                }
+              }
               await context.close();
               console.log(`Captured live role screen: ${role}`);
             }
