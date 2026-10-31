@@ -559,6 +559,23 @@ a{color:#c4a8ff}a:hover{color:#d8c8ff}
  .founder-hero-copy{max-width:100%}
 }
 
+
+/* Compact, grouped navigation: keep the primary journey visible and tuck secondary modules away. */
+.nav{gap:8px}
+.nav-group{border:1px solid transparent;border-radius:12px;padding:2px 4px}
+.nav-group[open]{background:rgba(255,255,255,.025);border-color:rgba(148,163,184,.12)}
+.nav-group>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer;padding:9px 9px;color:#aeb8ce;font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;user-select:none}
+.nav-group>summary::-webkit-details-marker{display:none}
+.nav-group>summary:after{content:'+';font-size:15px;font-weight:500;color:#77839b}
+.nav-group[open]>summary:after{content:'−'}
+.nav-group>summary small{margin-left:auto;padding:2px 6px;border-radius:20px;background:rgba(148,163,184,.12);color:#9ba8bf;font-size:10px;letter-spacing:0}
+.nav-group-items{display:grid;gap:3px;padding:0 2px 5px}
+.nav-group .nav-group-items button{display:flex;align-items:center;gap:10px;width:100%;min-height:37px;padding:8px 10px;border-radius:9px;background:transparent;color:#b8c2d8;text-align:left;font-size:12px;font-weight:550}
+.nav-group .nav-group-items button .nav-icon{width:18px;flex:0 0 18px;text-align:center;font-size:14px}
+.nav-group .nav-group-items button.active{background:linear-gradient(100deg,rgba(99,102,241,.24),rgba(139,92,246,.14));color:#fff;box-shadow:inset 2px 0 0 #9b8cff}
+.nav-group .nav-group-items button:hover{background:rgba(148,163,184,.12);color:#fff}
+.nav-group summary:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px;border-radius:8px}
+@media(max-width:900px){.nav-group>summary{padding:11px 9px}.nav-group .nav-group-items button{min-height:40px}}
 </style>
 </head>
 <body>
@@ -829,7 +846,21 @@ function renderApp(){
   if(['founder','hr','employee'].includes(role))extraModules.unshift(['workflow_forms','Workflow Forms','▤']);
   if(role!=='candidate')extraModules.forEach(item=>{const isGuide=item[0]==='saarthi_assistant';const managerExit=role==='manager'&&item[0]==='exit';const performanceRole=['founder','hr','manager','employee'].includes(role)&&item[0]==='performance';const founderStudio=role==='founder'&&item[0]==='founder_studio';const workflowForms=['founder','hr','employee'].includes(role)&&item[0]==='workflow_forms';if((isGuide||managerExit||performanceRole||founderStudio||workflowForms||state.accessConfig?.[role]?.[item[0]]===true)&&!roleNav.some(existing=>existing[0]===item[0]))roleNav.push(item)});
   if(!roleNav.some(([id])=>id===currentTab))currentTab=roleNav[0]?.[0]||'dashboard';
-  $('nav').innerHTML=roleNav.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('');
+  const navGroups=[
+    {label:'Home',ids:['dashboard']},
+    {label:'People',ids:['people_budget','ai_workforce','onboarding','directory','career','playbook','policy_docs','exit','rewards','attendance','profile','candidate_portal']},
+    {label:'Operations',ids:['requisitions','projects','performance','leaves','reimbursements','helpdesk','workflow_forms']},
+    {label:'Workspace',ids:['founder_studio','saarthi_assistant','admin_settings']}
+  ];
+  const grouped=navGroups.map(group=>({...group,items:roleNav.filter(item=>group.ids.includes(item[0]))})).filter(group=>group.items.length);
+  const assigned=new Set(grouped.flatMap(group=>group.items.map(item=>item[0])));
+  const ungrouped=roleNav.filter(item=>!assigned.has(item[0]));
+  if(ungrouped.length)grouped.push({label:'More',items:ungrouped});
+  $('nav').innerHTML=grouped.map((group,index)=>{
+    const containsActive=group.items.some(([id])=>id===currentTab);
+    const expanded=containsActive||group.label==='Home';
+    return `<details class="nav-group" ${expanded?'open':''}><summary><span>${group.label}</span><small>${group.items.length}</small></summary><div class="nav-group-items">${group.items.map(([id,label,icon])=>`<button class="${id===currentTab?'active':''}" data-tab="${id}"><span class="nav-icon">${icon}</span><span>${label}</span></button>`).join('')}</div></details>`;
+  }).join('');
   const canImportEmployees=['founder','hr'].includes(role);
   $('importEmployeesBtn').classList.toggle('hidden',!canImportEmployees);
   $('importEmployeesFile').classList.add('hidden');
