@@ -478,7 +478,17 @@ button:not(:disabled):active{transform:translateY(1px)}
       <div class="form-row"><label>Access code</label><input id="demoCode" required placeholder="demo123" value="demo123"></div>
       <button class="primary" type="submit" style="width:100%">Enter workspace</button>
     </form>
-    <p class="tiny muted" style="margin:12px 0 0">Code: demo123 · Data stays in this browser only.</p>
+    <p class="tiny muted" style="margin:12px 0 0">Demo access: <strong>demo123</strong> · Sample data stays in this browser.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px"><span style="height:1px;background:var(--line);flex:1"></span><span class="tiny muted">OR COMPANY ACCOUNT</span><span style="height:1px;background:var(--line);flex:1"></span></div>
+    <form id="companyAuthForm">
+      <div class="form-row"><label for="companyAuthMode">Account action</label><select id="companyAuthMode"><option value="signin">Sign in</option><option value="signup">Create account and workspace</option></select></div>
+      <div class="form-row"><label for="companyAuthEmail">Work email</label><input id="companyAuthEmail" type="email" autocomplete="username" required placeholder="you@company.com" value=""></div>
+      <div class="form-row"><label for="companyAuthPassword">Password</label><input id="companyAuthPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></div>
+      <div class="form-row" id="companyNameRow"><label for="companyOrgName">Organization name (required when creating a new workspace)</label><input id="companyOrgName" maxlength="120" placeholder="Your organization"></div>
+      <button class="primary" id="companyAuthSubmit" type="submit" style="width:100%">Sign in securely</button>
+      <p class="tiny muted" id="companyAuthStatus" role="status" aria-live="polite" style="margin:10px 0 0"></p>
+    </form>
+    <p class="tiny muted" style="margin:8px 0 0">Company accounts use Supabase Auth. Demo role switching and sample records are separate from authenticated organization data.</p>
   </div>
 </div>
 
@@ -586,6 +596,16 @@ function saveState(){
   }
 }
 let state=loadState(), currentTab='dashboard', toastTimer;
+window.saarthiAuthenticatedLogin=function(user,membership){
+  state.displayName=(user.user_metadata&&user.user_metadata.full_name)||user.email||'Team member';
+  state.activeRole=membership.role;
+  saveState();
+  window.saarthiAuthMode=true;
+  const selector=$('roleSelector');if(selector){selector.value=membership.role;selector.disabled=true;selector.title='Your role is assigned by your organization';}
+  const login=$('loginScreen'),app=$('app');if(login)login.classList.add('hidden');if(app)app.classList.remove('hidden');
+  currentTab=roles[membership.role].nav[0][0];renderApp();
+  notify('Signed in to your organization');
+};
 const $=id=>document.getElementById(id);
 // Install a resilient login path early so unrelated module initialisation errors cannot leave the demo inaccessible.
 window.saarthiLogin=function(event){
@@ -1530,6 +1550,28 @@ function renderOnboarding(el){
   $('onboardingWorkflowSelect')?.addEventListener('change',e=>{state.selectedOnboardingWorkflowId=e.target.value;saveState();renderApp()});
   $('deleteOnboardingWorkflow')?.addEventListener('click',()=>{if(state.onboardingWorkflows.length<2){notify('Keep at least one workflow template.');return}state.onboardingWorkflows=state.onboardingWorkflows.filter(w=>String(w.id)!==String(workflow.id));state.selectedOnboardingWorkflowId=state.onboardingWorkflows[0].id;saveState();renderApp();notify('Workflow template deleted')});
   $('applyOnboardingWorkflow')?.addEventListener('click',()=>{const existing=new Set(steps.map(x=>String(x.title||'').trim().toLowerCase()));const additions=(workflow.steps||[]).filter(title=>!existing.has(String(title).trim().toLowerCase())).map((title,i)=>({id:Date.now()+i,title,detail:'Complete and confirm: '+title,status:'Not started',owner:workflow.defaultOwner||'People Ops',dueDate:new Date(Date.now()+Math.round((i+1)*Number(workflow.durationDays||30)/(workflow.steps||[]).length)*86400000).toISOString().slice(0,10),geographyScope:workflow.geographyScope||'All locations'}));if(!additions.length){notify('All template steps are already on the checklist.');return}steps.push(...additions);saveState();renderApp();notify(additions.length+' workflow steps added')});
+  const aiCard=document.createElement('section');
+  aiCard.className='card';
+  aiCard.style.marginBottom='16px';
+  aiCard.innerHTML='<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div><span class="module-kicker">AI WORKFORCE · GEMINI</span><h3 style="margin:4px 0">Draft an onboarding checklist</h3><p class="muted tiny" style="margin:0">Creates a reviewable draft through Saarthi’s authenticated AI gateway. Nothing is saved until you choose to add it.</p></div><span class="pill open">Human review required</span></div><div class="form-grid" style="margin-top:14px"><label>Role title<input id="aiOnboardRole" maxlength="120" placeholder="e.g. Customer Success Manager" required></label><label>Start date<input id="aiOnboardDate" type="date" required value="'+new Date().toISOString().slice(0,10)+'"></label><label>Work mode<select id="aiOnboardMode"><option>Hybrid</option><option>Remote</option><option>On-site</option></select></label><button class="primary" type="button" id="aiOnboardGenerate">Generate draft</button></div><div id="aiOnboardResult" aria-live="polite" style="margin-top:12px"></div>';
+  el.prepend(aiCard);
+  $('aiOnboardGenerate')?.addEventListener('click',async()=>{
+    const button=$('aiOnboardGenerate'),out=$('aiOnboardResult');
+    const roleTitle=$('aiOnboardRole').value.trim(),startDate=$('aiOnboardDate').value,workMode=$('aiOnboardMode').value;
+    if(!roleTitle||!startDate){notify('Enter a role title and start date.');return}
+    if(!window.saarthiSupabaseClient||!window.saarthiAuthUser){notify('Sign in with your company account to use live AI.');return}
+    button.disabled=true;button.textContent='Generating…';out.textContent='Preparing a secure AI request…';
+    try{
+      const {data,error}=await window.saarthiSupabaseClient.functions.invoke('saarthi-ai',{body:{task:'draft_onboarding_checklist',roleTitle,startDate,workMode}});
+      if(error)throw error;
+      if(!data||!Array.isArray(data.draft))throw new Error(data&&data.error?data.error:'Unexpected AI response');
+      const draft=data.draft;
+      out.innerHTML='<div class="card" style="background:#f8fafc"><strong>'+escapeHTML(data.mode==='ai_draft'?'Gemini draft':'Starter checklist')+'</strong><p class="tiny muted" style="margin:4px 0 10px">'+escapeHTML(data.message||'Review every item, owner and date before use.')+'</p>'+draft.map(item=>'<div class="onboard-step"><div><strong>'+escapeHTML(item.day)+'</strong><div class="tiny">'+escapeHTML(item.task)+'</div></div><span class="tiny muted">'+escapeHTML(item.owner)+'</span></div>').join('')+'<button class="secondary small" type="button" id="aiOnboardAdd" style="margin-top:12px">Add reviewed items to this workflow</button></div>';
+      $('aiOnboardAdd')?.addEventListener('click',()=>{const titles=draft.map(item=>item.task);workflow.steps=[...(workflow.steps||[]),...titles.filter(title=>!(workflow.steps||[]).includes(title))];saveState();renderApp();notify('Reviewed AI items added to the selected workflow template')});
+      if(data.mode==='ai_draft')notify('Gemini draft generated. Review before using it.');else notify('Fallback checklist returned; live AI was unavailable.');
+    }catch(error){console.error('Saarthi AI gateway error:',error);out.textContent='Could not generate the draft. Check your sign-in and organization membership, then try again.';notify('AI request failed: '+(error.message||'unknown error'))}
+    finally{button.disabled=false;button.textContent='Generate draft'}
+  });
   el.querySelectorAll('[data-edit-step]').forEach(btn=>btn.addEventListener('click',()=>{const step=byId(btn.dataset.editStep);if(step)editStep(step)}));
 }
 function renderAttendance(el,role){
@@ -1988,6 +2030,8 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<script src="./auth-client.js"></script>
 <script>
 // Attach login even if a later module initializer in the main script throws.
 (function(){
