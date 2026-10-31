@@ -18,7 +18,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
     if(error)throw new Error('Could not verify organization membership. '+error.message);
     let membership=rows&&rows[0];
     if(!rows||rows.length===0){
-      if(!orgName)throw new Error('This account has no organization yet. Choose “Create account and workspace” or enter an organization name to create your workspace.');
+      if(!orgName)throw new Error('No workspace is linked to this account yet. Enter your organization name above and sign in again to create your first workspace.');
       const {data:orgId,error:bootstrapError}=await client.rpc('bootstrap_organization',{p_name:orgName});
       if(bootstrapError)throw new Error('Workspace setup failed: '+bootstrapError.message);
       membership={organization_id:orgId,role:'founder'};
