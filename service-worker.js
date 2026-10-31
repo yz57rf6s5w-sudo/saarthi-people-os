@@ -1,4 +1,4 @@
-const CACHE_NAME = 'saarthi-shell-v6';
+const CACHE_NAME = 'saarthi-shell-v7';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg', './auth-client.js'];
 
 self.addEventListener('install', event => {
