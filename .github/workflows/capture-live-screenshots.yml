@@ -1,0 +1,78 @@
+name: Capture live Saarthi prototype screens
+
+on:
+  push:
+    branches:
+      - capture/live-prototype-screenshots
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out prototype
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install browser test dependencies
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Capture genuine live demo role screens
+        run: |
+          mkdir -p artifacts
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const roles = [
+              ['founder', 'founder-dashboard'],
+              ['hr', 'people-ops'],
+              ['manager', 'manager'],
+              ['employee', 'employee'],
+              ['candidate', 'candidate']
+            ];
+            for (const [role, filename] of roles) {
+              const context = await browser.newContext({
+                viewport: { width: 1600, height: 1100 },
+                deviceScaleFactor: 1
+              });
+              const page = await context.newPage();
+              await page.goto('https://yz57rf6s5w-sudo.github.io/saarthi-people-os/', {
+                waitUntil: 'networkidle',
+                timeout: 90000
+              });
+              await page.locator('#loginRole').selectOption(role);
+              await page.locator('#loginName').fill('Saarthi Demo');
+              await page.locator('#demoCode').fill('demo123');
+              await page.getByRole('button', { name: 'Enter workspace' }).click();
+              await page.locator('#app').waitFor({ state: 'visible', timeout: 30000 });
+              await page.waitForTimeout(1800);
+              await page.screenshot({
+                path: `artifacts/${filename}.png`,
+                fullPage: true,
+                animations: 'disabled'
+              });
+              await context.close();
+              console.log(`Captured live role screen: ${role}`);
+            }
+            await browser.close();
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
+      - name: Upload original screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: saarthi-live-prototype-screenshots
+          path: artifacts/*.png
+          if-no-files-found: error
+          retention-days: 14
