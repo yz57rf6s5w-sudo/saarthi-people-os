@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
 (function(){
   'use strict';
   const SUPABASE_URL='https://cysgrthuejegrfgdzcpy.supabase.co';
@@ -6,8 +8,7 @@
   const mode=document.getElementById('companyAuthMode');
   const nameRow=document.getElementById('companyNameRow');
   const submit=document.getElementById('companyAuthSubmit');
-  if(!window.supabase||!window.supabase.createClient){if(status)status.textContent='Secure sign-in library did not load. Refresh and try again.';return;}
-  const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const client=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   window.saarthiSupabaseClient=client;
   function setStatus(message,isError){if(status){status.textContent=message;status.style.color=isError?'#b91c1c':'#64748b';}}
   function updateMode(){const signup=mode.value==='signup';nameRow.style.display=signup?'block':'block';submit.textContent=signup?'Create account and workspace':'Sign in securely';document.getElementById('companyOrgName').required=signup;}
