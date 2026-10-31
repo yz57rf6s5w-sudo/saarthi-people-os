@@ -482,9 +482,9 @@ button:not(:disabled):active{transform:translateY(1px)}
     <div style="display:flex;align-items:center;gap:10px;margin:22px 0 14px"><span style="height:1px;background:var(--line);flex:1"></span><span class="tiny muted">OR COMPANY ACCOUNT</span><span style="height:1px;background:var(--line);flex:1"></span></div>
     <form id="companyAuthForm">
       <div class="form-row"><label for="companyAuthMode">Account action</label><select id="companyAuthMode"><option value="signin">Sign in</option><option value="signup">Create account and workspace</option></select></div>
-      <div class="form-row"><label for="companyAuthEmail">Work email</label><input id="companyAuthEmail" type="email" autocomplete="username" required placeholder="you@company.com" value=""></div>
+      <div class="form-row"><label for="companyAuthEmail">Email address (personal or work)</label><input id="companyAuthEmail" type="email" autocomplete="username" required placeholder="you@company.com" value=""></div>
       <div class="form-row"><label for="companyAuthPassword">Password</label><input id="companyAuthPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></div>
-      <div class="form-row" id="companyNameRow"><label for="companyOrgName">Organization name (needed only when creating your first workspace)</label><input id="companyOrgName" maxlength="120" placeholder="Your organization"></div>
+      <div class="form-row" id="companyNameRow"><label for="companyOrgName">Workspace name (for example, Saarthi)</label><input id="companyOrgName" maxlength="120" placeholder="Name your workspace"></div>
       <button class="primary" id="companyAuthSubmit" type="submit" style="width:100%">Sign in securely</button>
       <p class="tiny muted" id="companyAuthStatus" role="status" aria-live="polite" style="margin:10px 0 0"></p>
     </form>
