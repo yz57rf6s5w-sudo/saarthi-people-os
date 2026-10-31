@@ -1462,6 +1462,11 @@ function renderOnboarding(el){
   state.onboardingWorkflows=Array.isArray(state.onboardingWorkflows)?state.onboardingWorkflows:(state.onboardingWorkflow?[{...state.onboardingWorkflow,id:'general',geographyScope:state.onboardingWorkflow.geographyScope||'All locations'}]:[defaultWorkflow]);
   if(!state.onboardingWorkflows.length)state.onboardingWorkflows=[defaultWorkflow];
   state.onboardingWorkflows=state.onboardingWorkflows.map((w,i)=>({...defaultWorkflow,...w,id:String(w.id||('workflow-'+i)),geographyScope:w.geographyScope||'All locations',steps:Array.isArray(w.steps)?w.steps:defaultWorkflow.steps.slice()}));
+  const tailoredDefaults=[
+    {id:'intern',name:'Intern onboarding',audience:'Interns · students · early-career placements',defaultOwner:'People Ops + assigned mentor',durationDays:30,steps:['Welcome and explain the internship programme','Assign a buddy and day-to-day supervisor','Set learning goals and expected outcomes','Provide role-appropriate tools and limited access','Introduce the team and key collaborators','Agree the first project and weekly check-ins','Review learning progress with the mentor']},
+    {id:'senior',name:'Senior hire onboarding',audience:'Senior · Lead · Head · Executive hires',defaultOwner:'Hiring manager + People Ops',durationDays:60,steps:['Founder or executive welcome and strategic context','Align mandate, decision rights and success measures','Map key stakeholders and schedule introductions','Review team structure, priorities and operating metrics','Confirm access to leadership tools and information','Agree 30/60-day priorities with the manager','Schedule stakeholder feedback and executive check-ins']}
+  ];
+  tailoredDefaults.forEach(seed=>{if(!state.onboardingWorkflows.some(w=>String(w.id)===seed.id||String(w.name||'').toLowerCase()===seed.name.toLowerCase()))state.onboardingWorkflows.push(seed)});
   state.selectedOnboardingWorkflowId=state.selectedOnboardingWorkflowId||state.onboardingWorkflows[0].id;
   let workflow=state.onboardingWorkflows.find(w=>String(w.id)===String(state.selectedOnboardingWorkflowId))||state.onboardingWorkflows[0];
   state.selectedOnboardingWorkflowId=workflow.id;
