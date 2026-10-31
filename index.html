@@ -1497,8 +1497,7 @@ function renderOnboarding(el){
   const policyCard=()=>'<section class="card" style="margin-bottom:16px"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><span class="module-kicker">LOCAL POLICY LIBRARY</span><h3 style="margin:4px 0">Policies for each geography</h3><p class="muted tiny" style="margin:0">Store company-approved policy notes and links to official sources. Check each source before using it in a workflow.</p></div><button class="secondary small" id="addOnboardingPolicy">+ Add policy or source</button></div>'+(state.onboardingPolicies.length?'<div class="metrics" style="margin-top:12px;margin-bottom:12px"><div class="card metric"><strong>'+state.onboardingPolicies.filter(policyNeedsReview).length+'</strong><span>Policies needing review</span></div><div class="card metric"><strong>'+state.onboardingPolicies.filter(policyExceptionNeedsReview).length+'</strong><span>Exceptions due / expired</span></div></div><div style="margin-top:12px;display:grid;gap:8px">'+state.onboardingPolicies.map(p=>'<div style="border:1px solid var(--border,#ddd);border-radius:10px;padding:10px 12px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>'+escapeHTML(p.title)+'</strong><span class="tiny muted">'+escapeHTML(p.geography)+' · '+escapeHTML(p.category)+'</span></div><p class="tiny" style="margin:6px 0">'+escapeHTML(p.summary||'No summary provided.')+'</p><div class="tiny muted">Source status: '+escapeHTML(p.status||'Needs verification')+(p.verifiedDate?' · Checked: '+escapeHTML(p.verifiedDate):'')+'</div>'+policyReviewAlert(p)+(p.sourceUrl?'<a href="'+escapeHTML(p.sourceUrl)+'" target="_blank" rel="noopener noreferrer" class="tiny">Open source ↗</a>':'<span class="tiny muted">Company-entered policy (no source link)</span>')+'<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--surface-secondary,#f5f5f5)"><div class="tiny"><strong>Exception / override:</strong> '+escapeHTML(p.exceptionStatus||'No exception')+(p.exceptionStatus==='Approved exception'?' · Approved by '+escapeHTML(p.exceptionApprovedBy||'Not specified')+(p.exceptionExpires?' · Expires '+escapeHTML(p.exceptionExpires):''):'')+'</div>'+(p.exceptionReason?'<p class="tiny" style="margin:4px 0 0">'+escapeHTML(p.exceptionReason)+'</p>':'')+policyExceptionAlert(p)+'<button class="secondary small" style="margin-top:7px" data-policy-exception="'+escapeHTML(p.id)+'">Manage exception</button></div></div>').join('')+'</div>':'<p class="muted tiny" style="margin:12px 0 0">No policies added yet. Add a company policy or link an official government/regulator source.</p>')+'<p class="tiny muted" style="margin:10px 0 0">Prototype note: this library stores company-entered information and source links; it does not automatically crawl or verify websites. Internet retrieval and update monitoring need a secure backend integration.</p></section>';
   el.innerHTML=pageHead('Onboarding Engine','One clear journey from accepted candidate to a ready-to-start teammate.',canManage?'<button class="primary" id="addOnboardingPerson">+ Add candidate</button>':'')+
   (canManage?'<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3 style="margin:0">People entering the team</h3><p class="muted tiny" style="margin:3px 0 0">Add an accepted candidate, then start their individual onboarding journey.</p></div><span class="pill open">'+((state.onboardingPeople||[]).length)+' people</span></div><div id="onboardingPeopleList"></div></section>':'')+
-  (canManage?'<details class="card" style="margin-bottom:16px;padding:0"><summary style="cursor:pointer;padding:15px 18px;font-weight:750;list-style-position:inside">Workflow templates and setup <span class="tiny muted" style="font-weight:450">· advanced</span></summary><div style="padding:0 16px 14px"><section class="card" style="margin-bottom:16px"><div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap"><div style="flex:1;min-width:220px"><span class="module-kicker">WORKFLOW LIBRARY · '+state.onboardingWorkflows.length+' TEMPLATE(S)</span><label for="onboardingWorkflowSelect" style="display:block;margin:7px 0 5px;font-weight:650">Selected onboarding journey</label><select id="onboardingWorkflowSelect" style="width:100%;max-width:520px">'+workflowOptions()+'</select><h3 style="margin:10px 0 4px">'+escapeHTML(workflow.name)+'</h3><p class="muted tiny" style="margin:0">Audience: '+escapeHTML(workflow.audience)+' · Geography: '+escapeHTML(workflow.geographyScope)+' · Default owner: '+escapeHTML(workflow.defaultOwner)+' · Target duration: '+Number(workflow.durationDays||30)+' days</p><p class="muted tiny" style="margin:6px 0 0">'+(workflow.steps||[]).length+' template steps · Templates remain separate until applied to the live checklist.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="secondary small" id="deleteOnboardingWorkflow" '+(state.onboardingWorkflows.length<2?'disabled title="Keep at least one workflow template"':'')+
-  (canManage?policyCard()+'</div></details>':'')+'>Delete template</button><button class="primary small" id="applyOnboardingWorkflow">Add steps to checklist</button></div></div><div class="tiny muted" style="margin-top:10px">Applying adds new checklist items and skips duplicate titles; it does not overwrite existing tasks. Assign actual owners and dates before relying on the plan.</div></section>':'')+
+  (canManage?'<section class="card" style="margin-bottom:16px"><div class="card-head"><div><h3 style="margin:0">Onboarding flows</h3><p class="muted tiny" style="margin:3px 0 0">Keep one standard flow, then tailor it for different roles and teams.</p></div><div class="actions"><button class="secondary small" id="customizeOnboardingWorkflow">Edit flow</button><button class="primary small" id="newOnboardingWorkflow">+ Create flow</button></div></div><label for="onboardingWorkflowSelect" class="tiny muted">Manage a flow</label><select id="onboardingWorkflowSelect" style="width:100%;max-width:520px;margin-top:5px">'+workflowOptions()+'</select><div class="tiny muted" style="margin-top:8px">'+escapeHTML(workflow.audience)+' · '+(workflow.steps||[]).length+' steps · '+Number(workflow.durationDays||30)+' days</div></section>':'')+
   `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h3 style="margin:0">New-joiner readiness</h3><p class="muted tiny">Blocked tasks show which prerequisite must finish first. A blocked task is not counted as an overdue owner follow-up.</p></div><strong style="color:#4f46e5;font-size:24px">${pct}%</strong></div><div class="progress" style="margin:12px 0 16px"><span style="width:${pct}%"></span></div><div class="metrics" style="margin-bottom:12px"><div class="card metric"><strong>${steps.length-done}</strong><span>Open steps</span></div><div class="card metric"><strong>${blocked}</strong><span>Blocked by prerequisite</span></div><div class="card metric"><strong>${steps.filter(overdue).length}</strong><span>Overdue · unblocked</span></div><div class="card metric"><strong>${done}</strong><span>Completed</span></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="pill done">✓ Done</span><span class="pill pending">⚠ Overdue</span><span class="pill open">↳ Blocked</span></div>
   <div class="filter-bar" style="margin-bottom:14px"><input id="onboardingSearch" type="search" aria-label="Search onboarding steps" placeholder="Search step, owner or details"><select id="onboardingStatus" aria-label="Filter onboarding status"><option value="all">All steps</option><option value="blocked">Blocked</option><option value="overdue">Overdue · unblocked</option><option value="ready">Ready to progress</option><option value="done">Completed</option></select><span class="muted tiny" id="onboardingResultCount">${steps.length} steps</span></div>
@@ -1552,6 +1551,26 @@ function renderOnboarding(el){
   $('deleteOnboardingWorkflow')?.addEventListener('click',()=>{if(state.onboardingWorkflows.length<2){notify('Keep at least one workflow template.');return}state.onboardingWorkflows=state.onboardingWorkflows.filter(w=>String(w.id)!==String(workflow.id));state.selectedOnboardingWorkflowId=state.onboardingWorkflows[0].id;saveState();renderApp();notify('Workflow template deleted')});
   $('applyOnboardingWorkflow')?.addEventListener('click',()=>{const existing=new Set(steps.map(x=>String(x.title||'').trim().toLowerCase()));const additions=(workflow.steps||[]).filter(title=>!existing.has(String(title).trim().toLowerCase())).map((title,i)=>({id:Date.now()+i,title,detail:'Complete and confirm: '+title,status:'Not started',owner:workflow.defaultOwner||'People Ops',dueDate:new Date(Date.now()+Math.round((i+1)*Number(workflow.durationDays||30)/(workflow.steps||[]).length)*86400000).toISOString().slice(0,10),geographyScope:workflow.geographyScope||'All locations'}));if(!additions.length){notify('All template steps are already on the checklist.');return}steps.push(...additions);saveState();renderApp();notify(additions.length+' workflow steps added')});
   state.onboardingPeople=Array.isArray(state.onboardingPeople)?state.onboardingPeople:[];
+  function startPersonWithFlow(person, flowId){
+    const chosen=state.onboardingWorkflows.find(w=>String(w.id)===String(flowId))||workflow;
+    if(steps.some(step=>String(step.personId||'')===String(person.id))){person.status='Onboarding';person.workflowId=chosen.id;saveState();renderApp();return}
+    const baseDate=new Date(person.startDate+'T12:00:00');
+    const flowSteps=chosen.steps||[];
+    const items=flowSteps.map((title,i)=>({id:'person-'+person.id+'-'+i,personId:person.id,title:person.name+' · '+title,detail:'For '+person.name+' ('+person.roleTitle+'). '+title,status:'Not started',owner:chosen.defaultOwner||'People Ops',dueDate:new Date(baseDate.getTime()+Math.round((i+1)*Number(chosen.durationDays||30)/Math.max(1,flowSteps.length))*86400000).toISOString().slice(0,10),geographyScope:chosen.geographyScope||'All locations'}));
+    steps.push(...items);person.status='Onboarding';person.workflowId=chosen.id;person.startedAt=new Date().toISOString();saveState();renderApp();notify('Onboarding started for '+person.name+' using '+chosen.name);
+  }
+  function recommendFlow(person){
+    const terms=[person.employeeType,person.seniority,person.team].join(' ').toLowerCase();
+    const matches=state.onboardingWorkflows.map(w=>{const text=(w.name+' '+w.audience+' '+(w.tags||'')).toLowerCase();let score=0;
+      if(/intern|internship/.test(terms)&&/intern/.test(text))score+=8;
+      if(/senior|lead|executive|head/.test(terms)&&/senior|lead|executive|leadership/.test(text))score+=8;
+      if(/contractor|consultant|vendor/.test(terms)&&/contractor|consultant/.test(text))score+=8;
+      if(person.team&&text.includes(person.team.toLowerCase()))score+=4;
+      if(/entry|junior|graduate/.test(terms)&&/entry|junior|graduate/.test(text))score+=5;
+      return {w,score};
+    }).sort((a,b)=>b.score-a.score);
+    return matches[0]?.w||workflow;
+  }
   function drawOnboardingPeople(){
     const list=$('onboardingPeopleList');if(!list)return;
     list.innerHTML=state.onboardingPeople.length?state.onboardingPeople.map(person=>{
@@ -1560,13 +1579,11 @@ function renderOnboarding(el){
     }).join(''):'<p class="muted tiny" style="margin:12px 0">No candidates added yet. Add someone whose offer has been accepted to begin preboarding.</p>';
     list.querySelectorAll('[data-person-start]').forEach(button=>button.addEventListener('click',()=>{
       const person=state.onboardingPeople.find(p=>String(p.id)===String(button.dataset.personStart));if(!person)return;
-      const already=steps.some(step=>String(step.personId||'')===String(person.id));
-      if(!already){
-        const baseDate=new Date(person.startDate+'T12:00:00');
-        const items=(workflow.steps||[]).map((title,i)=>({id:'person-'+person.id+'-'+i,personId:person.id,title:person.name+' · '+title,detail:'For '+person.name+' ('+person.roleTitle+'). '+title,status:'Not started',owner:workflow.defaultOwner||'People Ops',dueDate:new Date(baseDate.getTime()+Math.round((i+1)*Number(workflow.durationDays||30)/(workflow.steps||[]).length)*86400000).toISOString().slice(0,10),geographyScope:workflow.geographyScope||'All locations'}));
-        steps.push(...items);
-      }
-      person.status='Onboarding';person.workflowId=workflow.id;person.startedAt=new Date().toISOString();saveState();renderApp();notify('Onboarding started for '+person.name);
+      const suggested=recommendFlow(person);
+      const options=state.onboardingWorkflows.map(w=>w.name);
+      openForm('Choose onboarding flow for '+person.name,[
+        {name:'flowName',label:'Recommended flow · '+suggested.name,type:'select',options,value:suggested.name,required:true}
+      ],v=>{const chosen=state.onboardingWorkflows.find(w=>w.name===v.flowName);if(!chosen){notify('Choose a valid onboarding flow.');return false}startPersonWithFlow(person,chosen.id)});
     }));
     list.querySelectorAll('[data-person-edit]').forEach(button=>button.addEventListener('click',()=>{
       const person=state.onboardingPeople.find(p=>String(p.id)===String(button.dataset.personEdit));if(!person)return;
@@ -1574,6 +1591,9 @@ function renderOnboarding(el){
         {name:'name',label:'Candidate name',required:true,value:person.name},
         {name:'email',label:'Email address',type:'email',required:true,value:person.email},
         {name:'roleTitle',label:'Role title',required:true,value:person.roleTitle},
+        {name:'employeeType',label:'Employee type',type:'select',options:['Intern','Full-time','Part-time','Contractor','Fixed-term'],required:true,value:person.employeeType||'Full-time'},
+        {name:'seniority',label:'Seniority',type:'select',options:['Intern','Entry level','Junior','Mid-level','Senior','Lead','Head / Executive'],required:true,value:person.seniority||'Mid-level'},
+        {name:'team',label:'Team / department',required:true,value:person.team||''},
         {name:'startDate',label:'Planned start date',type:'date',required:true,value:person.startDate},
         {name:'workMode',label:'Work mode',type:'select',options:['Hybrid','Remote','On-site'],required:true,value:person.workMode}
       ],v=>{Object.assign(person,v);saveState();renderApp();notify('Candidate details updated')});
@@ -1589,13 +1609,21 @@ function renderOnboarding(el){
     {name:'name',label:'Candidate full name',required:true,value:''},
     {name:'email',label:'Email address',type:'email',required:true,value:''},
     {name:'roleTitle',label:'Role they are joining for',required:true,value:''},
+    {name:'employeeType',label:'Employee type',type:'select',options:['Intern','Full-time','Part-time','Contractor','Fixed-term'],required:true,value:'Full-time'},
+    {name:'seniority',label:'Seniority',type:'select',options:['Intern','Entry level','Junior','Mid-level','Senior','Lead','Head / Executive'],required:true,value:'Mid-level'},
+    {name:'team',label:'Team / department',required:true,value:''},
     {name:'startDate',label:'Planned start date',type:'date',required:true,value:today},
     {name:'workMode',label:'Work mode',type:'select',options:['Hybrid','Remote','On-site'],required:true,value:'Hybrid'}
   ],v=>{
     const email=String(v.email||'').trim().toLowerCase();
     if(state.onboardingPeople.some(p=>String(p.email||'').toLowerCase()===email)){notify('A candidate with this email is already on the onboarding list.');return false}
-    state.onboardingPeople.push({id:'person-'+Date.now(),name:String(v.name).trim(),email,roleTitle:String(v.roleTitle).trim(),startDate:v.startDate,workMode:v.workMode,status:'Ready to start',createdAt:new Date().toISOString()});
-    saveState();renderApp();notify('Candidate added. Start onboarding when ready.');
+    const person={id:'person-'+Date.now(),name:String(v.name).trim(),email,roleTitle:String(v.roleTitle).trim(),employeeType:v.employeeType,seniority:v.seniority,team:String(v.team).trim(),startDate:v.startDate,workMode:v.workMode,status:'Ready to start',createdAt:new Date().toISOString()};
+    state.onboardingPeople.push(person);saveState();renderApp();
+    const suggested=recommendFlow(person),options=state.onboardingWorkflows.map(w=>w.name);
+    openForm('Select onboarding flow for '+person.name,[
+      {name:'flowName',label:'Saarthi recommendation · '+suggested.name,type:'select',options,value:suggested.name,required:true}
+    ],choice=>{const chosen=state.onboardingWorkflows.find(w=>w.name===choice.flowName);if(!chosen){notify('Choose a valid onboarding flow.');return false}startPersonWithFlow(person,chosen.id)});
+    return false;
   }));
   drawOnboardingPeople();
   const aiCard=document.createElement('section');
